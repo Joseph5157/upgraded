@@ -56,10 +56,9 @@
                 <div class="flex items-center gap-4"><i data-lucide="history" class="w-5 h-5"></i> Order History</div>
                 <span class="text-[8px] font-black uppercase tracking-widest text-indigo-500/50 bg-indigo-500/5 border border-indigo-500/10 px-1.5 py-0.5 rounded">Soon</span>
             </div>
-            <div class="flex items-center justify-between px-8 py-4 text-sm font-medium text-[#9CA3AF] cursor-not-allowed select-none">
-                <div class="flex items-center gap-4"><i data-lucide="settings" class="w-5 h-5"></i> Settings</div>
-                <span class="text-[8px] font-black uppercase tracking-widest text-indigo-500/50 bg-indigo-500/5 border border-indigo-500/10 px-1.5 py-0.5 rounded">Soon</span>
-            </div>
+            <a href="{{ route('profile.edit') }}" class="flex items-center gap-4 px-8 py-4 text-sm font-medium text-[#6B7280] hover:text-[#1A1D23] transition-all">
+                <i data-lucide="settings" class="w-5 h-5"></i> Settings
+            </a>
         </nav>
         <div class="p-6">
             <form method="POST" action="{{ route('logout') }}">

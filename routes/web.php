@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AccountManagerController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AdminController;
@@ -33,7 +34,7 @@ Route::middleware('throttle:30,1')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Vendor/Admin Dashboard Routes
-    Route::middleware(['role:vendor'])->group(function () {
+    Route::middleware(['role:vendor', 'account.status'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/orders/{order}/claim', [DashboardController::class, 'claim'])->name('orders.claim');
         Route::post('/orders/{order}/unclaim', [DashboardController::class, 'unclaim'])->name('orders.unclaim');
@@ -43,7 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Client Dashboard Routes
-    Route::middleware(['role:client'])->prefix('client')->name('client.')->group(function () {
+    Route::middleware(['role:client', 'account.status'])->prefix('client')->name('client.')->group(function () {
         Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
         Route::post('/dashboard/upload', [ClientDashboardController::class, 'store'])->name('dashboard.upload');
         Route::post('/orders/{order}/cancel', [ClientDashboardController::class, 'cancel'])->name('orders.cancel');
@@ -55,7 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Admin Routes
-    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['role:admin', 'account.status'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/refunds', [RefundController::class, 'index'])->name('refunds.index');
         Route::post('/refunds/{refundRequest}/approve', [RefundController::class, 'approve'])->name('refunds.approve');
         Route::post('/refunds/{refundRequest}/reject', [RefundController::class, 'reject'])->name('refunds.reject');
@@ -65,7 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Admin Routes
-Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin', 'account.status'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::post('/accounts/store', [AdminController::class, 'storeAccount'])->name('accounts.store');
     Route::resource('/matrix', ClientMatrixController::class)->only(['index', 'update']);
@@ -87,6 +88,14 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
     Route::post('/announcements/{announcement}/toggle', [AnnouncementController::class, 'toggle'])->name('announcements.toggle');
     Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+
+    // Account Manager
+    Route::get('/accounts', [AccountManagerController::class, 'index'])->name('accounts.index');
+    Route::post('/accounts/{user}/freeze', [AccountManagerController::class, 'freeze'])->name('accounts.freeze');
+    Route::post('/accounts/{user}/unfreeze', [AccountManagerController::class, 'unfreeze'])->name('accounts.unfreeze');
+    Route::delete('/accounts/{user}', [AccountManagerController::class, 'destroy'])->name('accounts.destroy');
+    Route::post('/accounts/{id}/restore', [AccountManagerController::class, 'restore'])->name('accounts.restore');
+    Route::delete('/accounts/{id}/force', [AccountManagerController::class, 'forceDelete'])->name('accounts.forceDelete');
 });
 
 Route::middleware('auth')->group(function () {

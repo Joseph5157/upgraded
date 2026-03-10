@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\AdminCreationLog;
 use App\Models\Client;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -11,23 +12,57 @@ class AdminController extends Controller
 {
     public function storeAccount(Request $request)
     {
+        // SECURITY CHECK 1: Only super admin can create admins
+        if ($request->role === 'admin' && ! auth()->user()->isSuperAdmin()) {
+            abort(403, 'Only SYSTEM_ROOT can create admin accounts.');
+        }
+
+        // SECURITY CHECK 2: Super admin password confirmation required for admin creation
+        if ($request->role === 'admin') {
+            $request->validate([
+                'super_password' => ['required', 'string'],
+            ]);
+
+            if (! Hash::check($request->super_password, auth()->user()->password)) {
+                return back()->withErrors([
+                    'super_password' => 'Incorrect SYSTEM_ROOT password.',
+                ])->withInput();
+            }
+        }
+
+        // SECURITY CHECK 3: Limit total admin accounts to 5
+        if ($request->role === 'admin') {
+            $adminCount = User::where('role', 'admin')->count();
+            if ($adminCount >= 5) {
+                return back()->withErrors([
+                    'role' => 'Maximum admin limit (5) reached. Contact system administrator.',
+                ]);
+            }
+        }
+
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8'],
-            'role' => ['required', 'in:vendor,client,admin'],
-            'slots' => ['required_if:role,client', 'nullable', 'integer', 'min:1', 'max:10000'],
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role'     => ['required', 'in:vendor,client,admin'],
+            'slots'    => ['required_if:role,client', 'nullable', 'integer', 'min:1', 'max:10000'],
         ]);
 
-        // Create the standard user account
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
+        $userData = [
+            'name'     => $request->name,
+            'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+            'role'     => $request->role,
+        ];
 
-        // If the role is 'client', automatically provision their Client profile
+        if ($request->role === 'admin') {
+            $userData['admin_created_by']   = auth()->id();
+            $userData['is_super_admin']     = false;
+            $userData['email_verified_at']  = now();
+        }
+
+        $user = User::create($userData);
+
         if ($request->role === 'client') {
             $client = Client::create([
                 'name'   => $request->name . ' Account',
@@ -37,6 +72,33 @@ class AdminController extends Controller
             $user->update(['client_id' => $client->id]);
         }
 
+        AdminCreationLog::create([
+            'created_by_user_id' => auth()->id(),
+            'target_user_id'     => $user->id,
+            'action'             => 'created',
+            'ip_address'         => $request->ip(),
+            'user_agent'         => $request->userAgent(),
+            'metadata'           => [
+                'role'       => $request->role,
+                'created_at' => now()->toISOString(),
+            ],
+        ]);
+
         return back()->with('success', ucfirst($request->role) . ' account created successfully!');
+    }
+
+    public function promoteSuperAdmin(Request $request, User $user)
+    {
+        if (! auth()->user()->isSuperAdmin()) {
+            abort(403);
+        }
+
+        if (User::where('is_super_admin', true)->where('id', '!=', $user->id)->exists()) {
+            return back()->withErrors(['error' => 'A SYSTEM_ROOT already exists.']);
+        }
+
+        $user->update(['is_super_admin' => true]);
+
+        return back()->with('success', $user->name . ' promoted to SYSTEM_ROOT.');
     }
 }

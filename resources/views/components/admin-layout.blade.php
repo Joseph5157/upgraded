@@ -121,10 +121,10 @@
     <div class="flex h-screen overflow-hidden">
 
         {{-- 1. STICKY SIDEBAR --}}
-        <aside class="w-64 flex-shrink-0 bg-[#F7F8FA] border-r border-[#E2E6EA] flex flex-col dark:bg-[#0a0a0c] dark:border-[#1e2030]">
+        <aside class="w-64 flex-shrink-0 bg-[#F7F8FA] border-r border-[#E2E6EA] flex flex-col dark:bg-[#0a0a0c] dark:border-white/5">
 
             {{-- Brand --}}
-            <div class="p-6 border-b border-[#E2E6EA]">
+            <div class="p-6 border-b border-[#E2E6EA] dark:border-white/5">
                 <div class="flex items-center gap-3">
                     <div class="w-2 h-8 bg-[#4F6EF7] rounded-full"></div>
                     <span class="text-sm font-extrabold text-gray-900 tracking-wide uppercase dark:text-white">Control Center</span>
@@ -202,16 +202,29 @@
                     <a href="{{ route('admin.dashboard') }}#create-account" class="nav-link">
                         <i data-lucide="user-plus" class="w-3.5 h-3.5 flex-shrink-0"></i> Issue Account
                     </a>
+                    <a href="{{ route('admin.accounts.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.accounts.*') ? 'active' : '' }}">
+                        <i data-lucide="users" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        <span class="flex-1">Account Manager</span>
+                        @php $_frozenCount = \App\Models\User::whereIn('role',['vendor','client'])->where('status','frozen')->count(); @endphp
+                        @if($_frozenCount > 0)
+                            <span class="text-[8px] font-black bg-red-500/15 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-md leading-none">{{ $_frozenCount }}</span>
+                        @endif
+                    </a>
+                    <a href="{{ route('profile.edit') }}"
+                        class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                        <i data-lucide="settings" class="w-3.5 h-3.5 flex-shrink-0"></i> Settings
+                    </a>
                 </div>
 
             </nav>
 
             {{-- Operator Section --}}
-            <div class="p-4 border-t border-[#E2E6EA] bg-[#F0F2F5]">
-                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2">Operator</div>
+            <div class="p-4 border-t border-[#E2E6EA] bg-[#F0F2F5] dark:bg-[#0a0a0c] dark:border-white/5">
+                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2 dark:text-slate-700">Operator</div>
                 <div class="flex items-center gap-3 px-2 mb-3">
                     <div
-                        class="w-8 h-8 rounded-lg bg-red-600/20 text-red-500 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                        class="w-8 h-8 rounded-lg bg-red-600/20 text-red-500 flex items-center justify-center text-[10px] font-bold flex-shrink-0 dark:bg-red-500/20 dark:text-red-400">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
                     <div class="min-w-0 truncate">
@@ -226,7 +239,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                        class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-gray-500 hover:text-red-500 hover:bg-red-500/5 transition-all dark:text-slate-600 dark:hover:text-red-400">
+                        class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-gray-500 hover:text-red-500 hover:bg-red-500/5 transition-all dark:text-slate-500 dark:hover:text-red-400 dark:hover:bg-red-500/10">
                         <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
                     </button>
                 </form>

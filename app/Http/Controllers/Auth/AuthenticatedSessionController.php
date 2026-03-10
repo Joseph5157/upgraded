@@ -26,9 +26,24 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        if (Auth::user()->isFrozen()) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Your account has been frozen. Please contact support.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         $user = $request->user();
+
+        $user->update([
+            'last_login_at' => now(),
+            'last_login_ip' => $request->ip(),
+        ]);
 
         return match ($user->role) {
             'admin'  => redirect()->intended(route('admin.dashboard')),

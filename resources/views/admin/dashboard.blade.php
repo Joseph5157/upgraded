@@ -275,14 +275,15 @@
                 <div>
                     <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 dark:text-slate-500">Account
                         Type</label>
-                    <select name="role" id="modal-role" onchange="toggleSlotsField(this.value)" required
+                    <select name="role" id="modal-role" onchange="toggleRoleFields()" required
                         class="w-full bg-[#F0F2F5] border border-[#E2E6EA] rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-red-500/50 appearance-none dark:bg-white/5 dark:border-white/10 dark:text-white">
+                        @if(auth()->user()->isSuperAdmin())
+                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }} class="bg-[#FAFBFC]">System Admin</option>
+                        @endif
                         <option value="vendor" {{ old('role') === 'vendor' ? 'selected' : '' }} class="bg-[#FAFBFC]">
                             Processing Vendor</option>
                         <option value="client" {{ old('role') === 'client' ? 'selected' : '' }} class="bg-[#FAFBFC]">
                             Client Organization</option>
-                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }} class="bg-[#FAFBFC]">System
-                            Admin</option>
                     </select>
                 </div>
                 <div>
@@ -303,6 +304,30 @@
                     <input type="password" name="password" required
                         class="w-full bg-[#F0F2F5] border border-[#E2E6EA] rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-red-500/50 transition-colors dark:bg-white/5 dark:border-white/10 dark:text-white dark:placeholder-slate-700">
                 </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 dark:text-slate-500">Confirm Password</label>
+                    <input type="password" name="password_confirmation" required
+                        class="w-full bg-[#F0F2F5] border border-[#E2E6EA] rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-red-500/50 transition-colors dark:bg-white/5 dark:border-white/10 dark:text-white dark:placeholder-slate-700">
+                </div>
+                <div id="super-password-section" class="hidden">
+                    <div class="p-4 bg-red-500/5 border border-red-500/20 rounded-xl space-y-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-red-400"></i>
+                            <label class="text-[10px] font-bold text-red-400 uppercase tracking-widest">SYSTEM_ROOT Authorization Required</label>
+                        </div>
+                        <input type="password" name="super_password" id="super_password"
+                            class="w-full bg-[#F0F2F5] border border-red-500/20 rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-red-500/50 transition-colors font-mono dark:bg-white/5 dark:border-white/10 dark:text-white dark:placeholder-slate-700"
+                            placeholder="Enter your SYSTEM_ROOT password">
+                        @error('super_password')
+                            <p class="text-[10px] text-red-400">{{ $message }}</p>
+                        @enderror
+                        <ul class="text-[9px] text-gray-400 space-y-1 list-disc list-inside">
+                            <li>Admin accounts have full portal access. This action is logged.</li>
+                            <li>Maximum 5 admin accounts are allowed system-wide.</li>
+                            <li>Enter your own password to authorize this creation.</li>
+                        </ul>
+                    </div>
+                </div>
                 <div id="slots-field" class="{{ old('role', 'vendor') === 'client' ? '' : 'hidden' }}">
                     <div class="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-3">
                         <div class="flex items-center gap-2">
@@ -322,11 +347,16 @@
                     </button>
                 </div>
                 <script>
-                    function toggleSlotsField(role) {
-                        const field = document.getElementById('slots-field');
-                        field.classList.toggle('hidden', role !== 'client');
+                    function toggleRoleFields() {
+                        const role = document.getElementById('modal-role').value;
+                        document.getElementById('slots-field').classList.toggle('hidden', role !== 'client');
+                        const superSection = document.getElementById('super-password-section');
+                        superSection.classList.toggle('hidden', role !== 'admin');
+                        if (role !== 'admin') {
+                            document.getElementById('super_password').value = '';
+                        }
                     }
-                    toggleSlotsField(document.getElementById('modal-role').value);
+                    toggleRoleFields();
                 </script>
             </form>
         </div>

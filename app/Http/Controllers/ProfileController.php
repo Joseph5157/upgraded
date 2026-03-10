@@ -12,13 +12,22 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display the user's profile form, routed by role.
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $user = $request->user();
+
+        return match($user->role) {
+            'admin'  => view('admin.profile', ['user' => $user]),
+            'client' => view('client.profile', ['user' => $user]),
+            'vendor' => view('vendor.profile', [
+                'user'           => $user,
+                'filesProcessed' => $user->orders()->where('status', 'delivered')->count(),
+                'memberSince'    => $user->created_at,
+            ]),
+            default  => view('profile.edit', ['user' => $user]),
+        };
     }
 
     /**

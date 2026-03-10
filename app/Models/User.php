@@ -4,13 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -23,6 +24,15 @@ class User extends Authenticatable
         'password',
         'role',
         'client_id',
+        'status',
+        'frozen_at',
+        'frozen_reason',
+        'is_super_admin',
+        'admin_created_by',
+        'admin_creation_token',
+        'admin_token_expires_at',
+        'last_login_at',
+        'last_login_ip',
     ];
 
     /**
@@ -43,10 +53,55 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'      => 'datetime',
+            'frozen_at'              => 'datetime',
+            'password'               => 'hashed',
+            'is_super_admin'         => 'boolean',
+            'admin_token_expires_at' => 'datetime',
+            'last_login_at'          => 'datetime',
         ];
     }
+
+    public function isFrozen(): bool
+    {
+        return $this->status === 'frozen';
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->is_super_admin === true;
+    }
+
+    public function canCreateAdmins(): bool
+    {
+        return $this->isSuperAdmin();
+    }
+
+    public function canCreateVendors(): bool
+    {
+        return in_array($this->role, ['admin']);
+    }
+
+    public function canCreateClients(): bool
+    {
+        return in_array($this->role, ['admin']);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeFrozen($query)
+    {
+        return $query->where('status', 'frozen');
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class, 'claimed_by');
@@ -55,5 +110,15 @@ class User extends Authenticatable
     public function client()
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'admin_created_by');
+    }
+
+    public function adminCreationLogs()
+    {
+        return $this->hasMany(AdminCreationLog::class, 'created_by_user_id');
     }
 }
