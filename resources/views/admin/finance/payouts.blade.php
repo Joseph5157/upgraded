@@ -37,7 +37,7 @@
                 <table class="w-full text-left">
                     <thead>
                         <tr
-                            class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
+                            class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/5">
                             <th class="pb-6 px-4">Vendor</th>
                             <th class="pb-6 text-center">Payout Rate</th>
                             <th class="pb-6 text-center">Delivered</th>
@@ -132,7 +132,7 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr
-                                class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
+                                class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/5">
                                 <th class="pb-6 px-4">Vendor</th>
                                 <th class="pb-6 text-center">Amount</th>
                                 <th class="pb-6 text-center">UPI / Reference</th>
@@ -164,7 +164,7 @@
                                                 {{ $payout->reference_id }}
                                             </span>
                                         @else
-                                            <span class="text-xs text-slate-700 font-bold">—</span>
+                                            <span class="text-xs text-slate-500 font-bold">—</span>
                                         @endif
                                     </td>
                                     <td class="py-5 text-center text-xs text-slate-500 max-w-[200px] truncate">
@@ -183,7 +183,7 @@
                 <div class="py-16 text-center">
                     <div
                         class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/5">
-                        <i data-lucide="history" class="w-7 h-7 text-slate-700"></i>
+                        <i data-lucide="history" class="w-7 h-7 text-slate-500"></i>
                     </div>
                     <p class="text-sm font-bold text-slate-400">No payouts recorded yet</p>
                     <p class="text-[10px] text-slate-600 mt-1 font-bold">Use the "Pay" button above to record your first

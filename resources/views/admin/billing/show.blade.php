@@ -57,7 +57,7 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr
-                                class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
+                                class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/5">
                                 <th class="pb-6 px-4">Client</th>
                                 <th class="pb-6 text-center">Orders</th>
                                 <th class="pb-6 text-center">Price/File</th>
@@ -109,7 +109,7 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr
-                                class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
+                                class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/5">
                                 <th class="pb-6 px-4">Vendor</th>
                                 <th class="pb-6 text-center">Orders Completed</th>
                                 <th class="pb-6 text-right">Payout</th>

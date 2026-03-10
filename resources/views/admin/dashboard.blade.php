@@ -97,7 +97,7 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr
-                                class="text-[10px] text-gray-400 font-bold uppercase tracking-widest border-b border-[#E2E6EA] bg-[#F0F2F5] dark:text-slate-700 dark:border-white/[0.03] dark:bg-[#0a0a0c]">
+                                class="text-[10px] text-gray-400 font-bold uppercase tracking-widest border-b border-[#E2E6EA] bg-[#F0F2F5] dark:text-slate-400 dark:border-white/[0.03] dark:bg-[#0a0a0c]">
                                 <th class="pb-4 px-3">Vendor</th>
                                 <th class="pb-4 text-center">Files Today</th>
                                 <th class="pb-4 text-center">Lifetime</th>

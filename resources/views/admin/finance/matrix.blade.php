@@ -81,7 +81,7 @@
                 <table class="w-full text-left">
                     <thead>
                         <tr
-                            class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.2em] border-b border-white/[0.04]">
+                            class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] border-b border-white/[0.04]">
                             <th class="py-5 px-6">Client</th>
                             <th class="py-5 text-center">Total Slots</th>
                             <th class="py-5 text-center">Used</th>

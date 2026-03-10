@@ -89,7 +89,7 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr
-                                class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
+                                class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/5">
                                 <th class="pb-6 px-4">Client</th>
                                 <th class="pb-6 text-center">Orders Delivered</th>
                                 <th class="pb-6 text-center">Rate / File</th>
@@ -155,7 +155,7 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr
-                                class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
+                                class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/5">
                                 <th class="pb-6 px-4">Date</th>
                                 <th class="pb-6 text-center">Orders</th>
                                 <th class="pb-6 text-center">Revenue</th>
@@ -203,7 +203,7 @@
                 <div class="py-20 text-center">
                     <div
                         class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/5">
-                        <i data-lucide="book-open" class="w-8 h-8 text-slate-700"></i>
+                        <i data-lucide="book-open" class="w-8 h-8 text-slate-500"></i>
                     </div>
                     <p class="text-sm font-bold text-slate-300">No ledger entries yet</p>
                     <p class="text-[10px] text-slate-600 mt-1 font-bold">Run <code
