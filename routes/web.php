@@ -1,0 +1,98 @@
+<?php
+
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
+
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\BillingController;
+use App\Http\Controllers\ClientDashboardController;
+use App\Http\Controllers\ClientMatrixController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LedgerController;
+use App\Http\Controllers\MatrixController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\RefundController;
+use App\Http\Controllers\TopupRequestController;
+use App\Http\Controllers\VendorPayoutController;
+use App\Http\Controllers\ClientSubscriptionController;
+use App\Http\Controllers\AnnouncementController;
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+// Client Public Routes — throttled to prevent abuse
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/u/{token}', [OrderController::class, 'showUpload'])->name('client.upload');
+    Route::post('/u/{token}', [OrderController::class, 'store'])->name('client.store');
+    Route::delete('/u/{token}/orders/{order}', [OrderController::class, 'destroyOrder'])->name('client.link.orders.delete');
+    Route::get('/track/{token_view}', [OrderController::class, 'track'])->name('client.track');
+    Route::get('/download/{token_view}', [OrderController::class, 'download'])->name('client.download');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Vendor/Admin Dashboard Routes
+    Route::middleware(['role:vendor'])->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::post('/orders/{order}/claim', [DashboardController::class, 'claim'])->name('orders.claim');
+        Route::post('/orders/{order}/unclaim', [DashboardController::class, 'unclaim'])->name('orders.unclaim');
+        Route::post('/orders/{order}/status', [DashboardController::class, 'updateStatus'])->name('orders.status');
+        Route::post('/orders/{order}/report', [DashboardController::class, 'uploadReport'])->name('orders.report');
+        Route::get('/orders/{order}/files/{file}', [DashboardController::class, 'downloadFile'])->name('orders.files.download');
+    });
+
+    // Client Dashboard Routes
+    Route::middleware(['role:client'])->prefix('client')->name('client.')->group(function () {
+        Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/dashboard/upload', [ClientDashboardController::class, 'store'])->name('dashboard.upload');
+        Route::post('/orders/{order}/cancel', [ClientDashboardController::class, 'cancel'])->name('orders.cancel');
+        Route::delete('/orders/{order}/delete', [ClientDashboardController::class, 'destroy'])->name('orders.delete');
+        Route::delete('/orders/{order}/files/{file}', [ClientDashboardController::class, 'destroyFile'])->name('orders.files.delete');
+        Route::post('/orders/{order}/refund', [RefundController::class, 'store'])->name('orders.refund');
+        Route::post('/topup', [TopupRequestController::class, 'store'])->name('topup.store');
+        Route::get('/subscription', [ClientSubscriptionController::class, 'index'])->name('subscription');
+    });
+
+    // Admin Routes
+    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/refunds', [RefundController::class, 'index'])->name('refunds.index');
+        Route::post('/refunds/{refundRequest}/approve', [RefundController::class, 'approve'])->name('refunds.approve');
+        Route::post('/refunds/{refundRequest}/reject', [RefundController::class, 'reject'])->name('refunds.reject');
+    });
+    Route::post('/announcements/{announcement}/dismiss', [AnnouncementController::class, 'dismiss'])->name('announcements.dismiss');
+
+});
+
+// Admin Routes
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/accounts/store', [AdminController::class, 'storeAccount'])->name('accounts.store');
+    Route::resource('/matrix', ClientMatrixController::class)->only(['index', 'update']);
+    Route::post('/matrix/{client}/refill', [ClientMatrixController::class, 'refill'])->name('matrix.refill');
+    Route::post('/topup/{topupRequest}/approve', [TopupRequestController::class, 'approve'])->name('topup.approve');
+    Route::post('/topup/{topupRequest}/reject', [TopupRequestController::class, 'reject'])->name('topup.reject');
+    Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+    Route::get('/billing/{ledger}', [BillingController::class, 'show'])->name('billing.show');
+    // Finance Section
+    Route::prefix('finance')->name('finance.')->group(function () {
+        Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix');
+        Route::put('/matrix/{client}', [MatrixController::class, 'update'])->name('matrix.update');
+        Route::post('/matrix/{client}/refill', [MatrixController::class, 'refill'])->name('matrix.refill');
+        Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger');
+        Route::get('/payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
+        Route::post('/payouts', [VendorPayoutController::class, 'store'])->name('payouts.store');
+    });
+    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::post('/announcements/{announcement}/toggle', [AnnouncementController::class, 'toggle'])->name('announcements.toggle');
+    Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+require __DIR__ . '/auth.php';

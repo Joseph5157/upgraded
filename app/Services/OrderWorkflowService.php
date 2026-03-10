@@ -1,0 +1,156 @@
+<?php
+
+namespace App\Services;
+
+use App\Enums\OrderStatus;
+use App\Models\Order;
+use App\Models\OrderLog;
+use App\Models\OrderReport;
+use App\Models\User;
+use Exception;
+use Illuminate\Support\Facades\DB;
+
+class OrderWorkflowService
+{
+    /**
+     * Claim a pending, unclaimed order.
+     */
+    public function claim(Order $order, User $user): void
+    {
+        if ($order->status === OrderStatus::Cancelled) {
+            throw new Exception("This order has been cancelled by the client and is no longer available.");
+        }
+
+        if ($order->status !== OrderStatus::Pending) {
+            throw new Exception("Only pending orders can be claimed. This order is '{$order->status->value}'.");
+        }
+
+        if ($order->claimed_by !== null) {
+            throw new Exception("This order has already been claimed and is not available.");
+        }
+
+        DB::transaction(function () use ($order, $user) {
+            $order->update(['claimed_by' => $user->id]);
+            $this->logActivity($order, $user, 'claim', 'Order claimed by agent');
+        });
+    }
+
+    /**
+     * Move a pending order to processing.
+     */
+    public function startProcessing(Order $order, User $user): void
+    {
+        $this->assertVendorOrAdmin($order, $user, 'start processing');
+
+        if ($order->status === OrderStatus::Cancelled) {
+            throw new Exception("This order has been cancelled by the client.");
+        }
+
+        if ($order->status === OrderStatus::Delivered) {
+            throw new Exception("Cannot change a delivered order back to processing.");
+        }
+
+        if ($order->status !== OrderStatus::Pending) {
+            throw new Exception("Order must be in 'pending' status to start processing. Current status: '{$order->status->value}'.");
+        }
+
+        DB::transaction(function () use ($order, $user) {
+            $oldStatus = $order->status->value;
+            $order->update(['status' => OrderStatus::Processing]);
+            $this->logActivity($order, $user, 'start_processing', 'Order processing started', $oldStatus, OrderStatus::Processing->value);
+        });
+    }
+
+    /**
+     * Attach a report to the order and update metrics.
+     */
+    public function uploadReport(Order $order, User $user, array $data): void
+    {
+        $this->assertVendorOrAdmin($order, $user, 'upload a report for');
+
+        if ($order->status === OrderStatus::Cancelled) {
+            throw new Exception("Cannot upload a report for a cancelled order.");
+        }
+
+        if ($order->status === OrderStatus::Delivered) {
+            throw new Exception("Cannot upload a report for an order that has already been delivered.");
+        }
+
+        if (empty($data['report_path'])) {
+            throw new Exception("A report file path must be provided.");
+        }
+
+        DB::transaction(function () use ($order, $user, $data) {
+            OrderReport::updateOrCreate(
+                ['order_id' => $order->id],
+                ['report_path' => $data['report_path']]
+            );
+
+            $order->update([
+                'ai_percentage'   => $data['ai_percentage'] ?? $order->ai_percentage,
+                'plag_percentage' => $data['plag_percentage'] ?? $order->plag_percentage,
+            ]);
+
+            $this->logActivity($order, $user, 'upload_report', 'Report uploaded and metrics updated');
+        });
+    }
+
+    /**
+     * Mark an order as delivered.
+     */
+    public function deliver(Order $order, User $user): void
+    {
+        $this->assertVendorOrAdmin($order, $user, 'deliver');
+
+        if ($order->status === OrderStatus::Delivered) {
+            throw new Exception("This order has already been delivered and cannot be re-delivered.");
+        }
+
+        if ($order->status !== OrderStatus::Processing) {
+            throw new Exception("Order must be in 'processing' status before delivery. Current status: '{$order->status->value}'.");
+        }
+
+        if (!$order->report()->exists()) {
+            throw new Exception("A report PDF must be uploaded before the order can be delivered.");
+        }
+
+        DB::transaction(function () use ($order, $user) {
+            $oldStatus = $order->status->value;
+            $order->update([
+                'status'       => OrderStatus::Delivered,
+                'delivered_at' => now(),
+            ]);
+            $this->logActivity($order, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
+        });
+    }
+
+    // ─── Private Helpers ────────────────────────────────────────────────────────
+
+    protected function assertVendorOrAdmin(Order $order, User $user, string $action): void
+    {
+        $isOwner = (int) $order->claimed_by === (int) $user->id;
+        $isAdmin = $user->role === 'admin';
+
+        if (!$isOwner && !$isAdmin) {
+            throw new Exception("You are not authorized to {$action} this order.");
+        }
+    }
+
+    protected function logActivity(
+        Order $order,
+        User $user,
+        string $action,
+        string $notes = null,
+        string $oldStatus = null,
+        string $newStatus = null
+    ): void {
+        OrderLog::create([
+            'order_id'   => $order->id,
+            'user_id'    => $user->id,
+            'action'     => $action,
+            'old_status' => $oldStatus,
+            'new_status' => $newStatus,
+            'notes'      => $notes,
+        ]);
+    }
+}

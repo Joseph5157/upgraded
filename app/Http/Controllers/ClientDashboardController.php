@@ -1,0 +1,199 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Client;
+use App\Models\Order;
+use App\Models\OrderFile;
+use App\Enums\OrderStatus;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
+class ClientDashboardController extends Controller
+{
+    public function index()
+    {
+        $user = Auth::user();
+
+        $client = $user->client;
+
+        if (!$client) {
+            abort(403, 'No client account is linked to your profile. Please contact the administrator.');
+        }
+
+        $ordersQuery = Order::where('client_id', $client->id)
+            ->where('source', 'account');
+
+        if ($user->role === 'client') {
+            $ordersQuery->where('created_by_user_id', $user->id);
+        }
+
+        $orders = $ordersQuery->with(['report', 'files', 'client'])
+            ->latest()
+            ->get();
+
+        return view('client.dashboard', compact('client', 'orders'));
+    }
+
+    public function store(Request $request)
+    {
+        $user = Auth::user();
+        $client = $user->client;
+
+        if (!$client) {
+            abort(403, 'No client account is linked to your profile. Please contact the administrator.');
+        }
+
+        $request->validate([
+            'files.*' => 'required|file|mimes:pdf,doc,docx,zip|max:102400',
+            'files'   => 'required|array|min:1|max:20',
+        ]);
+
+        try {
+            $tokenView = DB::transaction(function () use ($client, $request, $user) {
+                // Lock the client row to prevent race conditions on slot checks
+                $client = Client::where('id', $client->id)->lockForUpdate()->first();
+
+                $totalOrders = $client->orders()->count();
+                if ($client->status === 'suspended' || $totalOrders >= $client->slots) {
+                    throw new \Exception('Insufficient credits. You have reached your limit of ' . $client->slots . ' files. Please contact Admin for a refill.');
+                }
+
+                $tokenView = Str::random(32);
+
+                $order = Order::create([
+                    'client_id'          => $client->id,
+                    'token_view'         => $tokenView,
+                    'files_count'        => count($request->file('files')),
+                    'status'             => OrderStatus::Pending,
+                    'due_at'             => now()->addMinutes(config('services.portal.default_sla_minutes', 20)),
+                    'source'             => 'account',
+                    'created_by_user_id' => $user->id,
+                ]);
+
+                foreach ($request->file('files') as $file) {
+                    $originalName = $file->getClientOriginalName();
+                    $path = $file->storeAs('orders/' . $order->id, $originalName);
+                    OrderFile::create([
+                        'order_id'  => $order->id,
+                        'file_path' => $path,
+                    ]);
+                }
+
+                // Suspend client if they have now hit their limit
+                if ($client->orders()->count() >= $client->slots) {
+                    $client->update(['status' => 'suspended']);
+                }
+
+                return $tokenView;
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('client.dashboard')->with('success', 'Order created successfully. Tracking ID: ' . $tokenView);
+    }
+
+    public function cancel(Order $order)
+    {
+        $user = Auth::user();
+        $client = $user->client;
+
+        if ($order->client_id !== $client->id || $order->created_by_user_id !== $user->id) {
+            abort(403);
+        }
+
+        if (!$order->due_at->isPast()) {
+            return back()->with('error', 'You can only cancel an order after the 20-minute deadline has passed.');
+        }
+
+        if ($order->status === OrderStatus::Delivered || $order->status === OrderStatus::Cancelled) {
+            return back()->with('error', 'This order cannot be cancelled.');
+        }
+
+        DB::transaction(function () use ($order, $client) {
+            $order->update([
+                'status'     => OrderStatus::Cancelled,
+                'claimed_by' => null,
+                'claimed_at' => null,
+            ]);
+
+            // Delete all files from disk permanently
+            foreach ($order->files as $file) {
+                Storage::delete($file->file_path);
+            }
+
+            // Delete the entire order folder
+            Storage::deleteDirectory('orders/' . $order->id);
+
+            // Delete file records from database
+            $order->files()->delete();
+
+            if ($client->status === 'suspended') {
+                $ordersCount = $client->orders()
+                    ->whereNotIn('status', [OrderStatus::Cancelled->value])
+                    ->count();
+                if ($ordersCount < $client->slots) {
+                    $client->update(['status' => 'active']);
+                }
+            }
+        });
+
+        return back()->with('success', 'Order cancelled. Your credit slot has been refunded.');
+    }
+
+    public function destroyFile(Order $order, OrderFile $file)
+    {
+        $user = Auth::user();
+        $client = $user->client;
+
+        if ($order->client_id !== $client->id || $order->created_by_user_id !== $user->id) {
+            abort(403);
+        }
+
+        if ($file->order_id !== $order->id) {
+            abort(403);
+        }
+
+        Storage::delete($file->file_path);
+        $file->delete();
+
+        return back()->with('success', 'File deleted successfully.');
+    }
+
+    public function destroy(Order $order)
+    {
+        $user = Auth::user();
+        $client = $user->client;
+
+        if ($order->client_id !== $client->id || $order->created_by_user_id !== $user->id) {
+            abort(403);
+        }
+
+        DB::transaction(function () use ($order) {
+            // Delete all files from disk permanently
+            foreach ($order->files as $file) {
+                Storage::delete($file->file_path);
+            }
+
+            // Delete the order folder entirely
+            Storage::deleteDirectory('orders/' . $order->id);
+
+            // Delete report file from disk if exists
+            if ($order->report && $order->report->report_path) {
+                Storage::delete($order->report->report_path);
+                Storage::deleteDirectory('reports/' . $order->id);
+            }
+
+            // Delete database records
+            $order->files()->delete();
+            $order->report()->delete();
+            $order->delete();
+        });
+
+        return back()->with('success', 'Order and all associated files have been permanently deleted.');
+    }
+}
