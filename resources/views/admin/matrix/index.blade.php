@@ -47,7 +47,7 @@
                 <table class="w-full text-left">
                     <thead>
                         <tr
-                            class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
+                            class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/5">
                             <th class="pb-6 px-4">Client / Org name</th>
                             <th class="pb-6 text-center">Total Slots</th>
                             <th class="pb-6 text-center">Used Slots</th>

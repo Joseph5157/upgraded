@@ -518,7 +518,7 @@
             </div>
         </div>
 
-        <footer class="p-10 text-center border-t border-[#E2E6EA] bg-[#F0F2F5] dark:bg-[#0a0a0c] dark:border-[#1e2030] dark:text-slate-700">
+        <footer class="p-10 text-center border-t border-[#E2E6EA] bg-[#F0F2F5] dark:bg-[#0a0a0c] dark:border-[#1e2030] dark:text-slate-400">
             <p class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">PlagExpert &bull; Advanced Plagiarism
                 Prevention</p>
         </footer>

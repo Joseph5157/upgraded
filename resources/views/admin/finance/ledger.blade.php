@@ -78,7 +78,7 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr
-                                class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.2em] border-b border-white/[0.04]">
+                                class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.2em] border-b border-white/[0.04]">
                                 <th class="py-5 px-8">Date</th>
                                 <th class="py-5 text-center">Orders</th>
                                 <th class="py-5 text-center">Revenue</th>
@@ -121,10 +121,10 @@
                     <div class="py-20 text-center">
                         <div
                             class="w-14 h-14 bg-white/[0.03] rounded-full flex items-center justify-center mx-auto mb-4 border border-white/[0.04]">
-                            <i data-lucide="book-open" class="w-7 h-7 text-slate-700"></i>
+                            <i data-lucide="book-open" class="w-7 h-7 text-slate-500"></i>
                         </div>
                         <p class="text-sm font-bold text-slate-600">No ledger entries yet</p>
-                        <p class="text-[10px] text-slate-700 mt-1">Run <code
+                        <p class="text-[10px] text-slate-500 mt-1">Run <code
                                 class="bg-white/5 px-1.5 py-0.5 rounded font-mono">php artisan app:close-day</code> to
                             create the first snapshot.</p>
                     </div>
