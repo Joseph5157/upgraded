@@ -58,6 +58,10 @@ class ClientDashboardController extends Controller
                 // Lock the client row to prevent race conditions on slot checks
                 $client = Client::where('id', $client->id)->lockForUpdate()->first();
 
+                if ($client->plan_expiry && $client->plan_expiry->isPast()) {
+                    throw new \Exception('Your plan has expired on ' . $client->plan_expiry->format('d M Y') . '. Please contact Admin to renew.');
+                }
+
                 if ($client->status === 'suspended' || $client->slots_consumed >= $client->slots) {
                     throw new \Exception('Insufficient credits. You have reached your limit of ' . $client->slots . ' files. Please contact Admin for a refill.');
                 }
@@ -110,12 +114,8 @@ class ClientDashboardController extends Controller
             abort(403);
         }
 
-        if (!$order->due_at->isPast()) {
-            return back()->with('error', 'You can only cancel an order after the 20-minute deadline has passed.');
-        }
-
-        if ($order->status === OrderStatus::Delivered || $order->status === OrderStatus::Cancelled) {
-            return back()->with('error', 'This order cannot be cancelled.');
+        if ($order->claimed_by !== null) {
+            return back()->with('error', 'This order has already been claimed by an agent and cannot be cancelled.');
         }
 
         DB::transaction(function () use ($order, $client) {

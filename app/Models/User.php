@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'role',
         'delivered_orders_count',
+        'daily_delivered_count',
         'client_id',
         'status',
         'frozen_at',

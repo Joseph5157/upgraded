@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\VendorDailySnapshot;
 use App\Models\VendorPayout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class VendorEarningsController extends Controller
 {
@@ -29,7 +30,7 @@ class VendorEarningsController extends Controller
             $statement->push([
                 'date'        => $snap->date,
                 'type'        => 'earned',
-                'description' => $snap->orders_delivered . ' ' . str_plural('order', $snap->orders_delivered) . ' completed',
+                'description' => $snap->orders_delivered . ' ' . Str::plural('order', $snap->orders_delivered) . ' completed',
                 'credit'      => $snap->amount_earned,
                 'debit'       => null,
             ]);
