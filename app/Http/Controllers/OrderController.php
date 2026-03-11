@@ -87,8 +87,13 @@ class OrderController extends Controller
             }
             Storage::deleteDirectory('orders/' . $order->id);
 
-            if ($order->report && $order->report->report_path) {
-                Storage::delete($order->report->report_path);
+            if ($order->report) {
+                if ($order->report->ai_report_path) {
+                    Storage::delete($order->report->ai_report_path);
+                }
+                if ($order->report->plag_report_path) {
+                    Storage::delete($order->report->plag_report_path);
+                }
                 Storage::deleteDirectory('reports/' . $order->id);
             }
 
@@ -106,7 +111,7 @@ class OrderController extends Controller
         return view('client.track', compact('order'));
     }
 
-    public function download($token_view)
+    public function download($token_view, Request $request)
     {
         $order = Order::where('token_view', $token_view)->with('report')->firstOrFail();
 
@@ -114,12 +119,15 @@ class OrderController extends Controller
             abort(404);
         }
 
-        if ($order->is_downloaded) {
-            return back()->with('error', 'Report has already been downloaded once.');
+        $type = $request->query('type', 'ai');
+
+        if ($type === 'plag') {
+            if (!$order->report->plag_report_path) abort(404);
+            return Storage::download($order->report->plag_report_path, 'plagiarism-report-' . $order->id . '.pdf');
         }
 
+        if (!$order->report->ai_report_path) abort(404);
         $order->update(['is_downloaded' => true]);
-
-        return Storage::download($order->report->report_path, 'report-' . $order->id . '.pdf');
+        return Storage::download($order->report->ai_report_path, 'ai-report-' . $order->id . '.pdf');
     }
 }

@@ -13,11 +13,11 @@
     @endphp
 
     <div id="announcement-{{ $announcement->id }}"
-        class="flex items-start gap-4 p-4 {{ $colors['bg'] }} border {{ $colors['border'] }} rounded-2xl">
-        <i data-lucide="{{ $colors['icon'] }}" class="w-4 h-4 {{ $colors['text'] }} flex-shrink-0 mt-0.5"></i>
+        class="flex items-start gap-4 p-5 {{ $colors['bg'] }} border {{ $colors['border'] }} rounded-2xl">
+        <i data-lucide="{{ $colors['icon'] }}" class="w-5 h-5 {{ $colors['text'] }} flex-shrink-0 mt-0.5"></i>
         <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold {{ $colors['text'] }}">{{ $announcement->title }}</p>
-            <p class="text-xs text-[#6B7280] mt-0.5">{{ $announcement->message }}</p>
+            <p class="text-[15px] font-semibold {{ $colors['text'] }}">{{ $announcement->title }}</p>
+            <p class="text-[13px] text-[#6B7280] mt-1 leading-relaxed">{{ $announcement->message }}</p>
         </div>
         <button onclick="dismissAnnouncement({{ $announcement->id }})"
             class="{{ $colors['text'] }} opacity-60 hover:opacity-100 transition-opacity flex-shrink-0">

@@ -29,11 +29,11 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div
             class="bg-[#F0F2F5] border border-[#E2E6EA] p-6 rounded-2xl group hover:border-green-500/20 transition-all dark:bg-[#0a0a0c] dark:border-white/5">
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 dark:text-slate-500">Pulse &bull; Files Today</p>
+            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 dark:text-slate-400">Pulse &bull; Files Today</p>
             <div class="flex items-end justify-between">
                 <h2 class="text-4xl font-extrabold text-gray-900 font-mono tracking-tight dark:text-white">
                     {{ $stats['total_processed_today'] }}</h2>
-                <div class="w-8 h-8 bg-green-500/10 rounded-xl flex items-center justify-center text-green-500">
+                <div class="w-8 h-8 bg-green-500/15 rounded-xl flex items-center justify-center text-green-500">
                     <i data-lucide="trending-up" class="w-4 h-4"></i>
                 </div>
             </div>
@@ -41,10 +41,10 @@
 
         <div
             class="bg-[#F0F2F5] border border-[#E2E6EA] p-6 rounded-2xl group hover:border-amber-500/20 transition-all dark:bg-[#0a0a0c] dark:border-white/5">
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 dark:text-slate-500">Pending &bull; Pool Size</p>
+            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 dark:text-slate-400">Pending &bull; Pool Size</p>
             <div class="flex items-end justify-between">
                 <h2 class="text-4xl font-extrabold text-gray-900 font-mono tracking-tight dark:text-white">{{ $stats['pending_pool'] }}</h2>
-                <div class="w-8 h-8 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500">
+                <div class="w-8 h-8 bg-amber-500/15 rounded-xl flex items-center justify-center text-amber-500">
                     <i data-lucide="database" class="w-4 h-4"></i>
                 </div>
             </div>
@@ -52,10 +52,10 @@
 
         <div
             class="bg-[#F0F2F5] border border-[#E2E6EA] p-6 rounded-2xl group hover:border-indigo-500/20 transition-all dark:bg-[#0a0a0c] dark:border-white/5">
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 dark:text-slate-500">Active &bull; Workforce</p>
+            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 dark:text-slate-400">Active &bull; Workforce</p>
             <div class="flex items-end justify-between">
                 <h2 class="text-4xl font-extrabold text-gray-900 font-mono tracking-tight dark:text-white">{{ $stats['active_vendors'] }}</h2>
-                <div class="w-8 h-8 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500">
+                <div class="w-8 h-8 bg-indigo-500/15 rounded-xl flex items-center justify-center text-indigo-500">
                     <i data-lucide="users-2" class="w-4 h-4"></i>
                 </div>
             </div>
@@ -63,11 +63,11 @@
 
         <div
             class="bg-[#F0F2F5] border border-[#E2E6EA] p-6 rounded-2xl group hover:border-purple-500/20 transition-all dark:bg-[#0a0a0c] dark:border-white/5">
-            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 dark:text-slate-500">Growth &bull; New Clients</p>
+            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 dark:text-slate-400">Growth &bull; New Clients</p>
             <div class="flex items-end justify-between">
                 <h2 class="text-4xl font-extrabold text-gray-900 font-mono tracking-tight dark:text-white">{{ $stats['new_clients_today'] }}
                 </h2>
-                <div class="w-8 h-8 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-500">
+                <div class="w-8 h-8 bg-purple-500/15 rounded-xl flex items-center justify-center text-purple-500">
                     <i data-lucide="sparkles" class="w-4 h-4"></i>
                 </div>
             </div>
@@ -82,7 +82,7 @@
             <div class="bg-[#FAFBFC] border border-[#E2E6EA] shadow-sm rounded-2xl p-7 dark:bg-[#0a0a0c] dark:border-white/5">
                 <div class="flex justify-between items-center mb-7">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500">
+                        <div class="w-8 h-8 bg-red-500/15 rounded-xl flex items-center justify-center text-red-500">
                             <i data-lucide="zap" class="w-4 h-4"></i>
                         </div>
                         <div>
@@ -97,20 +97,20 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr
-                                class="text-[10px] text-gray-400 font-bold uppercase tracking-widest border-b border-[#E2E6EA] bg-[#F0F2F5] dark:text-slate-700 dark:border-white/[0.03] dark:bg-[#0a0a0c]">
+                                class="text-[10px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100 bg-gray-50 dark:text-slate-600 dark:border-white/[0.04] dark:bg-white/[0.02]">
                                 <th class="pb-4 px-3">Vendor</th>
                                 <th class="pb-4 text-center">Files Today</th>
                                 <th class="pb-4 text-center">Lifetime</th>
                                 <th class="pb-4 text-right">Efficiency</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#E8ECF0] dark:divide-white/[0.03]">
+                        <tbody class="divide-y divide-gray-100 dark:divide-white/[0.04]">
                             @forelse($vendorPerformance as $vendor)
-                                <tr class="group hover:bg-[#F0F2F5] transition-all dark:hover:bg-white/[0.01]">
+                                <tr class="group hover:bg-gray-50 transition-all dark:hover:bg-white/[0.03]">
                                     <td class="py-4 px-3">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-8 h-8 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500 group-hover:bg-red-500/10 group-hover:text-red-500 transition-all border border-[#E2E6EA] flex-shrink-0">
+                                                class="w-8 h-8 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500 group-hover:bg-red-500/10 group-hover:text-red-500 transition-all border border-[#E2E6EA] dark:bg-white/[0.05] dark:border-white/[0.05] dark:text-slate-400 flex-shrink-0">
                                                 <i data-lucide="user" class="w-4 h-4"></i>
                                             </div>
                                             <div>
@@ -127,7 +127,7 @@
                                         {{ $vendor->total_jobs }}</td>
                                     <td class="py-4 text-right">
                                         <div class="flex justify-end items-center gap-2">
-                                            <div class="w-20 h-1 bg-[#ECEEF2] rounded-full overflow-hidden">
+                                            <div class="w-20 h-1 bg-gray-200 dark:bg-white/[0.06] rounded-full overflow-hidden">
                                                 <div class="bg-[#4F6EF7] h-full rounded-full"
                                                     style="width: {{ min(100, $vendor->today_jobs * 10) }}%"></div>
                                             </div>
@@ -164,14 +164,14 @@
                                     @elseif($order->status->value === 'pending') bg-amber-500
                                     @else bg-red-500 @endif">
                             </div>
-                            <div class="absolute left-[2px] top-4 w-px h-full bg-[#F0F2F5] group-last:hidden"></div>
+                            <div class="absolute left-[2px] top-4 w-px h-full bg-gray-200 dark:bg-white/[0.05] group-last:hidden"></div>
                             <div class="space-y-0.5">
                                 <div class="flex justify-between items-start gap-2">
                                     <p class="text-[11px] font-bold text-gray-700 uppercase tracking-tight dark:text-slate-400">
                                         @if($order->status->value === 'delivered') Result Uploaded @else Processing Stream @endif
                                     </p>
                                     <span
-                                        class="text-[10px] text-gray-300 font-mono flex-shrink-0">{{ $order->created_at->diffForHumans() }}</span>
+                                        class="text-[10px] text-gray-400 font-mono flex-shrink-0 dark:text-slate-500">{{ $order->created_at->diffForHumans() }}</span>
                                 </div>
                                 <p class="text-[10px] text-gray-400 font-mono line-clamp-1 dark:text-slate-400">{{ $order->client->name }} &bull; {{ $order->files_count }} files</p>
                                 @if($order->vendor)
@@ -184,7 +184,7 @@
                     @endforelse
                 </div>
 
-                <div class="mt-6 pt-6 border-t border-[#E2E6EA]">
+                <div class="mt-6 pt-6 border-t border-gray-200 dark:border-white/[0.05]">
                     <button
                         class="w-full py-2.5 bg-[#EEF2FF] hover:bg-[#E0E7FF] text-[10px] font-bold text-[#4F6EF7] uppercase tracking-widest rounded-xl border border-[#C7D2FE] transition-all dark:bg-red-600/10 dark:text-red-400 dark:border-red-600/20">
                         View Security Logs
@@ -199,7 +199,7 @@
         <button onclick="document.getElementById('create-account-modal').classList.remove('hidden')"
             class="bg-[#F0F2F5] border border-[#E2E6EA] p-6 rounded-2xl space-y-3 hover:border-red-500/20 transition-all cursor-pointer group text-left w-full dark:bg-white/[0.02] dark:border-white/5 dark:hover:border-red-500/20">
             <div
-                class="w-10 h-10 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500 group-hover:text-red-500 group-hover:bg-red-500/10 transition-colors">
+                class="w-10 h-10 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500 group-hover:text-red-500 group-hover:bg-red-500/10 transition-colors dark:bg-white/[0.05] dark:text-slate-400">
                 <i data-lucide="user-plus" class="w-5 h-5"></i>
             </div>
             <div>
@@ -211,7 +211,7 @@
         <a href="{{ route('admin.finance.matrix') }}"
             class="bg-[#F0F2F5] border border-[#E2E6EA] p-6 rounded-2xl space-y-3 hover:border-red-500/20 transition-all group block dark:bg-white/[0.02] dark:border-white/5 dark:hover:border-red-500/20">
             <div
-                class="w-10 h-10 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500 group-hover:text-red-500 group-hover:bg-red-500/10 transition-colors">
+                class="w-10 h-10 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500 group-hover:text-red-500 group-hover:bg-red-500/10 transition-colors dark:bg-white/[0.05] dark:text-slate-400">
                 <i data-lucide="building" class="w-5 h-5"></i>
             </div>
             <div>
@@ -223,7 +223,7 @@
         <a href="{{ route('admin.finance.ledger') }}"
             class="bg-[#F0F2F5] border border-[#E2E6EA] p-6 rounded-2xl space-y-3 hover:border-green-500/20 transition-all group block dark:bg-white/[0.02] dark:border-white/5">
             <div
-                class="w-10 h-10 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500 group-hover:text-green-500 group-hover:bg-green-500/10 transition-colors">
+                class="w-10 h-10 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500 group-hover:text-green-500 group-hover:bg-green-500/10 transition-colors dark:bg-white/[0.05] dark:text-slate-400">
                 <i data-lucide="trending-up" class="w-5 h-5"></i>
             </div>
             <div>
@@ -234,7 +234,7 @@
 
         <div
             class="bg-[#F0F2F5] border border-[#E2E6EA] p-6 rounded-2xl space-y-3 opacity-40 cursor-not-allowed group">
-            <div class="w-10 h-10 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500">
+            <div class="w-10 h-10 bg-[#F0F2F5] rounded-xl flex items-center justify-center text-gray-500 dark:bg-white/[0.05] dark:text-slate-400">
                 <i data-lucide="settings-2" class="w-5 h-5"></i>
             </div>
             <div>

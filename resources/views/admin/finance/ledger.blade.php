@@ -1,5 +1,5 @@
 <x-admin-layout>
-    <div class="min-h-screen bg-[#111113] text-slate-400">
+    <div class="min-h-screen bg-gray-50 dark:bg-[#111113] text-gray-600 dark:text-slate-400">
 
         {{-- Header --}}
         <div class="px-10 py-8 border-b border-white/[0.04] flex items-center justify-between">

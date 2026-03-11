@@ -116,11 +116,12 @@
         </nav>
 
         {{-- Sign out --}}
-        <div class="px-2 pb-5 pt-3">
+        <div class="px-3 pb-5 pt-2 border-t border-white/[0.05] mt-2">
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[11px] font-semibold text-slate-600 hover:text-red-400 hover:bg-red-500/[0.06] hover:border-red-500/[0.1] border border-transparent transition-all">
-                    <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                <button type="submit"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-bold text-red-400 bg-red-500/[0.08] hover:bg-red-500/[0.15] border border-red-500/[0.15] hover:border-red-500/[0.3] transition-all active:scale-[0.98]">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
                 </button>
             </form>
         </div>
@@ -137,7 +138,7 @@
                 <h1 class="text-[15px] font-semibold text-white/90">
                     Good Morning, {{ auth()->user()->name }}
                 </h1>
-                <span class="text-base"></span>
+                <span class="text-base">👋</span>
             </div>
             <div class="flex items-center gap-5">
                 <div class="flex items-center gap-3 pr-5 border-r border-white/[0.05]">
@@ -172,13 +173,13 @@
             @endif
 
             {{--  CREDIT STATUS BANNER  --}}
-            @php $remaining = $client->slots - $client->orders()->count(); @endphp
+            @php $remaining = max(0, $client->slots - $client->fresh()->slots_consumed); @endphp
 
             @if($remaining > 10)
                 <div class="flex items-center gap-4 px-5 py-4 rounded-2xl border border-emerald-500/[0.15] bg-gradient-to-r from-emerald-500/[0.06] to-transparent">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" style="box-shadow:0 0 10px rgba(52,211,153,0.5)"></span>
                     <div>
-                        <p class="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-500/60">Credit Status</p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400">Credit Status</p>
                         <p class="text-[13px] font-bold text-emerald-400 mt-0.5">Credits Available: <span class="font-mono">{{ $remaining }}</span></p>
                     </div>
                 </div>
@@ -186,7 +187,7 @@
                 <div class="flex items-center gap-4 px-5 py-4 rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/[0.06] to-transparent">
                     <span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0 pulse-dot" style="box-shadow:0 0 10px rgba(251,191,36,0.5)"></span>
                     <div>
-                        <p class="text-[9px] font-black uppercase tracking-[0.25em] text-amber-500/60">Credit Status</p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.25em] text-amber-400">Credit Status</p>
                         <p class="text-[13px] font-bold text-amber-400 mt-0.5">Low Credits  <span class="font-mono">{{ $remaining }}</span> remaining</p>
                     </div>
                     <span class="ml-auto text-[8px] font-black uppercase tracking-widest text-amber-500/70 bg-amber-500/[0.08] border border-amber-500/[0.15] px-2.5 py-1 rounded-lg">Low</span>
@@ -195,7 +196,7 @@
                 <div class="flex items-center gap-4 px-5 py-4 rounded-2xl border border-red-500/20 bg-gradient-to-r from-red-500/[0.06] to-transparent">
                     <span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 pulse-dot" style="box-shadow:0 0 10px rgba(239,68,68,0.5)"></span>
                     <div>
-                        <p class="text-[9px] font-black uppercase tracking-[0.25em] text-red-500/60">Credit Status</p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.25em] text-red-400">Credit Status</p>
                         <p class="text-[13px] font-bold text-red-400 mt-0.5">0 Credits  Please Top Up</p>
                     </div>
                     <span class="ml-auto text-[8px] font-black uppercase tracking-widest text-red-500/70 bg-red-500/[0.08] border border-red-500/[0.15] px-2.5 py-1 rounded-lg">Depleted</span>
@@ -209,17 +210,17 @@
                 <div class="card card-glow p-6 rounded-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-28 h-28 bg-indigo-500/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
                     <div class="flex justify-between items-start mb-5">
-                        <p class="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">
-                            Credits Used &nbsp;<span class="font-mono text-slate-500">{{ $client->orders()->count() }}</span>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                            Credits Used &nbsp;<span class="font-mono text-slate-500">{{ $client->slots_consumed }}</span>
                         </p>
                         <div class="w-8 h-8 bg-indigo-500/[0.1] rounded-lg flex items-center justify-center text-indigo-400 border border-indigo-500/[0.15]">
                             <i data-lucide="coins" class="w-4 h-4"></i>
                         </div>
                     </div>
                     <h3 class="text-[2.75rem] font-extrabold text-white leading-none font-mono tracking-tight">
-                        {{ max(0, $client->slots - $client->orders()->count()) }}
+                        {{ max(0, $client->slots - $client->slots_consumed) }}
                     </h3>
-                    <p class="text-[11px] text-slate-600 mt-1.5 font-medium">Remaining Credits</p>
+                    <p class="text-[11px] text-slate-400 mt-1.5 font-medium">Remaining Credits</p>
                     <div class="mt-5">
                         <button onclick="document.getElementById('topup-modal').classList.remove('hidden')"
                             class="px-4 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors shadow-lg shadow-indigo-500/20">
@@ -232,7 +233,7 @@
                 <div class="card card-glow p-6 rounded-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-28 h-28 bg-blue-500/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
                     <div class="flex justify-between items-start mb-5">
-                        <p class="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Active Orders</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Active Orders</p>
                         <div class="w-8 h-8 bg-blue-500/[0.1] rounded-lg flex items-center justify-center text-blue-400 border border-blue-500/[0.15]">
                             <i data-lucide="activity" class="w-4 h-4"></i>
                         </div>
@@ -240,14 +241,14 @@
                     <h3 class="text-[2.75rem] font-extrabold text-white leading-none font-mono tracking-tight">
                         {{ $orders->where('status', '!=', 'delivered')->count() }}
                     </h3>
-                    <p class="text-[11px] text-slate-600 mt-1.5 font-medium">In Processing Flow</p>
+                    <p class="text-[11px] text-slate-400 mt-1.5 font-medium">In Processing Flow</p>
                 </div>
 
                 {{-- Plan Status Card --}}
                 <div class="card card-glow p-6 rounded-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-28 h-28 bg-emerald-500/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
                     <div class="flex justify-between items-start mb-5">
-                        <p class="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">Plan Status</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Plan Status</p>
                         <div class="w-8 h-8 @if($client->plan_expiry && $client->plan_expiry->isPast()) bg-red-500/[0.1] text-red-400 border-red-500/[0.15] @else bg-emerald-500/[0.1] text-emerald-400 border-emerald-500/[0.15] @endif rounded-lg flex items-center justify-center border">
                             <i data-lucide="shield-check" class="w-4 h-4"></i>
                         </div>
@@ -255,7 +256,7 @@
                     <h3 class="text-2xl font-extrabold text-white leading-none tracking-tight">
                         @if($client->plan_expiry && $client->plan_expiry->isPast()) Expired @else Professional @endif
                     </h3>
-                    <p class="text-[11px] text-slate-600 mt-1.5 font-medium">
+                    <p class="text-[11px] text-slate-400 mt-1.5 font-medium">
                         @if($client->plan_expiry) {{ $client->plan_expiry->format('d M, Y') }} @else Perpetual @endif
                     </p>
                 </div>
@@ -270,23 +271,58 @@
                         <div class="flex justify-between items-start mb-7">
                             <div>
                                 <h2 class="text-[17px] font-bold text-white tracking-tight">Secure Upload</h2>
-                                <p class="text-[11px] text-slate-600 mt-1">Submit your document for non-repository scanning</p>
+                                <p class="text-[11px] text-slate-400 mt-1">Submit your document for non-repository scanning</p>
                             </div>
                             <div class="w-11 h-11 bg-white/[0.04] rounded-2xl flex items-center justify-center border border-white/[0.06]">
                                 <i data-lucide="shield" class="w-5 h-5 text-indigo-400"></i>
                             </div>
                         </div>
 
-                        <form action="{{ route('client.dashboard.upload') }}" method="POST" enctype="multipart/form-data">
+                        <form id="upload-form" action="{{ route('client.dashboard.upload') }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                            <label for="files" class="upload-zone group block rounded-[1.5rem] p-10 text-center cursor-pointer">
-                                <input type="file" name="files[]" id="files" multiple required class="hidden" onchange="this.form.submit()">
-                                <div class="w-16 h-16 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
+
+                            {{-- STEP 1: Drop zone --}}
+                            <label for="files" id="drop-zone" class="upload-zone group block rounded-[1.5rem] p-10 text-center cursor-pointer transition-all">
+                                <input type="file" name="files[]" id="files" multiple required class="hidden" onchange="handleFileSelect(this)">
+                                <div id="drop-icon" class="w-16 h-16 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
                                     <i data-lucide="file-plus" class="w-8 h-8 text-indigo-400"></i>
                                 </div>
                                 <h3 class="text-[15px] font-bold text-white/90 mb-1.5">Drop files here or click</h3>
-                                <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest">PDF, DOCX up to 50MB</p>
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">PDF, DOCX up to 50MB</p>
                             </label>
+
+                            {{-- STEP 2: File preview + notes + submit (hidden until files selected) --}}
+                            <div id="upload-stage" class="hidden mt-4 space-y-3">
+
+                                {{-- Selected files preview --}}
+                                <div id="file-preview" class="bg-white/[0.03] border border-white/[0.06] rounded-2xl divide-y divide-white/[0.04]"></div>
+
+                                {{-- Notes box --}}
+                                <div class="space-y-1.5">
+                                    <label class="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                        <i data-lucide="message-square" class="w-3 h-3 text-indigo-400"></i>
+                                        Instructions for Vendor
+                                        <span class="text-slate-600 font-medium normal-case tracking-normal">(optional)</span>
+                                    </label>
+                                    <textarea name="notes" id="notes-input" rows="3"
+                                        placeholder="e.g. Please check for AI content in Chapter 2, priority is plagiarism scan..."
+                                        class="w-full bg-white/[0.03] border border-white/[0.07] hover:border-indigo-500/30 focus:border-indigo-500/50 rounded-xl px-4 py-3 text-[12px] text-white placeholder-slate-700 focus:outline-none transition-all resize-none leading-relaxed"></textarea>
+                                    <p id="notes-counter" class="text-[9px] text-slate-700 text-right font-mono">0 / 1000</p>
+                                </div>
+
+                                {{-- Action row --}}
+                                <div class="flex items-center gap-3">
+                                    <button type="button" onclick="resetUpload()"
+                                        class="flex items-center gap-1.5 px-4 py-2.5 bg-white/[0.04] hover:bg-white/[0.07] text-slate-500 hover:text-slate-300 text-[11px] font-semibold rounded-xl border border-white/[0.06] transition-all">
+                                        <i data-lucide="x" class="w-3.5 h-3.5"></i> Clear
+                                    </button>
+                                    <button type="submit"
+                                        class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
+                                        <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                                        Submit Order
+                                    </button>
+                                </div>
+                            </div>
                         </form>
 
                         <div class="mt-6 grid grid-cols-2 gap-3">
@@ -294,13 +330,13 @@
                                 <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
                                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-tight">AI Detection<br>Enabled</span>
+                                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-tight">AI Detection<br>Enabled</span>
                             </div>
                             <div class="p-3.5 bg-emerald-500/[0.05] rounded-xl border border-emerald-500/[0.1] flex items-center gap-3">
                                 <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
                                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-tight">No Repo<br>Mode</span>
+                                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-tight">No Repo<br>Mode</span>
                             </div>
                         </div>
                     </div>
@@ -324,10 +360,10 @@
                                             <i data-lucide="file-text" class="w-5 h-5"></i>
                                         </div>
                                         <div class="min-w-0">
-                                            <h4 class="text-[13px] font-bold text-slate-200 truncate leading-snug">
+                                            <h4 class="text-[13px] font-bold text-white truncate leading-snug">
                                                 {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
                                             </h4>
-                                            <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">
+                                            <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
                                                 {{ $order->created_at->format('d M, h:i A') }}
                                             </p>
                                         </div>
@@ -362,33 +398,54 @@
 
                                     {{-- DELIVERED STATE --}}
                                     @if($order->status->value === 'delivered')
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex gap-4">
-                                                @if($order->report?->ai_percentage !== null)
-                                                    <div>
-                                                        <p class="text-[8px] font-bold text-slate-700 uppercase tracking-widest">AI Score</p>
-                                                        <p class="text-[12px] font-bold text-red-400 font-mono mt-0.5">{{ (int) $order->report?->ai_percentage }}%</p>
-                                                    </div>
+                                        <div class="flex items-center justify-between gap-2">
+                                            {{-- Download buttons --}}
+                                            <div class="flex items-center gap-2">
+                                                @if($order->report?->ai_report_path)
+                                                    <a href="{{ route('client.download', $order->token_view) }}?type=ai"
+                                                        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-500/[0.08] hover:bg-red-500/[0.15] text-red-400 text-[9px] font-bold rounded-lg border border-red-500/[0.15] transition-all active:scale-95">
+                                                        <i data-lucide="download" class="w-3 h-3"></i> AI Report
+                                                    </a>
                                                 @endif
-                                                @if($order->report?->plag_percentage !== null)
-                                                    <div>
-                                                        <p class="text-[8px] font-bold text-slate-700 uppercase tracking-widest">Plagiarism</p>
-                                                        <p class="text-[12px] font-bold text-blue-400 font-mono mt-0.5">{{ (int) $order->report?->plag_percentage }}%</p>
-                                                    </div>
+                                                @if($order->report?->plag_report_path)
+                                                    <a href="{{ route('client.download', $order->token_view) }}?type=plag"
+                                                        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-500/[0.08] hover:bg-amber-500/[0.15] text-amber-400 text-[9px] font-bold rounded-lg border border-amber-500/[0.15] transition-all active:scale-95">
+                                                        <i data-lucide="download" class="w-3 h-3"></i> Plag Report
+                                                    </a>
                                                 @endif
                                             </div>
-                                            @if($order->report)
-                                                <a href="{{ route('client.download', $order->token_view) }}"
-                                                    class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold rounded-lg transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
-                                                    <i data-lucide="download" class="w-3.5 h-3.5"></i> Download
-                                                </a>
-                                            @endif
+                                            {{-- Delete button --}}
+                                            <form action="{{ route('client.orders.delete', $order) }}" method="POST"
+                                                onsubmit="return confirm('Delete this order and all its files permanently?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-500/[0.06] hover:bg-red-500/[0.15] text-red-500/60 hover:text-red-400 text-[9px] font-bold rounded-lg border border-red-500/[0.1] hover:border-red-500/[0.25] transition-all active:scale-95">
+                                                    <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
+                                                </button>
+                                            </form>
                                         </div>
 
                                     {{-- CANCELLED STATE --}}
                                     @elseif($order->status->value === 'cancelled')
+                                        @if($order->files->isNotEmpty())
+                                            <div class="flex flex-wrap items-center gap-2 mb-3">
+                                                @foreach($order->files as $file)
+                                                    <form method="POST" action="{{ route('client.orders.files.delete', [$order, $file]) }}"
+                                                        onsubmit="return confirm('Permanently delete this file from our servers?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/[0.08] hover:bg-red-500/[0.15] text-red-400 text-[10px] font-bold rounded-lg border border-red-500/[0.15] transition-all">
+                                                            <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                                            <span class="truncate max-w-[120px]">{{ basename($file->file_path) }}</span>
+                                                        </button>
+                                                    </form>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                         <div class="flex items-center justify-between gap-3">
-                                            <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
                                                 <i data-lucide="ban" class="w-3 h-3"></i> Order Cancelled
                                             </p>
                                             @php
@@ -417,7 +474,7 @@
                                     {{-- ACTIVE / PROCESSING / PENDING STATE --}}
                                     @else
                                         <div class="flex items-center justify-between gap-3">
-                                            <div class="flex items-center gap-2 text-[9px] text-slate-600 font-bold uppercase tracking-widest">
+                                            <div class="flex items-center gap-2 text-[9px] text-slate-400 font-bold uppercase tracking-widest">
                                                 @if($order->status->value === 'processing')
                                                     <span class="w-1.5 h-1.5 bg-blue-500 rounded-full pulse-dot"></span>
                                                     Processing...
@@ -437,12 +494,17 @@
                                                     </button>
                                                 </form>
                                             @else
-                                                <div id="timer-wrap-{{ $order->id }}" class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/[0.06] rounded-lg border border-indigo-500/[0.1]">
-                                                    <i data-lucide="clock" class="w-3 h-3 text-indigo-400/60"></i>
-                                                    <span class="countdown-timer text-[10px] font-mono font-bold text-indigo-400"
-                                                        data-due="{{ $order->due_at->toIso8601String() }}"
-                                                        data-order-id="{{ $order->id }}"
-                                                        data-cancel-url="{{ route('client.orders.cancel', $order) }}">--:--</span>
+                                                <div id="timer-wrap-{{ $order->id }}"
+                                                    class="inline-flex flex-col items-center gap-0.5 px-4 py-2 bg-indigo-500/[0.08] rounded-xl border border-indigo-500/[0.18]"
+                                                    style="min-width:80px">
+                                                    <div class="flex items-center gap-1.5">
+                                                        <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                                        <span class="countdown-timer text-[18px] font-mono font-extrabold text-indigo-300 tabular-nums tracking-tight leading-none"
+                                                            data-due="{{ $order->due_at->toIso8601String() }}"
+                                                            data-order-id="{{ $order->id }}"
+                                                            data-cancel-url="{{ route('client.orders.cancel', $order) }}">--:--</span>
+                                                    </div>
+                                                    <span class="text-[8px] font-bold text-indigo-500/60 uppercase tracking-widest">SLA Timer</span>
                                                 </div>
                                             @endif
                                         </div>
@@ -454,8 +516,8 @@
                                 <div class="w-14 h-14 bg-white/[0.03] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/[0.05]">
                                     <i data-lucide="inbox" class="w-6 h-6 text-slate-700"></i>
                                 </div>
-                                <p class="text-[10px] font-bold text-slate-700 uppercase tracking-[0.2em]">No Recent Orders</p>
-                                <p class="text-[11px] text-slate-700 mt-1">Upload a document to get started</p>
+                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">No Recent Orders</p>
+                                <p class="text-[11px] text-slate-500 mt-1">Upload a document to get started</p>
                             </div>
                         @endforelse
                     </div>
@@ -465,7 +527,7 @@
 
         {{-- FOOTER --}}
         <footer class="px-8 py-6 text-center border-t border-white/[0.04] bg-[#0b0b0f] mt-4">
-            <p class="text-[9px] font-bold text-slate-700 uppercase tracking-[0.3em]">PlagExpert &bull; Advanced Plagiarism Prevention</p>
+            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">PlagExpert &bull; Advanced Plagiarism Prevention</p>
         </footer>
     </main>
 
@@ -497,7 +559,7 @@
                 @csrf
 
                 <div>
-                    <label class="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-2.5">Select Package</label>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Select Package</label>
                     <div class="grid grid-cols-3 gap-2 mb-3">
                         <button type="button" onclick="setSlots(50)"
                             class="slot-preset py-2.5 bg-white/[0.04] hover:bg-indigo-500/[0.1] border border-white/[0.06] hover:border-indigo-500/30 rounded-xl text-xs font-bold text-slate-400 hover:text-indigo-400 transition-all">
@@ -521,11 +583,11 @@
 
                 <div class="p-4 bg-indigo-500/[0.05] border border-indigo-500/[0.1] rounded-2xl flex items-center justify-between">
                     <div>
-                        <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Total Payable</p>
-                        <p id="price-display" class="text-2xl font-extrabold text-white mt-0.5 font-mono">0</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Payable</p>
+                        <p id="price-display" class="text-2xl font-extrabold text-white mt-0.5 font-mono">₹0</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Rate</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Rate</p>
                         <p class="text-[11px] text-indigo-400 font-bold font-mono mt-0.5">{{ number_format($client->price_per_file, 0) }} / slot</p>
                     </div>
                 </div>
@@ -541,11 +603,11 @@
                             <p class="text-sm font-bold text-white font-mono mt-0.5">your-upi@ybl</p>
                         </div>
                     </div>
-                    <p class="text-[10px] text-slate-600 leading-relaxed">Send the exact amount to the UPI ID, then paste your <span class="text-indigo-400 font-semibold">Transaction / UTR Reference Number</span> below.</p>
+                    <p class="text-[10px] text-slate-400 leading-relaxed">Send the exact amount to the UPI ID, then paste your <span class="text-indigo-400 font-semibold">Transaction / UTR Reference Number</span> below.</p>
                 </div>
 
                 <div>
-                    <label class="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-2">Transaction / UTR Reference</label>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Transaction / UTR Reference</label>
                     <input type="text" name="transaction_id" required placeholder="e.g. 123456789012"
                         class="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors placeholder-slate-700 font-mono">
                 </div>
@@ -600,6 +662,62 @@
         </div>
     </div>
 
+    {{-- 
+         UPLOAD STAGING
+     --}}
+    <script>
+        // ── Upload staging ──────────────────────────────────────────
+        function handleFileSelect(input) {
+            const files = Array.from(input.files);
+            if (!files.length) return;
+
+            const preview = document.getElementById('file-preview');
+            preview.innerHTML = '';
+
+            files.forEach(file => {
+                const ext  = file.name.split('.').pop().toUpperCase();
+                const size = file.size > 1048576
+                    ? (file.size / 1048576).toFixed(1) + ' MB'
+                    : (file.size / 1024).toFixed(0) + ' KB';
+                const colors = {
+                    PDF:  'text-red-400 bg-red-500/[0.08] border-red-500/[0.12]',
+                    DOCX: 'text-blue-400 bg-blue-500/[0.08] border-blue-500/[0.12]',
+                    DOC:  'text-blue-400 bg-blue-500/[0.08] border-blue-500/[0.12]',
+                    ZIP:  'text-amber-400 bg-amber-500/[0.08] border-amber-500/[0.12]'
+                };
+                const c = colors[ext] || 'text-slate-400 bg-slate-500/[0.08] border-slate-500/[0.12]';
+                preview.innerHTML += `
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <span class="text-[8px] font-black px-1.5 py-0.5 rounded border ${c}">${ext}</span>
+                        <span class="text-[12px] font-semibold text-slate-200 truncate flex-1">${file.name}</span>
+                        <span class="text-[9px] text-slate-600 font-mono flex-shrink-0">${size}</span>
+                    </div>`;
+            });
+
+            document.getElementById('upload-stage').classList.remove('hidden');
+            document.getElementById('drop-zone').classList.add('opacity-60', 'pointer-events-none');
+        }
+
+        function resetUpload() {
+            document.getElementById('files').value = '';
+            document.getElementById('file-preview').innerHTML = '';
+            document.getElementById('upload-stage').classList.add('hidden');
+            document.getElementById('drop-zone').classList.remove('opacity-60', 'pointer-events-none');
+            document.getElementById('notes-input').value = '';
+            document.getElementById('notes-counter').textContent = '0 / 1000';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const notesInput = document.getElementById('notes-input');
+            if (notesInput) {
+                notesInput.addEventListener('input', function () {
+                    document.getElementById('notes-counter').textContent = this.value.length + ' / 1000';
+                });
+            }
+        });
+        // ── End upload staging ───────────────────────────────────────
+    </script>
+
     <script>
         lucide.createIcons();
 
@@ -616,8 +734,8 @@
                     wrap.outerHTML = `
                         <form method="POST" action="${cancelUrl}" onsubmit="return confirm('Cancel this order? Your credit slot will be refunded.')">
                             <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/[0.08] hover:bg-red-500/[0.15] text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-red-500/[0.15] transition-all">
-                                <i data-lucide="x-circle" class="w-3 h-3"></i> Cancel
+                            <button type="submit" class="flex items-center gap-1.5 px-4 py-2.5 bg-red-500/[0.08] hover:bg-red-500/[0.15] text-red-400 text-[11px] font-bold uppercase tracking-widest rounded-xl border border-red-500/[0.2] transition-all">
+                                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Cancel Order
                             </button>
                         </form>`;
                     lucide.createIcons();
@@ -642,7 +760,7 @@
 
         function updatePrice(val) {
             const n = parseInt(val) || 0;
-            document.getElementById('price-display').textContent = '' + (n * pricePerSlot).toLocaleString('en-IN');
+            document.getElementById('price-display').textContent = '₹' + (n * pricePerSlot).toLocaleString('en-IN');
         }
 
         //  Refund Modal 

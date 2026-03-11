@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'delivered_orders_count',
         'client_id',
         'status',
         'frozen_at',

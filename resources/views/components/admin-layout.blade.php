@@ -107,12 +107,12 @@
         }
         .dark .nav-link:hover {
             background: rgba(255, 255, 255, 0.05);
-            color: #cbd5e1;
+            color: #e2e8f0;
         }
         .dark .nav-link.active {
-            background: rgba(255, 255, 255, 0.05);
-            color: #cbd5e1;
-            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(99, 102, 241, 0.12);
+            color: #818cf8;
+            border-color: transparent;
         }
     </style>
 </head>

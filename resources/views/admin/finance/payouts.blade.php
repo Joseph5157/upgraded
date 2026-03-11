@@ -23,7 +23,7 @@
         {{-- Vendor Balance Table --}}
         <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl">
             <div class="flex items-center gap-4 mb-8">
-                <div class="w-10 h-10 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500">
+                <div class="w-10 h-10 bg-indigo-500/15 rounded-2xl flex items-center justify-center text-indigo-500">
                     <i data-lucide="users" class="w-5 h-5"></i>
                 </div>
                 <div>
@@ -117,7 +117,7 @@
         {{-- Payout History --}}
         <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl">
             <div class="flex items-center gap-4 mb-8">
-                <div class="w-10 h-10 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500">
+                <div class="w-10 h-10 bg-green-500/15 rounded-2xl flex items-center justify-center text-green-500">
                     <i data-lucide="history" class="w-5 h-5"></i>
                 </div>
                 <div>

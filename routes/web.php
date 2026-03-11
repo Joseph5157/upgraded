@@ -18,6 +18,7 @@ use App\Http\Controllers\TopupRequestController;
 use App\Http\Controllers\VendorPayoutController;
 use App\Http\Controllers\ClientSubscriptionController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\VendorEarningsController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,6 +42,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/{order}/status', [DashboardController::class, 'updateStatus'])->name('orders.status');
         Route::post('/orders/{order}/report', [DashboardController::class, 'uploadReport'])->name('orders.report');
         Route::get('/orders/{order}/files/{file}', [DashboardController::class, 'downloadFile'])->name('orders.files.download');
+        Route::get('/earnings', [VendorEarningsController::class, 'index'])->name('vendor.earnings');
     });
 
     // Client Dashboard Routes
@@ -55,48 +57,45 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/subscription', [ClientSubscriptionController::class, 'index'])->name('subscription');
     });
 
-    // Admin Routes
-    Route::middleware(['role:admin', 'account.status'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/refunds', [RefundController::class, 'index'])->name('refunds.index');
-        Route::post('/refunds/{refundRequest}/approve', [RefundController::class, 'approve'])->name('refunds.approve');
-        Route::post('/refunds/{refundRequest}/reject', [RefundController::class, 'reject'])->name('refunds.reject');
-    });
     Route::post('/announcements/{announcement}/dismiss', [AnnouncementController::class, 'dismiss'])->name('announcements.dismiss');
 
 });
 
-// Admin Routes
-Route::middleware(['auth', 'verified', 'role:admin', 'account.status'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-    Route::post('/accounts/store', [AdminController::class, 'storeAccount'])->name('accounts.store');
-    Route::resource('/matrix', ClientMatrixController::class)->only(['index', 'update']);
-    Route::post('/matrix/{client}/refill', [ClientMatrixController::class, 'refill'])->name('matrix.refill');
-    Route::post('/topup/{topupRequest}/approve', [TopupRequestController::class, 'approve'])->name('topup.approve');
-    Route::post('/topup/{topupRequest}/reject', [TopupRequestController::class, 'reject'])->name('topup.reject');
-    Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
-    Route::get('/billing/{ledger}', [BillingController::class, 'show'])->name('billing.show');
-    // Finance Section
-    Route::prefix('finance')->name('finance.')->group(function () {
-        Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix');
-        Route::put('/matrix/{client}', [MatrixController::class, 'update'])->name('matrix.update');
-        Route::post('/matrix/{client}/refill', [MatrixController::class, 'refill'])->name('matrix.refill');
-        Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger');
-        Route::get('/payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
-        Route::post('/payouts', [VendorPayoutController::class, 'store'])->name('payouts.store');
+// Admin Routes — single consolidated group
+Route::middleware(['auth', 'verified', 'role:admin', 'account.status'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/accounts/store', [AdminController::class, 'storeAccount'])->name('accounts.store');
+        Route::resource('/matrix', ClientMatrixController::class)->only(['index', 'update']);
+        Route::post('/matrix/{client}/refill', [ClientMatrixController::class, 'refill'])->name('matrix.refill');
+        Route::post('/topup/{topupRequest}/approve', [TopupRequestController::class, 'approve'])->name('topup.approve');
+        Route::post('/topup/{topupRequest}/reject', [TopupRequestController::class, 'reject'])->name('topup.reject');
+        Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
+        Route::get('/billing/{ledger}', [BillingController::class, 'show'])->name('billing.show');
+        Route::prefix('finance')->name('finance.')->group(function () {
+            Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix');
+            Route::put('/matrix/{client}', [MatrixController::class, 'update'])->name('matrix.update');
+            Route::post('/matrix/{client}/refill', [MatrixController::class, 'refill'])->name('matrix.refill');
+            Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger');
+            Route::get('/payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
+            Route::post('/payouts', [VendorPayoutController::class, 'store'])->name('payouts.store');
+        });
+        Route::get('/refunds', [RefundController::class, 'index'])->name('refunds.index');
+        Route::post('/refunds/{refundRequest}/approve', [RefundController::class, 'approve'])->name('refunds.approve');
+        Route::post('/refunds/{refundRequest}/reject', [RefundController::class, 'reject'])->name('refunds.reject');
+        Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+        Route::post('/announcements/{announcement}/toggle', [AnnouncementController::class, 'toggle'])->name('announcements.toggle');
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        Route::get('/accounts', [AccountManagerController::class, 'index'])->name('accounts.index');
+        Route::post('/accounts/{user}/freeze', [AccountManagerController::class, 'freeze'])->name('accounts.freeze');
+        Route::post('/accounts/{user}/unfreeze', [AccountManagerController::class, 'unfreeze'])->name('accounts.unfreeze');
+        Route::delete('/accounts/{user}', [AccountManagerController::class, 'destroy'])->name('accounts.destroy');
+        Route::post('/accounts/{id}/restore', [AccountManagerController::class, 'restore'])->name('accounts.restore');
+        Route::delete('/accounts/{id}/force', [AccountManagerController::class, 'forceDelete'])->name('accounts.forceDelete');
     });
-    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
-    Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
-    Route::post('/announcements/{announcement}/toggle', [AnnouncementController::class, 'toggle'])->name('announcements.toggle');
-    Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
-
-    // Account Manager
-    Route::get('/accounts', [AccountManagerController::class, 'index'])->name('accounts.index');
-    Route::post('/accounts/{user}/freeze', [AccountManagerController::class, 'freeze'])->name('accounts.freeze');
-    Route::post('/accounts/{user}/unfreeze', [AccountManagerController::class, 'unfreeze'])->name('accounts.unfreeze');
-    Route::delete('/accounts/{user}', [AccountManagerController::class, 'destroy'])->name('accounts.destroy');
-    Route::post('/accounts/{id}/restore', [AccountManagerController::class, 'restore'])->name('accounts.restore');
-    Route::delete('/accounts/{id}/force', [AccountManagerController::class, 'forceDelete'])->name('accounts.forceDelete');
-});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

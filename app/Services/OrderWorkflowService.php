@@ -76,22 +76,24 @@ class OrderWorkflowService
             throw new Exception("Cannot upload a report for an order that has already been delivered.");
         }
 
-        if (empty($data['report_path'])) {
-            throw new Exception("A report file path must be provided.");
+        if (empty($data['ai_report_path'])) {
+            throw new Exception("The AI report PDF file is required.");
+        }
+
+        if (empty($data['plag_report_path'])) {
+            throw new Exception("The Plagiarism report PDF file is required.");
         }
 
         DB::transaction(function () use ($order, $user, $data) {
             OrderReport::updateOrCreate(
                 ['order_id' => $order->id],
-                ['report_path' => $data['report_path']]
+                [
+                    'ai_report_path'   => $data['ai_report_path'],
+                    'plag_report_path' => $data['plag_report_path'],
+                ]
             );
 
-            $order->update([
-                'ai_percentage'   => $data['ai_percentage'] ?? $order->ai_percentage,
-                'plag_percentage' => $data['plag_percentage'] ?? $order->plag_percentage,
-            ]);
-
-            $this->logActivity($order, $user, 'upload_report', 'Report uploaded and metrics updated');
+            $this->logActivity($order, $user, 'upload_report', 'AI and Plagiarism report PDFs uploaded');
         });
     }
 
@@ -110,8 +112,9 @@ class OrderWorkflowService
             throw new Exception("Order must be in 'processing' status before delivery. Current status: '{$order->status->value}'.");
         }
 
-        if (!$order->report()->exists()) {
-            throw new Exception("A report PDF must be uploaded before the order can be delivered.");
+        $report = $order->report()->first();
+        if (!$report || !$report->ai_report_path || !$report->plag_report_path) {
+            throw new Exception("Both the AI report and Plagiarism report PDFs must be uploaded before delivery.");
         }
 
         DB::transaction(function () use ($order, $user) {
@@ -120,6 +123,11 @@ class OrderWorkflowService
                 'status'       => OrderStatus::Delivered,
                 'delivered_at' => now(),
             ]);
+
+            // Permanently record this delivery on the vendor's profile.
+            // This count is NEVER decremented — even if client deletes the order later.
+            $user->increment('delivered_orders_count');
+
             $this->logActivity($order, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
         });
     }

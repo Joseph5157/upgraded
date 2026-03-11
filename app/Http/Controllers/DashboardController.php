@@ -22,6 +22,11 @@ class DashboardController extends Controller
 
         // Auto-Release is now handled by the orders:auto-release scheduled command.
         // Vendor Dashboard Logic
+        $payoutRate    = config('services.portal.vendor_payout_per_order', 30);
+        $totalEarned   = $user->delivered_orders_count * $payoutRate;
+        $totalPaid     = \App\Models\VendorPayout::where('user_id', $user->id)->sum('amount');
+        $balance       = max(0, $totalEarned - $totalPaid);
+
         $stats = [
             'available_pool'       => Order::where('status', OrderStatus::Pending)->whereNull('claimed_by')->count(),
             'active_jobs'          => Order::where('status', OrderStatus::Processing)->where('claimed_by', $user->id)->count(),
@@ -32,6 +37,10 @@ class DashboardController extends Controller
             'overdue_count'        => Order::whereNotIn('status', [OrderStatus::Delivered, OrderStatus::Cancelled])
                 ->where('due_at', '<', now())
                 ->count(),
+            'total_delivered'      => $user->delivered_orders_count,
+            'total_earned'         => $totalEarned,
+            'total_paid'           => $totalPaid,
+            'balance'              => $balance,
         ];
 
         $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
@@ -101,29 +110,26 @@ class DashboardController extends Controller
     public function uploadReport(Request $request, Order $order)
     {
         $request->validate([
-            'report' => 'required|file|mimes:pdf|max:102400', // 100MB PDF
-            'ai_percentage' => 'nullable|numeric|min:0|max:100',
-            'plag_percentage' => 'nullable|numeric|min:0|max:100',
+            'ai_report'   => 'required|file|mimes:pdf|max:102400',
+            'plag_report' => 'required|file|mimes:pdf|max:102400',
         ]);
 
         try {
-            $path = $request->file('report')->store('reports/' . $order->id);
+            $aiPath   = $request->file('ai_report')->store('reports/' . $order->id . '/ai');
+            $plagPath = $request->file('plag_report')->store('reports/' . $order->id . '/plag');
 
             $this->workflowService->uploadReport($order, auth()->user(), [
-                'report_path' => $path,
-                'ai_percentage' => $request->ai_percentage,
-                'plag_percentage' => $request->plag_percentage,
+                'ai_report_path'   => $aiPath,
+                'plag_report_path' => $plagPath,
             ]);
 
-            // Auto-promote to processing if still pending before delivering
             if ($order->fresh()->status === OrderStatus::Pending) {
                 $this->workflowService->startProcessing($order->fresh(), auth()->user());
             }
 
-            // Automatically deliver after upload
             $this->workflowService->deliver($order->fresh(), auth()->user());
 
-            return back()->with('success', 'Report uploaded and order delivered successfully.');
+            return back()->with('success', 'Both reports uploaded. Order delivered successfully.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

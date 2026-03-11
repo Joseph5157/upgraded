@@ -19,9 +19,10 @@ class VendorPayoutController extends Controller
 
         // Compute balance for each vendor
         $vendorData = $vendors->map(function ($vendor) use ($payoutRate) {
-            $delivered = Order::where('claimed_by', $vendor->id)
-                ->where('status', OrderStatus::Delivered)
-                ->count();
+            // Use the permanent delivered_orders_count on the vendor's profile.
+            // DO NOT count from orders table — client may have deleted delivered orders
+            // which would reduce the count and wipe vendor's earned credits.
+            $delivered = $vendor->delivered_orders_count;
 
             $earned  = $delivered * $payoutRate;
             $paid    = VendorPayout::where('user_id', $vendor->id)->sum('amount');

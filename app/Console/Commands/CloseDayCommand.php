@@ -80,6 +80,24 @@ class CloseDayCommand extends Command
             [[$date, $orders->count(), '₹' . $totalRevenue, '₹' . $vendorPayouts, '₹' . $netProfit]]
         );
 
+        // Save per-vendor daily snapshot before resetting counter
+        $payoutRate = config('services.portal.vendor_payout_per_order', 30);
+        \App\Models\User::where('role', 'vendor')
+            ->where('daily_delivered_count', '>', 0)
+            ->each(function ($vendor) use ($date, $payoutRate) {
+                \App\Models\VendorDailySnapshot::updateOrCreate(
+                    ['user_id' => $vendor->id, 'date' => $date],
+                    [
+                        'orders_delivered' => $vendor->daily_delivered_count,
+                        'amount_earned'    => $vendor->daily_delivered_count * $payoutRate,
+                    ]
+                );
+            });
+
+        // Reset daily delivered counter for all vendors
+        \App\Models\User::where('role', 'vendor')->update(['daily_delivered_count' => 0]);
+        $this->info('Daily snapshots saved and counters reset for all vendors.');
+
         $this->info('Day closed successfully.');
         return Command::SUCCESS;
     }

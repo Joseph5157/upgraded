@@ -50,6 +50,7 @@ class ClientDashboardController extends Controller
         $request->validate([
             'files.*' => 'required|file|mimes:pdf,doc,docx,zip|max:102400',
             'files'   => 'required|array|min:1|max:20',
+            'notes'   => 'nullable|string|max:1000',
         ]);
 
         try {
@@ -57,8 +58,7 @@ class ClientDashboardController extends Controller
                 // Lock the client row to prevent race conditions on slot checks
                 $client = Client::where('id', $client->id)->lockForUpdate()->first();
 
-                $totalOrders = $client->orders()->count();
-                if ($client->status === 'suspended' || $totalOrders >= $client->slots) {
+                if ($client->status === 'suspended' || $client->slots_consumed >= $client->slots) {
                     throw new \Exception('Insufficient credits. You have reached your limit of ' . $client->slots . ' files. Please contact Admin for a refill.');
                 }
 
@@ -68,6 +68,7 @@ class ClientDashboardController extends Controller
                     'client_id'          => $client->id,
                     'token_view'         => $tokenView,
                     'files_count'        => count($request->file('files')),
+                    'notes'              => $request->input('notes') ?: null,
                     'status'             => OrderStatus::Pending,
                     'due_at'             => now()->addMinutes(config('services.portal.default_sla_minutes', 20)),
                     'source'             => 'account',
@@ -83,8 +84,11 @@ class ClientDashboardController extends Controller
                     ]);
                 }
 
-                // Suspend client if they have now hit their limit
-                if ($client->orders()->count() >= $client->slots) {
+                // Increment permanent consumed counter — never decremented
+                $client->increment('slots_consumed');
+
+                // Suspend if consumed all slots
+                if ($client->slots_consumed >= $client->slots) {
                     $client->update(['status' => 'suspended']);
                 }
 
@@ -132,13 +136,10 @@ class ClientDashboardController extends Controller
             // Delete file records from database
             $order->files()->delete();
 
-            if ($client->status === 'suspended') {
-                $ordersCount = $client->orders()
-                    ->whereNotIn('status', [OrderStatus::Cancelled->value])
-                    ->count();
-                if ($ordersCount < $client->slots) {
-                    $client->update(['status' => 'active']);
-                }
+            // On cancel: decrement consumed because service was never rendered
+            $client->decrement('slots_consumed');
+            if ($client->status === 'suspended' && $client->fresh()->slots_consumed < $client->slots) {
+                $client->update(['status' => 'active']);
             }
         });
 
@@ -166,34 +167,52 @@ class ClientDashboardController extends Controller
 
     public function destroy(Order $order)
     {
-        $user = Auth::user();
+        $user   = Auth::user();
         $client = $user->client;
 
         if ($order->client_id !== $client->id || $order->created_by_user_id !== $user->id) {
             abort(403);
         }
 
-        DB::transaction(function () use ($order) {
-            // Delete all files from disk permanently
+        // Capture delivered status BEFORE deletion
+        $wasDelivered = $order->status === \App\Enums\OrderStatus::Delivered;
+
+        DB::transaction(function () use ($order, $client, $wasDelivered) {
+            // Delete uploaded files from disk
             foreach ($order->files as $file) {
                 Storage::delete($file->file_path);
             }
-
-            // Delete the order folder entirely
             Storage::deleteDirectory('orders/' . $order->id);
 
-            // Delete report file from disk if exists
-            if ($order->report && $order->report->report_path) {
-                Storage::delete($order->report->report_path);
+            // Delete report PDFs from disk (AI + Plag)
+            if ($order->report) {
+                if ($order->report->ai_report_path) {
+                    Storage::delete($order->report->ai_report_path);
+                }
+                if ($order->report->plag_report_path) {
+                    Storage::delete($order->report->plag_report_path);
+                }
                 Storage::deleteDirectory('reports/' . $order->id);
             }
 
-            // Delete database records
+            // Delete DB records
             $order->files()->delete();
             $order->report()->delete();
             $order->delete();
+
+            // Only restore slot if order was NOT delivered (service not rendered)
+            if (!$wasDelivered) {
+                $client->decrement('slots_consumed');
+                if ($client->status === 'suspended' && $client->fresh()->slots_consumed < $client->slots) {
+                    $client->update(['status' => 'active']);
+                }
+            }
         });
 
-        return back()->with('success', 'Order and all associated files have been permanently deleted.');
+        $message = $wasDelivered
+            ? 'Order and all files permanently deleted.'
+            : 'Order deleted. Your credit slot has been restored.';
+
+        return back()->with('success', $message);
     }
 }

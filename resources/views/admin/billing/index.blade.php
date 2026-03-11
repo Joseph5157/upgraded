@@ -29,7 +29,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
 
                 <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl space-y-3">
-                    <div class="w-10 h-10 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500">
+                    <div class="w-10 h-10 bg-green-500/15 rounded-2xl flex items-center justify-center text-green-500">
                         <i data-lucide="trending-up" class="w-5 h-5"></i>
                     </div>
                     <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Revenue</p>
@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl space-y-3">
-                    <div class="w-10 h-10 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500">
+                    <div class="w-10 h-10 bg-red-500/15 rounded-2xl flex items-center justify-center text-red-500">
                         <i data-lucide="arrow-down-circle" class="w-5 h-5"></i>
                     </div>
                     <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Vendor Payouts</p>
@@ -60,7 +60,7 @@
                 <div
                     class="bg-[#0d0d0f] border {{ $todayProfit >= 0 ? 'border-green-500/20' : 'border-red-500/20' }} rounded-2xl p-8 shadow-2xl space-y-3">
                     <div
-                        class="w-10 h-10 {{ $todayProfit >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400' }} rounded-2xl flex items-center justify-center">
+                        class="w-10 h-10 {{ $todayProfit >= 0 ? 'bg-green-500/15 text-green-400' : 'bg-red-500/15 text-red-400' }} rounded-2xl flex items-center justify-center">
                         <i data-lucide="{{ $todayProfit >= 0 ? 'check-circle' : 'alert-circle' }}" class="w-5 h-5"></i>
                     </div>
                     <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Net Profit</p>
@@ -76,7 +76,7 @@
         @if($todayClientBreakdown->count() > 0)
             <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl">
                 <div class="flex items-center gap-4 mb-8">
-                    <div class="w-10 h-10 bg-purple-500/10 rounded-2xl flex items-center justify-center text-purple-500">
+                    <div class="w-10 h-10 bg-purple-500/15 rounded-2xl flex items-center justify-center text-purple-500">
                         <i data-lucide="users" class="w-5 h-5"></i>
                     </div>
                     <div>
@@ -131,7 +131,7 @@
             <div class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-4">
                     <div
-                        class="w-10 h-10 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500">
+                    <div class="w-10 h-10 bg-indigo-500/15 rounded-2xl flex items-center justify-center text-indigo-500">
                         <i data-lucide="book-open" class="w-5 h-5"></i>
                     </div>
                     <div>

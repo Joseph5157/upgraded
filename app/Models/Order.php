@@ -11,9 +11,8 @@ class Order extends Model
         'client_id',
         'token_view',
         'files_count',
+        'notes',
         'status',
-        'ai_percentage',
-        'plag_percentage',
         'claimed_by',
         'due_at',
         'delivered_at',
@@ -30,55 +29,20 @@ class Order extends Model
         'status'        => OrderStatus::class,
     ];
 
-    public function client()
-    {
-        return $this->belongsTo(Client::class);
-    }
-
-    public function files()
-    {
-        return $this->hasMany(OrderFile::class);
-    }
-
-    public function report()
-    {
-        return $this->hasOne(OrderReport::class);
-    }
-
-    public function vendor()
-    {
-        return $this->belongsTo(User::class, 'claimed_by');
-    }
-
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id');
-    }
-
-    public function link()
-    {
-        return $this->belongsTo(ClientLink::class, 'client_link_id');
-    }
-
-    public function orderLogs()
-    {
-        return $this->hasMany(OrderLog::class);
-    }
-
-    public function refundRequest()
-    {
-        return $this->hasOne(RefundRequest::class);
-    }
+    public function client()      { return $this->belongsTo(Client::class); }
+    public function files()       { return $this->hasMany(OrderFile::class); }
+    public function report()      { return $this->hasOne(OrderReport::class); }
+    public function vendor()      { return $this->belongsTo(User::class, 'claimed_by'); }
+    public function creator()     { return $this->belongsTo(User::class, 'created_by_user_id'); }
+    public function link()        { return $this->belongsTo(ClientLink::class, 'client_link_id'); }
+    public function orderLogs()   { return $this->hasMany(OrderLog::class); }
+    public function refundRequest(){ return $this->hasOne(RefundRequest::class); }
 
     public function getComputedStatusAttribute()
     {
-        if ($this->status === OrderStatus::Delivered)
-            return 'delivered';
-        if ($this->status === OrderStatus::Processing)
-            return 'processing';
-        if ($this->due_at && $this->due_at->isPast())
-            return 'overdue';
-
+        if ($this->status === OrderStatus::Delivered)  return 'delivered';
+        if ($this->status === OrderStatus::Processing) return 'processing';
+        if ($this->due_at && $this->due_at->isPast())  return 'overdue';
         return 'pending';
     }
 
