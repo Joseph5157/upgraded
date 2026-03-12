@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'email_verified_at',
         'role',
         'delivered_orders_count',
         'daily_delivered_count',
