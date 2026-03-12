@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "php artisan migrate --force --seed && php -S 0.0.0.0:$PORT -t public",
+    "startCommand": "php artisan migrate --force && php artisan db:seed --force && php -S 0.0.0.0:$PORT -t public",
     "healthcheckPath": "/",
     "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE",
