@@ -1,12 +1,11 @@
 [phases.setup]
-nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.mbstring", "php82Extensions.tokenizer", "php82Extensions.xml", "php82Extensions.ctype", "php82Extensions.fileinfo", "php82Extensions.bcmath", "php82Extensions.curl", "php82Extensions.zip", "php82Extensions.gd", "nodejs_20"]
+nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.mbstring", "php82Extensions.tokenizer", "php82Extensions.xml", "php82Extensions.ctype", "php82Extensions.fileinfo", "php82Extensions.bcmath", "php82Extensions.curl", "php82Extensions.zip", "php82Extensions.gd", "composer", "nodejs_20"]
 
 [phases.install]
 cmds = [
-  'curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer',
-  '/usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction',
-  'npm ci',
-  'npm run build'
+  "composer install --no-dev --optimize-autoloader --no-interaction",
+  "npm install",
+  "npm run build"
 ]
 
 [phases.build]
@@ -18,4 +17,4 @@ cmds = [
 ]
 
 [start]
-cmd = "php artisan migrate --force && php artisan queue:work --daemon --tries=3 & php -S 0.0.0.0:$PORT -t public"
+cmd = "php artisan migrate --force --seed && php -S 0.0.0.0:$PORT -t public"
