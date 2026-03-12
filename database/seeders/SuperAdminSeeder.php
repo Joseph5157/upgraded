@@ -9,20 +9,24 @@ class SuperAdminSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::where('role', 'admin')->first();
+        try {
+            $admin = User::where('role', 'admin')->first();
 
-        if (! $admin) {
-            $this->command->error('No admin user found. Create an admin account first.');
-            return;
+            if (! $admin) {
+                $this->command->warn('⚠️  No admin user found. Skipping super admin promotion.');
+                return;
+            }
+
+            if ($admin->is_super_admin) {
+                $this->command->info("✅ User [{$admin->email}] is already SYSTEM_ROOT (super admin).");
+                return;
+            }
+
+            $admin->update(['is_super_admin' => true]);
+
+            $this->command->info("✅ Promoted [{$admin->email}] to SYSTEM_ROOT (super admin).");
+        } catch (\Exception $e) {
+            $this->command->error("❌ Failed to promote super admin: {$e->getMessage()}");
         }
-
-        if ($admin->is_super_admin) {
-            $this->command->warn("User [{$admin->email}] is already SYSTEM_ROOT.");
-            return;
-        }
-
-        $admin->update(['is_super_admin' => true]);
-
-        $this->command->info("Promoted [{$admin->email}] to SYSTEM_ROOT (super admin).");
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\ClientLink;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,30 +18,61 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Admin
-        User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'role' => 'admin',
-        ]);
+        $this->command->info('🌱 Starting database seeding...');
 
-        // Create Vendor
-        User::factory()->create([
-            'name' => 'Vendor User',
-            'email' => 'vendor@example.com',
-            'role' => 'vendor',
-        ]);
+        // Create Admin User
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@example.com',
+                'role' => 'admin',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $this->command->info("✅ Admin created: {$admin->email} (password: password)");
+
+        // Create Vendor User
+        $vendor = User::firstOrCreate(
+            ['email' => 'vendor@example.com'],
+            [
+                'name' => 'Vendor User',
+                'email' => 'vendor@example.com',
+                'role' => 'vendor',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+            ]
+        );
+        $this->command->info("✅ Vendor created: {$vendor->email} (password: password)");
 
         // Create Client and Link
-        $client = Client::create(['name' => 'Default Client']);
-        ClientLink::create([
-            'client_id' => $client->id,
-            'token' => 'test-token',
-            'is_active' => 1
-        ]);
+        $client = Client::firstOrCreate(
+            ['name' => 'Default Client'],
+            ['name' => 'Default Client']
+        );
+        $this->command->info("✅ Client created: {$client->name}");
 
+        $link = ClientLink::firstOrCreate(
+            ['token' => 'test-token'],
+            [
+                'client_id' => $client->id,
+                'token' => 'test-token',
+                'is_active' => 1
+            ]
+        );
+        $this->command->info("✅ Client link created with token: {$link->token}");
+
+        // Promote admin to super admin
         $this->call([
             SuperAdminSeeder::class,
         ]);
+
+        $this->command->info('🎉 Database seeding completed successfully!');
+        $this->command->newLine();
+        $this->command->warn('📧 Login credentials:');
+        $this->command->line("   Email: admin@example.com");
+        $this->command->line("   Password: password");
+        $this->command->newLine();
     }
 }
