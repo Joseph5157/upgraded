@@ -38,5 +38,9 @@ class DatabaseSeeder extends Seeder
             'token' => 'test-token',
             'is_active' => 1
         ]);
+
+        $this->call([
+            SuperAdminSeeder::class,
+        ]);
     }
 }
