@@ -21,7 +21,15 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\VendorEarningsController;
 
 Route::get('/', function () {
-    return view('welcome');
+    if (auth()->check()) {
+        return match(auth()->user()->role) {
+            'admin'  => redirect()->route('admin.dashboard'),
+            'vendor' => redirect()->route('dashboard'),
+            'client' => redirect()->route('client.dashboard'),
+            default  => redirect()->route('login'),
+        };
+    }
+    return redirect()->route('login');
 });
 
 // Client Public Routes — throttled to prevent abuse
