@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "php artisan config:clear && php artisan view:clear && php artisan route:clear && php artisan migrate --force && php -S 0.0.0.0:$PORT -t public",
+    "startCommand": "mkdir -p /app/storage/app/private /app/storage/app/public /app/storage/framework/sessions /app/storage/framework/views /app/storage/framework/cache /app/storage/logs && php artisan storage:link --force && php artisan config:clear && php artisan view:clear && php artisan route:clear && php artisan migrate --force && php -S 0.0.0.0:$PORT -t public",
     "healthcheckPath": "/login",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
