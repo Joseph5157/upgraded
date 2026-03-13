@@ -21,27 +21,27 @@ class DatabaseSeeder extends Seeder
         $this->command->info('🌱 Starting database seeding...');
 
         // Create Admin User
-        $admin = User::firstOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'name' => 'Admin User',
-                'email' => 'admin@example.com',
                 'role' => 'admin',
-                'password' => Hash::make('password'),
+                'password' => 'password',
                 'email_verified_at' => now(),
+                'status' => 'active',
             ]
         );
         $this->command->info("✅ Admin created: {$admin->email} (password: password)");
 
         // Create Vendor User
-        $vendor = User::firstOrCreate(
+        $vendor = User::updateOrCreate(
             ['email' => 'vendor@example.com'],
             [
                 'name' => 'Vendor User',
-                'email' => 'vendor@example.com',
                 'role' => 'vendor',
-                'password' => Hash::make('password'),
+                'password' => 'password',
                 'email_verified_at' => now(),
+                'status' => 'active',
             ]
         );
         $this->command->info("✅ Vendor created: {$vendor->email} (password: password)");
