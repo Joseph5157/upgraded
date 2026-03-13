@@ -3,10 +3,8 @@
 
 <head>
     <script>
-        (function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'dark') document.documentElement.classList.add('dark');
-        })();
+        // Force dark mode as default
+        document.documentElement.classList.add('dark');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -100,7 +98,6 @@
                         <p class="text-[10px] text-gray-400">{{ auth()->user()->email }}</p>
                     </div>
                 </div>
-                <x-dark-mode-toggle />
             </div>
         </header>
 

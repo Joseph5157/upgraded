@@ -3,12 +3,8 @@
 
 <head>
     <script>
-        (function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            }
-        })();
+        // Force dark mode as default
+        document.documentElement.classList.add('dark');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -233,9 +229,6 @@
                         <p class="text-[10px] font-bold text-red-500">SYSTEM_ROOT</p>
                     </div>
                 </div>
-                <div class="mb-3 px-2">
-                    <x-dark-mode-toggle />
-                </div>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
@@ -256,7 +249,6 @@
                     <span class="text-sm font-bold text-gray-900 dark:text-white">Admin</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <x-dark-mode-toggle />
                     <div class="relative group">
                         <button class="w-8 h-8 rounded-lg bg-red-600/20 text-red-500 dark:bg-red-500/20 dark:text-red-400 flex items-center justify-center text-xs font-bold">
                             {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}

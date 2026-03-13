@@ -2,12 +2,8 @@
 <html lang="en">
 <head>
     <script>
-        (function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            }
-        })();
+        // Force dark mode as default
+        document.documentElement.classList.add('dark');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -363,22 +359,6 @@
                 }
             }
         }
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const html = document.documentElement;
-            const themeToggle = document.getElementById('theme-toggle');
-            const isDark = localStorage.getItem('theme') === 'dark';
-
-            if (isDark) html.classList.add('dark');
-
-            if (themeToggle) {
-                themeToggle.addEventListener('click', () => {
-                    const darkMode = html.classList.toggle('dark');
-                    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-                });
-            }
-        });
     </script>
 </body>
 </html>

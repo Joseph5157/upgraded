@@ -3,10 +3,8 @@
 
 <head>
     <script>
-        (function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'dark') document.documentElement.classList.add('dark');
-        })();
+        // Force dark mode as default
+        document.documentElement.classList.add('dark');
     </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -100,8 +98,6 @@
                         <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-[0_0_6px_#34d399] animate-pulse"></span>
                         <span class="text-[9px] text-emerald-400 font-bold uppercase tracking-widest">Live</span>
                     </div>
-
-                    <x-dark-mode-toggle />
 
                     {{-- Profile menu --}}
                     <div class="group relative">
