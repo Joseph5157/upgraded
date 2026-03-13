@@ -73,6 +73,12 @@
     <!-- Main -->
     <main class="flex-1 overflow-y-auto overflow-x-hidden bg-[#F0F2F5] w-full min-w-0">
         <header class="h-20 border-b border-[#E2E6EA] flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-[#FAFBFC] backdrop-blur-md sticky top-0 z-10">
+            {{-- Mobile Menu Button --}}
+            <button class="md:hidden w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 mr-3" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
             <div>
                 <h1 class="text-[#1A1D23] font-semibold">Subscription & Credits</h1>
                 <p class="text-[10px] text-[#9CA3AF] uppercase tracking-widest mt-0.5">Manage your plan and top-ups</p>
@@ -87,6 +93,27 @@
                 </div>
             </div>
         </header>
+
+        {{-- Mobile Menu Dropdown --}}
+        <div id="mobile-menu" class="hidden md:hidden bg-[#F7F8FA] border-b border-[#E2E6EA]">
+            <nav class="px-4 py-3 space-y-1">
+                <a href="{{ route('client.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#6B7280] hover:bg-[#ECEEF2]">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i> Dashboard
+                </a>
+                <div class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-indigo-500/10 text-indigo-600">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i> Subscription
+                </div>
+                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-[#6B7280] hover:bg-[#ECEEF2]">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Settings
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="mt-2 pt-2 border-t border-[#E2E6EA]">
+                    @csrf
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-bold text-[#6B7280] hover:text-red-500 hover:bg-red-50 border border-[#E2E6EA]">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                    </button>
+                </form>
+            </nav>
+        </div>
 
         <div class="p-10 max-w-6xl mx-auto space-y-10">
 

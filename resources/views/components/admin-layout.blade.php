@@ -249,6 +249,36 @@
 
         {{-- 2. INDEPENDENT SCROLLING CONTENT --}}
         <main class="flex-1 h-full overflow-y-auto overflow-x-hidden relative bg-[#F0F2F5] custom-scrollbar dark:bg-[#050505] w-full min-w-0">
+            {{-- Mobile Header (visible only on mobile) --}}
+            <div class="md:hidden sticky top-0 z-20 bg-[#F7F8FA] dark:bg-[#0a0a0c] border-b border-[#E2E6EA] dark:border-white/5 px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-1.5 h-6 bg-[#4F6EF7] rounded-full"></div>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">Admin</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <x-dark-mode-toggle />
+                    <div class="relative group">
+                        <button class="w-8 h-8 rounded-lg bg-red-600/20 text-red-500 dark:bg-red-500/20 dark:text-red-400 flex items-center justify-center text-xs font-bold">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                        </button>
+                        <div class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all p-1.5">
+                            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg">
+                                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Dashboard
+                            </a>
+                            <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg">
+                                <i data-lucide="settings" class="w-3.5 h-3.5"></i> Settings
+                            </a>
+                            <hr class="my-1.5 border-gray-200 dark:border-white/10">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg">
+                                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="p-4 sm:p-6 lg:p-10 max-w-[1600px] mx-auto space-y-6 sm:space-y-12">
                 {{ $slot }}
             </div>

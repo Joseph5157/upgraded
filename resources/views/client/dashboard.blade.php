@@ -133,7 +133,13 @@
     <main class="flex-1 overflow-y-auto bg-[#070709] scrollbar-thin">
 
         {{-- TOP HEADER --}}
-        <header class="h-14 border-b border-white/[0.05] flex items-center justify-between px-8 bg-[#070709]/80 backdrop-blur-xl sticky top-0 z-20">
+        <header class="h-14 border-b border-white/[0.05] flex items-center justify-between px-4 sm:px-8 bg-[#070709]/80 backdrop-blur-xl sticky top-0 z-20">
+            {{-- Mobile Menu Button --}}
+            <button class="md:hidden w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white mr-3" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
             <div class="flex items-center gap-2">
                 <h1 class="text-[15px] font-semibold text-white/90">
                     Good Morning, {{ auth()->user()->name }}
@@ -158,6 +164,24 @@
                 </div>
             </div>
         </header>
+
+        {{-- Mobile Menu Dropdown --}}
+        <div id="mobile-menu" class="hidden md:hidden bg-[#0b0b0f] border-b border-white/[0.05]">
+            <nav class="px-4 py-3 space-y-1">
+                <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white bg-white/[0.06]">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i> Dashboard
+                </a>
+                <a href="{{ route('client.subscription') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/[0.04]">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i> Subscription
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="mt-2 pt-2 border-t border-white/[0.05]">
+                    @csrf
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-bold text-red-400 bg-red-500/[0.08] hover:bg-red-500/[0.15] border border-red-500/[0.15]">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                    </button>
+                </form>
+            </nav>
+        </div>
 
         {{--  ANNOUNCEMENTS BANNER  --}}
         <x-announcements-banner />

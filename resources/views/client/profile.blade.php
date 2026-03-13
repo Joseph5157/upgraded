@@ -79,7 +79,13 @@
     <main class="flex-1 overflow-y-auto overflow-x-hidden bg-[#F0F2F5] dark:bg-[#080810] w-full min-w-0">
 
         <!-- Top Bar -->
-        <header class="h-20 border-b border-[#E2E6EA] flex items-center justify-between px-10 bg-[#FAFBFC] sticky top-0 z-10 dark:bg-[#0a0a0c] dark:border-[#1e2030]">
+        <header class="h-20 border-b border-[#E2E6EA] flex items-center justify-between px-4 sm:px-10 bg-[#FAFBFC] sticky top-0 z-10 dark:bg-[#0a0a0c] dark:border-[#1e2030]">
+            {{-- Mobile Menu Button --}}
+            <button class="md:hidden w-8 h-8 flex items-center justify-center text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white mr-3" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
             <div>
                 <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Account Settings</h1>
                 <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">Manage your profile and security</p>
@@ -97,6 +103,27 @@
                 <x-dark-mode-toggle />
             </div>
         </header>
+
+        {{-- Mobile Menu Dropdown --}}
+        <div id="mobile-menu" class="hidden md:hidden bg-[#FAFBFC] dark:bg-[#0a0a0c] border-b border-[#E2E6EA] dark:border-[#1e2030]">
+            <nav class="px-4 py-3 space-y-1">
+                <a href="{{ route('client.dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-400 hover:bg-[#ECEEF2] dark:hover:bg-white/5">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i> Dashboard
+                </a>
+                <a href="{{ route('client.subscription') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-400 hover:bg-[#ECEEF2] dark:hover:bg-white/5">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i> Subscription
+                </a>
+                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-[#EEF2FF] text-[#4F6EF7] dark:bg-indigo-500/10 dark:text-indigo-400">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Settings
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="mt-2 pt-2 border-t border-[#E2E6EA] dark:border-[#1e2030]">
+                    @csrf
+                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 border border-[#E2E6EA] dark:border-[#1e2030]">
+                        <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                    </button>
+                </form>
+            </nav>
+        </div>
 
         <div class="p-10 max-w-5xl mx-auto space-y-8">
 
