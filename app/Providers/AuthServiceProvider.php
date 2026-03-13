@@ -5,11 +5,13 @@ namespace App\Providers;
 use App\Models\Client;
 use App\Models\Order;
 use App\Models\RefundRequest;
+use App\Models\TopupRequest;
 use App\Models\User;
 use App\Models\VendorPayout;
 use App\Policies\ClientPolicy;
 use App\Policies\OrderPolicy;
 use App\Policies\RefundRequestPolicy;
+use App\Policies\TopupRequestPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\VendorPayoutPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -27,6 +29,7 @@ class AuthServiceProvider extends ServiceProvider
         User::class          => UserPolicy::class,
         Client::class        => ClientPolicy::class,
         RefundRequest::class => RefundRequestPolicy::class,
+        TopupRequest::class  => TopupRequestPolicy::class,
         VendorPayout::class  => VendorPayoutPolicy::class,
     ];
 

@@ -255,7 +255,8 @@
                                 <th class="px-4 py-4">Slots Requested</th>
                                 <th class="px-4 py-4">Amount</th>
                                 <th class="px-4 py-4">Transaction ID</th>
-                                <th class="px-6 py-4">Status</th>
+                                <th class="px-4 py-4">Status</th>
+                                <th class="px-6 py-4">Admin Note</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#E2E6EA]">
@@ -270,7 +271,7 @@
                                         ₹{{ number_format($topup->amount_requested * $client->price_per_file, 0) }}
                                     </td>
                                     <td class="px-4 py-4 text-[10px] text-[#6B7280] font-mono">{{ $topup->transaction_id ?? '—' }}</td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-4 py-4">
                                         @if($topup->status === 'approved')
                                             <span class="px-2.5 py-1 bg-green-500/10 text-green-400 rounded-lg text-[9px] font-bold border border-green-500/10">Approved</span>
                                         @elseif($topup->status === 'rejected')
@@ -279,9 +280,12 @@
                                             <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold border border-amber-500/10">Pending</span>
                                         @endif
                                     </td>
+                                    <td class="px-6 py-4 text-[10px] text-[#6B7280] max-w-[160px] truncate" title="{{ $topup->notes ?? '' }}">
+                                        {{ $topup->notes ?? '—' }}
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="px-6 py-10 text-center text-xs text-[#9CA3AF]">No top-up history yet.</td></tr>
+                                <tr><td colspan="6" class="px-6 py-10 text-center text-xs text-[#9CA3AF]">No top-up history yet.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

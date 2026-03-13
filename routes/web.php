@@ -78,6 +78,7 @@ Route::middleware(['auth', 'verified', 'role:admin', 'account.status'])
         Route::post('/accounts/store', [AdminController::class, 'storeAccount'])->name('accounts.store');
         Route::resource('/matrix', ClientMatrixController::class)->only(['index', 'update']);
         Route::post('/matrix/{client}/refill', [ClientMatrixController::class, 'refill'])->name('matrix.refill');
+        Route::get('/topup', [TopupRequestController::class, 'index'])->name('topup.index');
         Route::post('/topup/{topupRequest}/approve', [TopupRequestController::class, 'approve'])->name('topup.approve');
         Route::post('/topup/{topupRequest}/reject', [TopupRequestController::class, 'reject'])->name('topup.reject');
         Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');

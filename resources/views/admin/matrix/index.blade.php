@@ -117,76 +117,31 @@
             </div>
         </div>
 
-        {{-- Pending Top-up Requests --}}
+        {{-- Pending Top-up Requests — link to dedicated page --}}
         @if($pendingTopups->count() > 0)
-            <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 mt-8 shadow-2xl">
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="w-10 h-10 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500">
-                        <i data-lucide="clock" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-white">Pending Top-up Requests</h2>
-                        <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5 font-mono">
-                            {{ $pendingTopups->count() }} awaiting review
-                        </p>
-                    </div>
-                    <span
-                        class="ml-auto px-3 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold font-mono rounded-full border border-amber-500/20 animate-pulse">
-                        {{ $pendingTopups->count() }} Pending
-                    </span>
+            <a href="{{ route('admin.topup.index') }}"
+                class="flex items-center gap-5 bg-[#0d0d0f] border border-amber-500/20 rounded-2xl px-6 py-5 mt-8 hover:border-amber-500/40 transition-all group">
+                <div class="w-10 h-10 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 flex-shrink-0">
+                    <i data-lucide="clock" class="w-5 h-5"></i>
                 </div>
-
-                <div class="space-y-4">
-                    @foreach($pendingTopups as $topup)
-                        <div
-                            class="flex flex-col sm:flex-row sm:items-center gap-4 p-5 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-amber-500/20 transition-all">
-                            <div class="flex items-center gap-4 flex-1">
-                                <div
-                                    class="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-400 border border-white/5 flex-shrink-0">
-                                    <i data-lucide="building" class="w-5 h-5"></i>
-                                </div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-slate-300">{{ $topup->client->name }}</h4>
-                                    <p class="text-[10px] text-slate-600 font-mono mt-0.5">Requested: <span
-                                            class="text-slate-400">{{ $topup->amount_requested }} slots</span></p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-6 text-center">
-                                <div>
-                                    <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Value</p>
-                                    <p class="text-sm font-bold text-white font-mono">
-                                        ₹{{ number_format($topup->client->price_per_file * $topup->amount_requested, 0) }}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">UTR / Txn ID</p>
-                                    <p class="text-xs font-mono text-indigo-400">{{ $topup->transaction_id ?? '—' }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Submitted</p>
-                                    <p class="text-xs text-slate-500 font-mono">{{ $topup->created_at->diffForHumans() }}</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 sm:ml-4 flex-shrink-0">
-                                <form method="POST" action="{{ route('admin.topup.approve', $topup) }}">
-                                    @csrf
-                                    <button type="submit"
-                                        class="px-4 py-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-green-500/20 transition-all flex items-center gap-1.5">
-                                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Approve
-                                    </button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.topup.reject', $topup) }}">
-                                    @csrf
-                                    <button type="submit"
-                                        class="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-red-500/20 transition-all flex items-center gap-1.5">
-                                        <i data-lucide="x" class="w-3.5 h-3.5"></i> Reject
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    @endforeach
+                <div class="flex-1">
+                    <p class="text-sm font-bold text-white">Pending Top-up Requests</p>
+                    <p class="text-[10px] text-slate-500 font-mono mt-0.5">{{ $pendingTopups->count() }} awaiting review — click to manage</p>
                 </div>
-            </div>
+                <span class="px-3 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold font-mono rounded-full border border-amber-500/20 animate-pulse">
+                    {{ $pendingTopups->count() }} Pending
+                </span>
+                <i data-lucide="arrow-right" class="w-4 h-4 text-slate-500 group-hover:text-amber-400 transition-colors flex-shrink-0"></i>
+            </a>
+        @else
+            <a href="{{ route('admin.topup.index') }}"
+                class="flex items-center gap-4 bg-[#0d0d0f] border border-white/5 rounded-2xl px-6 py-4 mt-8 hover:border-white/10 transition-all group">
+                <div class="w-8 h-8 bg-white/5 rounded-xl flex items-center justify-center text-slate-500 flex-shrink-0">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i>
+                </div>
+                <p class="text-xs text-slate-500 flex-1">No pending top-up requests.</p>
+                <span class="text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors font-mono uppercase tracking-widest">View History →</span>
+            </a>
         @endif
     </div>
 

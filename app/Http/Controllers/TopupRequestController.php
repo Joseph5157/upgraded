@@ -11,13 +11,33 @@ use Illuminate\Support\Facades\DB;
 class TopupRequestController extends Controller
 {
     /**
+     * Admin views all topup requests — standalone page.
+     */
+    public function index()
+    {
+        $this->authorize('viewAny', TopupRequest::class);
+
+        $pending  = TopupRequest::with('client')->where('status', 'pending')->latest()->get();
+        $resolved = TopupRequest::with('client')
+            ->whereIn('status', ['approved', 'rejected'])
+            ->latest('reviewed_at')
+            ->take(100)
+            ->get();
+
+        return view('admin.topups', compact('pending', 'resolved'));
+    }
+
+    /**
      * Client submits a top-up request.
      */
     public function store(Request $request)
     {
         $request->validate([
-            'amount_requested' => 'required|integer|min:1',
-            'transaction_id' => 'required|string|max:255',
+            'amount_requested' => 'required|integer|min:1|max:1000',
+            'transaction_id'   => 'required|string|max:255|unique:topup_requests,transaction_id',
+        ], [
+            'transaction_id.unique' => 'This Transaction / UTR ID has already been submitted. If this is an error, please contact admin.',
+            'amount_requested.max'  => 'Maximum top-up request is 1000 slots at a time.',
         ]);
 
         $client = Auth::user()->client;
@@ -32,10 +52,10 @@ class TopupRequestController extends Controller
         }
 
         TopupRequest::create([
-            'client_id' => $client->id,
+            'client_id'        => $client->id,
             'amount_requested' => $request->amount_requested,
-            'transaction_id' => $request->transaction_id,
-            'status' => 'pending',
+            'transaction_id'   => $request->transaction_id,
+            'status'           => 'pending',
         ]);
 
         return back()->with('success', 'Top-up request submitted! The admin will review it shortly.');
@@ -46,6 +66,8 @@ class TopupRequestController extends Controller
      */
     public function approve(TopupRequest $topupRequest)
     {
+        $this->authorize('approve', $topupRequest);
+
         if ($topupRequest->status !== 'pending') {
             return back()->with('error', 'This request has already been processed.');
         }
@@ -53,14 +75,13 @@ class TopupRequestController extends Controller
         DB::transaction(function () use ($topupRequest) {
             $client = $topupRequest->client;
 
-            // Add slots (same logic as the existing refill method)
             $client->update([
-                'slots' => $client->slots + $topupRequest->amount_requested,
+                'slots'  => $client->slots + $topupRequest->amount_requested,
                 'status' => 'active',
             ]);
 
             $topupRequest->update([
-                'status' => 'approved',
+                'status'      => 'approved',
                 'reviewed_at' => now(),
             ]);
         });
@@ -69,16 +90,23 @@ class TopupRequestController extends Controller
     }
 
     /**
-     * Admin rejects a top-up request.
+     * Admin rejects a topup request — optionally adds a note visible to the client.
      */
-    public function reject(TopupRequest $topupRequest)
+    public function reject(Request $request, TopupRequest $topupRequest)
     {
+        $this->authorize('reject', $topupRequest);
+
+        $request->validate([
+            'notes' => 'nullable|string|max:500',
+        ]);
+
         if ($topupRequest->status !== 'pending') {
             return back()->with('error', 'This request has already been processed.');
         }
 
         $topupRequest->update([
-            'status' => 'rejected',
+            'status'      => 'rejected',
+            'notes'       => $request->notes,
             'reviewed_at' => now(),
         ]);
 
