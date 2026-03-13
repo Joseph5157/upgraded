@@ -41,4 +41,9 @@ return [
         'default_client_price'     => env('PORTAL_DEFAULT_CLIENT_PRICE', 100.00),
     ],
 
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'vendor_chat_id' => env('TELEGRAM_VENDOR_CHAT_ID'),
+    ],
+
 ];

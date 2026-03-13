@@ -6,6 +6,7 @@ use App\Models\ClientLink;
 use App\Models\Order;
 use App\Models\OrderFile;
 use App\Enums\OrderStatus;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     public function showUpload($token)
     {
         $link = ClientLink::where('token', $token)->where('is_active', true)->with('client')->firstOrFail();
@@ -31,7 +38,8 @@ class OrderController extends Controller
         ]);
 
         try {
-            $tokenView = DB::transaction(function () use ($link, $request) {
+            $orderId = null;
+            $tokenView = DB::transaction(function () use ($link, $request, &$orderId) {
                 // Lock the client row to prevent concurrent slot over-use
                 $client = \App\Models\Client::where('id', $link->client_id)->lockForUpdate()->first();
 
@@ -64,8 +72,17 @@ class OrderController extends Controller
                     $client->update(['status' => 'suspended']);
                 }
 
+                // Store order ID for notification after transaction
+                $orderId = $order->id;
+
                 return $tokenView;
             });
+
+            // Send Telegram notification to vendors (after transaction commits)
+            if ($orderId) {
+                $order = Order::find($orderId);
+                $this->notificationService->notifyVendorsNewOrder($order);
+            }
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
