@@ -142,6 +142,10 @@ class DashboardController extends Controller
             abort(404);
         }
 
-        return Storage::download($file->file_path);
+        if (!Storage::exists($file->file_path)) {
+            return back()->with('error', 'File not found on storage. It may have been uploaded before the storage volume was attached. Please ask the client to re-upload.');
+        }
+
+        return Storage::download($file->file_path, basename($file->file_path));
     }
 }

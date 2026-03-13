@@ -123,10 +123,12 @@ class OrderController extends Controller
 
         if ($type === 'plag') {
             if (!$order->report->plag_report_path) abort(404);
+            if (!Storage::exists($order->report->plag_report_path)) abort(404);
             return Storage::download($order->report->plag_report_path, 'plagiarism-report-' . $order->id . '.pdf');
         }
 
         if (!$order->report->ai_report_path) abort(404);
+        if (!Storage::exists($order->report->ai_report_path)) abort(404);
         $order->update(['is_downloaded' => true]);
         return Storage::download($order->report->ai_report_path, 'ai-report-' . $order->id . '.pdf');
     }
