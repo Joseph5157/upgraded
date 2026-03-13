@@ -101,17 +101,7 @@
                     </svg>
                 </div>
                 @if($stats['overdue_count'] > 0)
-                    <div class="inline-flex flex-col items-center gap-0.5 px-4 py-2 bg-indigo-500/[0.08] rounded-xl border border-indigo-500/[0.18]" style="min-width:80px">
-                        <div class="flex items-center gap-1.5">
-                            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <span class="workspace-timer text-[18px] font-mono font-extrabold text-indigo-300 tabular-nums tracking-tight leading-none"
-                                data-due="{{ $order->due_at?->toIso8601String() }}">--:--</span>
-                        </div>
-                        <span class="text-[8px] font-bold text-indigo-500/60 uppercase tracking-widest">SLA Timer</span>
-                    </div>
+                    <span class="text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-lg animate-pulse uppercase tracking-wider">Overdue</span>
                 @endif
             </div>
             <p
