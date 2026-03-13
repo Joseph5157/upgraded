@@ -5,25 +5,25 @@
     </div>
 
     {{-- ===== EARNINGS BANNER ===== --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 bg-[#0f0f14] dark:bg-[#0f0f14] border border-white/[0.06] rounded-2xl">
+    <div class="grid grid-cols-3 gap-3 sm:gap-4 p-4 sm:p-5 bg-[#0f0f14] dark:bg-[#0f0f14] border border-white/[0.06] rounded-2xl">
         <div class="flex flex-col gap-1">
-            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Total Delivered</p>
-            <p class="text-3xl font-extrabold text-white font-mono tabular-nums">{{ $stats['total_delivered'] }}</p>
-            <p class="text-[10px] text-slate-500 font-semibold">Orders completed</p>
+            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Delivered</p>
+            <p class="text-xl sm:text-3xl font-extrabold text-white font-mono tabular-nums">{{ $stats['total_delivered'] }}</p>
+            <p class="text-[10px] text-slate-500 font-semibold hidden sm:block">Orders completed</p>
         </div>
         <div class="flex flex-col gap-1">
-            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Total Earned</p>
-            <p class="text-3xl font-extrabold text-emerald-400 font-mono tabular-nums">₹{{ number_format($stats['total_earned'], 0) }}</p>
-            <p class="text-[10px] text-slate-500 font-semibold">₹{{ number_format(config('services.portal.vendor_payout_per_order', 30), 0) }} per order</p>
+            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Earned</p>
+            <p class="text-xl sm:text-3xl font-extrabold text-emerald-400 font-mono tabular-nums">₹{{ number_format($stats['total_earned'], 0) }}</p>
+            <p class="text-[10px] text-slate-500 font-semibold hidden sm:block">₹{{ number_format(config('services.portal.vendor_payout_per_order', 30), 0) }} per order</p>
         </div>
         <div class="flex flex-col gap-1">
-            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Pending Payout</p>
-            <p class="text-3xl font-extrabold font-mono tabular-nums @if($stats['balance'] > 0) text-amber-400 @else text-slate-600 @endif">
+            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Payout</p>
+            <p class="text-xl sm:text-3xl font-extrabold font-mono tabular-nums @if($stats['balance'] > 0) text-amber-400 @else text-slate-600 @endif">
                 ₹{{ number_format($stats['balance'], 0) }}
             </p>
-            <p class="text-[10px] text-slate-500 font-semibold">₹{{ number_format($stats['total_paid'], 0) }} already paid</p>
+            <p class="text-[10px] text-slate-500 font-semibold hidden sm:block">₹{{ number_format($stats['total_paid'], 0) }} paid</p>
         </div>
-        <div class="md:col-span-3 flex justify-end pt-2 border-t border-white/[0.06] mt-2">
+        <div class="col-span-3 flex justify-end pt-2 border-t border-white/[0.06] mt-2">
             <a href="{{ route('vendor.earnings') }}"
                 class="flex items-center gap-1.5 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest transition-colors">
                 View Full Statement
@@ -35,92 +35,87 @@
     </div>
 
     {{-- ===== STAT CARDS ===== --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
         {{-- Available Pool --}}
         <div
-            class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-5 hover:border-indigo-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
-            <div class="flex items-start justify-between mb-4">
-                <div class="w-9 h-9 bg-indigo-500/10 rounded-xl flex items-center justify-center">
-                    <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-3 sm:p-5 hover:border-indigo-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
+            <div class="flex items-start justify-between mb-3 sm:mb-4">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-500/10 rounded-xl flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                 </div>
-                <span
-                    class="text-[9px] font-bold text-indigo-400 bg-indigo-400/5 border border-indigo-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Pool</span>
+                <span class="text-[9px] font-bold text-indigo-400 bg-indigo-400/5 border border-indigo-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Pool</span>
             </div>
-            <p class="text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['available_pool'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500">Available Orders</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['available_pool'] }}</p>
+            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Available Orders</p>
         </div>
 
         {{-- Active Jobs --}}
         <div
-            class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-5 hover:border-blue-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
-            <div class="flex items-start justify-between mb-4">
-                <div class="w-9 h-9 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+            class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-3 sm:p-5 hover:border-blue-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
+            <div class="flex items-start justify-between mb-3 sm:mb-4">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
-                <span
-                    class="text-[9px] font-bold text-blue-400 bg-blue-400/5 border border-blue-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Active</span>
+                <span class="text-[9px] font-bold text-blue-400 bg-blue-400/5 border border-blue-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Active</span>
             </div>
-            <p class="text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['active_jobs'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500">In Progress</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['active_jobs'] }}</p>
+            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">In Progress</p>
         </div>
 
         {{-- Total Checked Today --}}
         <div
-            class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
-            <div class="flex items-start justify-between mb-4">
-                <div class="w-9 h-9 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-3 sm:p-5 hover:border-emerald-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
+            <div class="flex items-start justify-between mb-3 sm:mb-4">
+                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <span
-                    class="text-[9px] font-bold text-emerald-400 bg-emerald-400/5 border border-emerald-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">All Time</span>
+                <span class="text-[9px] font-bold text-emerald-400 bg-emerald-400/5 border border-emerald-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">All Time</span>
             </div>
-            <p class="text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['total_delivered'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500">Total Delivered</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['total_delivered'] }}</p>
+            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Total Delivered</p>
         </div>
 
         {{-- Overdue --}}
         <div
-            class="group bg-[#FAFBFC] border @if($stats['overdue_count'] > 0) border-red-500/20 @else border-[#E2E6EA] @endif rounded-2xl p-5 hover:border-red-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
-            <div class="flex items-start justify-between mb-4">
+            class="group bg-[#FAFBFC] border @if($stats['overdue_count'] > 0) border-red-500/20 @else border-[#E2E6EA] @endif rounded-2xl p-3 sm:p-5 hover:border-red-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
+            <div class="flex items-start justify-between mb-3 sm:mb-4">
                 <div
-                    class="w-9 h-9 @if($stats['overdue_count'] > 0) bg-red-500/10 @else bg-gray-100 dark:bg-white/[0.05] @endif rounded-xl flex items-center justify-center">
-                    <svg class="w-4 h-4 @if($stats['overdue_count'] > 0) text-red-400 @else text-gray-400 dark:text-slate-500 @endif"
+                    class="w-8 h-8 sm:w-9 sm:h-9 @if($stats['overdue_count'] > 0) bg-red-500/10 @else bg-gray-100 dark:bg-white/[0.05] @endif rounded-xl flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 @if($stats['overdue_count'] > 0) text-red-400 @else text-gray-400 dark:text-slate-500 @endif"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 @if($stats['overdue_count'] > 0)
-                    <span class="text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-lg animate-pulse uppercase tracking-wider">Overdue</span>
+                    <span class="text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-lg animate-pulse uppercase tracking-wider">Late</span>
                 @endif
             </div>
-            <p
-                class="text-3xl font-bold @if($stats['overdue_count'] > 0) text-red-400 @else text-[#1A1D23] dark:text-white @endif tabular-nums">
+            <p class="text-2xl sm:text-3xl font-bold @if($stats['overdue_count'] > 0) text-red-400 @else text-[#1A1D23] dark:text-white @endif tabular-nums">
                 {{ $stats['overdue_count'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500">Overdue Tasks</p>
+            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Overdue Tasks</p>
         </div>
     </div>
 
     {{-- ===== PRIMARY CONTENT GRID ===== --}}
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-5">
 
         {{-- LEFT COLUMN (2/3 width) --}}
-        <div class="xl:col-span-2 space-y-5">
+        <div class="xl:col-span-2 space-y-4 sm:space-y-5 min-w-0">
 
             {{-- ===== MY WORKSPACE ===== --}}
             <div id="workspace" class="bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl overflow-hidden dark:bg-[#13151c] dark:border-white/[0.06]">
                 {{-- Header --}}
-                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/[0.04]">
+                <div class="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 dark:border-white/[0.04]">
                     <div class="flex items-center gap-2.5">
                         <div class="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
                         <h2 class="text-sm font-semibold text-gray-900 dark:text-white">My Workspace</h2>
@@ -155,20 +150,20 @@
                     <thead>
                         <tr
                             class="text-[9px] text-gray-400 font-semibold uppercase tracking-widest border-b border-gray-100 dark:text-slate-600 dark:border-white/[0.04]">
-                            <th class="text-left px-6 py-3 font-semibold">File</th>
-                            <th class="text-center px-4 py-3 font-semibold">Timer</th>
-                            <th class="text-center px-4 py-3 font-semibold">Status</th>
-                            <th class="text-right px-6 py-3 font-semibold">Actions</th>
+                            <th class="text-left px-3 sm:px-6 py-3 font-semibold">File</th>
+                            <th class="text-center px-2 sm:px-4 py-3 font-semibold hidden sm:table-cell">Timer</th>
+                            <th class="text-center px-2 sm:px-4 py-3 font-semibold hidden sm:table-cell">Status</th>
+                            <th class="text-right px-3 sm:px-6 py-3 font-semibold">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-white/[0.04]">
                         @forelse($myWorkspace as $order)
                             @php $isOverdue = $order->is_overdue; @endphp
                             <tr class="hover:bg-gray-50 transition-colors group dark:hover:bg-white/[0.02]">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
+                                <td class="px-3 sm:px-6 py-3 sm:py-4">
+                                    <div class="flex items-center gap-2 sm:gap-3">
                                         <div
-                                            class="w-8 h-8 bg-indigo-600/10 rounded-lg flex items-center justify-center text-indigo-400 flex-shrink-0">
+                                            class="w-7 h-7 sm:w-8 sm:h-8 bg-indigo-600/10 rounded-lg flex items-center justify-center text-indigo-400 flex-shrink-0">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -194,7 +189,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-4 text-center">
+                                <td class="px-2 sm:px-4 py-3 sm:py-4 text-center hidden sm:table-cell">
                                     @if($isOverdue)
                                         <span
                                             class="text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-lg animate-pulse">Overdue</span>
@@ -204,7 +199,7 @@
                                             data-due="{{ $order->due_at?->toIso8601String() }}">--:--</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-4 text-center">
+                                <td class="px-2 sm:px-4 py-3 sm:py-4 text-center hidden sm:table-cell">
                                     @if($isOverdue)
                                         <span
                                             class="inline-flex items-center gap-1 text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-full">
@@ -222,8 +217,8 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex items-center justify-end gap-2">
+                                <td class="px-3 sm:px-6 py-3 sm:py-4 text-right">
+                                    <div class="flex items-center justify-end gap-1.5 sm:gap-2">
                                         @if($order->files->first())
                                             <a href="{{ route('orders.files.download', [$order, $order->files->first()]) }}"
                                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:bg-white/[0.05] dark:border-white/[0.08] dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/[0.08] rounded-lg transition-all">
@@ -384,7 +379,7 @@
         </div>{{-- end left col --}}
 
         {{-- RIGHT COLUMN (1/3 width) --}}
-        <div class="space-y-5">
+        <div class="space-y-4 sm:space-y-5 min-w-0">
 
             {{-- Recent History --}}
             <div id="history" class="bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl overflow-hidden dark:bg-[#13151c] dark:border-white/[0.06]">
