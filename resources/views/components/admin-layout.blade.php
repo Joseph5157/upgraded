@@ -117,11 +117,11 @@
     </style>
 </head>
 
-<body class="bg-[#F0F2F5] antialiased dark:bg-[#050505]">
-    <div class="flex h-screen overflow-hidden">
+<body class="bg-[#F0F2F5] antialiased dark:bg-[#050505] overflow-x-hidden">
+    <div class="flex h-screen overflow-hidden overflow-x-hidden">
 
         {{-- 1. STICKY SIDEBAR --}}
-        <aside class="w-64 flex-shrink-0 bg-[#F7F8FA] border-r border-[#E2E6EA] flex flex-col dark:bg-[#0a0a0c] dark:border-white/5">
+        <aside class="hidden md:flex w-64 flex-shrink-0 bg-[#F7F8FA] border-r border-[#E2E6EA] flex-col dark:bg-[#0a0a0c] dark:border-white/5">
 
             {{-- Brand --}}
             <div class="p-6 border-b border-[#E2E6EA] dark:border-white/5">
@@ -248,8 +248,8 @@
         </aside>
 
         {{-- 2. INDEPENDENT SCROLLING CONTENT --}}
-        <main class="flex-1 h-full overflow-y-auto relative bg-[#F0F2F5] custom-scrollbar dark:bg-[#050505]">
-            <div class="p-10 max-w-[1600px] mx-auto space-y-12">
+        <main class="flex-1 h-full overflow-y-auto overflow-x-hidden relative bg-[#F0F2F5] custom-scrollbar dark:bg-[#050505] w-full min-w-0">
+            <div class="p-4 sm:p-6 lg:p-10 max-w-[1600px] mx-auto space-y-6 sm:space-y-12">
                 {{ $slot }}
             </div>
         </main>

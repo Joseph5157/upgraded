@@ -30,10 +30,10 @@
     </style>
 </head>
 
-<body class="h-screen flex bg-[#F0F2F5] text-[#111827] overflow-hidden dark:bg-[#0f1117] dark:text-slate-300">
+<body class="h-screen flex bg-[#F0F2F5] text-[#111827] overflow-hidden overflow-x-hidden dark:bg-[#0f1117] dark:text-slate-300">
 
     <!-- Sidebar -->
-    <aside class="w-64 flex-shrink-0 h-full border-r border-[#E2E6EA] flex flex-col pt-8 bg-[#F7F8FA] dark:bg-[#0a0a0c] dark:border-[#1e2030]">
+    <aside class="hidden md:flex w-64 flex-shrink-0 h-full border-r border-[#E2E6EA] flex-col pt-8 bg-[#F7F8FA] dark:bg-[#0a0a0c] dark:border-[#1e2030]">
         <div class="px-8 mb-12">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -76,7 +76,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto bg-[#F0F2F5] dark:bg-[#080810]">
+    <main class="flex-1 overflow-y-auto overflow-x-hidden bg-[#F0F2F5] dark:bg-[#080810] w-full min-w-0">
 
         <!-- Top Bar -->
         <header class="h-20 border-b border-[#E2E6EA] flex items-center justify-between px-10 bg-[#FAFBFC] sticky top-0 z-10 dark:bg-[#0a0a0c] dark:border-[#1e2030]">

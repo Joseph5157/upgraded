@@ -33,10 +33,10 @@
         .sidebar-link-active { background: rgba(99,102,241,0.1); color:#fff; border-right: 2px solid #6366f1; }
     </style>
 </head>
-<body class="h-screen flex bg-[#F0F2F5] text-[#111827] overflow-hidden">
+<body class="h-screen flex bg-[#F0F2F5] text-[#111827] overflow-hidden overflow-x-hidden">
 
     <!-- Sidebar — same as dashboard -->
-    <aside class="w-64 flex-shrink-0 h-full border-r border-[#E2E6EA] flex flex-col pt-8 bg-[#F7F8FA]">
+    <aside class="hidden md:flex w-64 flex-shrink-0 h-full border-r border-[#E2E6EA] flex-col pt-8 bg-[#F7F8FA]">
         <div class="px-8 mb-12">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -71,8 +71,8 @@
     </aside>
 
     <!-- Main -->
-    <main class="flex-1 overflow-y-auto bg-[#F0F2F5]">
-        <header class="h-20 border-b border-[#E2E6EA] flex items-center justify-between px-10 bg-[#FAFBFC] backdrop-blur-md sticky top-0 z-10">
+    <main class="flex-1 overflow-y-auto overflow-x-hidden bg-[#F0F2F5] w-full min-w-0">
+        <header class="h-20 border-b border-[#E2E6EA] flex items-center justify-between px-4 sm:px-6 lg:px-10 bg-[#FAFBFC] backdrop-blur-md sticky top-0 z-10">
             <div>
                 <h1 class="text-[#1A1D23] font-semibold">Subscription & Credits</h1>
                 <p class="text-[10px] text-[#9CA3AF] uppercase tracking-widest mt-0.5">Manage your plan and top-ups</p>
@@ -170,7 +170,7 @@
                     @csrf
                     <div>
                         <label class="block text-[10px] font-bold text-[#6B7280] uppercase tracking-widest mb-3">Select Package</label>
-                        <div class="grid grid-cols-3 gap-3 mb-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                             <button type="button" onclick="setSlots(50)"
                                 class="py-3 bg-[#F0F2F5] hover:bg-indigo-500/10 border border-[#E2E6EA] hover:border-indigo-500/30 rounded-xl text-xs font-bold text-[#1A1D23] hover:text-indigo-400 transition-all">50 Slots</button>
                             <button type="button" onclick="setSlots(100)"

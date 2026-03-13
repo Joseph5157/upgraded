@@ -9,7 +9,7 @@
     </div>
     {{-- Close button (mobile drawer only) --}}
     <button onclick="closeSidebar()"
-            class="lg:hidden w-7 h-7 bg-white/[0.04] border border-white/[0.06] rounded-lg flex items-center justify-center text-slate-500 hover:text-white transition-colors"
+            class="md:hidden w-7 h-7 bg-white/[0.04] border border-white/[0.06] rounded-lg flex items-center justify-center text-slate-500 hover:text-white transition-colors"
             aria-label="Close menu">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>

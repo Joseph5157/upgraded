@@ -29,7 +29,7 @@
     </style>
 </head>
 
-<body class="text-slate-300 min-h-screen">
+<body class="text-slate-300 min-h-screen overflow-x-hidden">
     <!-- Navbar -->
     <nav class="flex justify-between items-center px-8 py-4 border-b border-white/5">
         <div class="flex items-center gap-2">

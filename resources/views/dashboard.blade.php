@@ -5,7 +5,7 @@
     </div>
 
     {{-- ===== EARNINGS BANNER ===== --}}
-    <div class="grid grid-cols-3 gap-3 sm:gap-4 p-4 sm:p-5 bg-[#0f0f14] dark:bg-[#0f0f14] border border-white/[0.06] rounded-2xl">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 p-4 sm:p-5 bg-[#0f0f14] dark:bg-[#0f0f14] border border-white/[0.06] rounded-2xl">
         <div class="flex flex-col gap-1">
             <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Delivered</p>
             <p class="text-xl sm:text-3xl font-extrabold text-white font-mono tabular-nums">{{ $stats['total_delivered'] }}</p>
@@ -35,7 +35,7 @@
     </div>
 
     {{-- ===== STAT CARDS ===== --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
         {{-- Available Pool --}}
         <div
@@ -107,7 +107,7 @@
     </div>
 
     {{-- ===== PRIMARY CONTENT GRID ===== --}}
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-5">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
 
         {{-- LEFT COLUMN (2/3 width) --}}
         <div class="xl:col-span-2 space-y-4 sm:space-y-5 min-w-0">
@@ -146,7 +146,8 @@
                 </div>
 
                 {{-- Table --}}
-                <table class="w-full">
+                <div class="overflow-x-auto">
+                <table class="w-full min-w-0">
                     <thead>
                         <tr
                             class="text-[9px] text-gray-400 font-semibold uppercase tracking-widest border-b border-gray-100 dark:text-slate-600 dark:border-white/[0.04]">
@@ -302,6 +303,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
 
             {{-- ===== AVAILABLE FILES ===== --}}
@@ -469,7 +471,7 @@
                     </div>
 
                     {{-- TWO UPLOAD ZONES --}}
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
                         {{-- AI Report --}}
                         <div class="space-y-2">

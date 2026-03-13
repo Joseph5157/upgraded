@@ -75,6 +75,7 @@
                 </div>
 
                 @if($ledgers->count() > 0)
+                    <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
                             <tr
@@ -114,6 +115,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                     <div class="px-8 py-5 border-t border-white/[0.04]">
                         {{ $ledgers->links() }}
                     </div>

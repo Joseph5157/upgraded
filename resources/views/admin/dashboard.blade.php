@@ -26,7 +26,7 @@
     </div>
 
     {{-- System Pulse Metrics --}}
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div
             class="bg-[#F0F2F5] border border-[#E2E6EA] p-6 rounded-2xl group hover:border-green-500/20 transition-all dark:bg-[#0a0a0c] dark:border-white/5">
             <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 dark:text-slate-400">Pulse &bull; Files Today</p>

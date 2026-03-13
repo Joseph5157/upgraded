@@ -20,7 +20,7 @@
     </style>
 </head>
 
-<body class="bg-[#0f172a] text-slate-200 min-h-screen p-6">
+<body class="bg-[#0f172a] text-slate-200 min-h-screen p-4 sm:p-6 overflow-x-hidden">
     <div class="max-w-2xl mx-auto space-y-8 mt-12">
         <div class="glass p-8 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
             <div>

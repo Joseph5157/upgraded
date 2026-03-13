@@ -66,6 +66,7 @@
         {{-- ===== VENDORS TAB ===== --}}
         <div x-show="tab === 'vendors'" x-cloak>
             <div class="bg-[#F0F2F5] border border-[#E2E6EA] rounded-2xl overflow-hidden dark:bg-[#0a0a0c] dark:border-white/5">
+                <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-[#E2E6EA] dark:border-white/5">
@@ -179,12 +180,14 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 
         {{-- ===== CLIENTS TAB ===== --}}
         <div x-show="tab === 'clients'" x-cloak>
             <div class="bg-[#F0F2F5] border border-[#E2E6EA] rounded-2xl overflow-hidden dark:bg-[#0a0a0c] dark:border-white/5">
+                <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-[#E2E6EA] dark:border-white/5">
@@ -304,6 +307,7 @@
                         @endforelse
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
 

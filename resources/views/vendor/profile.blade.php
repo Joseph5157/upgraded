@@ -19,7 +19,7 @@
     @endif
 
     {{-- Two-column grid --}}
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {{-- ===== LEFT COLUMN (2/3) ===== --}}
         <div class="xl:col-span-2 space-y-5">

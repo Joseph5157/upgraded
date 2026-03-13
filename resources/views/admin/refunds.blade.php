@@ -14,6 +14,7 @@
     @endif
 
     <div class="bg-white border border-[#E8ECF0] rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
         <table class="w-full text-left">
             <thead>
                 <tr class="text-[9px] text-[#9CA3AF] font-bold uppercase tracking-[0.25em] border-b border-[#E8ECF0]">
@@ -80,6 +81,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
 </x-admin-layout>

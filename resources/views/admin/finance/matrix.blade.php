@@ -78,6 +78,7 @@
 
             {{-- Clients Table --}}
             <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl overflow-hidden">
+                <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
                         <tr
@@ -144,6 +145,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
         </main>
     </div>

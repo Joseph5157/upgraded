@@ -72,12 +72,12 @@
     </style>
 </head>
 
-<body class="h-screen flex bg-[#070709] text-slate-400 overflow-hidden">
+<body class="h-screen flex bg-[#070709] text-slate-400 overflow-hidden overflow-x-hidden">
 
     {{-- 
          SIDEBAR
      --}}
-    <aside class="w-[220px] flex-shrink-0 h-full border-r border-white/[0.05] flex flex-col bg-[#0b0b0f]">
+    <aside class="hidden md:flex w-[220px] flex-shrink-0 h-full border-r border-white/[0.05] flex-col bg-[#0b0b0f]">
 
         {{-- Brand --}}
         <div class="px-5 pt-6 pb-8">

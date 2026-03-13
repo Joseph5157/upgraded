@@ -50,29 +50,29 @@
     </style>
 </head>
 
-<body class="bg-[#0f1117] text-slate-300 antialiased dark:bg-[#0f1117]">
+<body class="bg-[#0f1117] text-slate-300 antialiased dark:bg-[#0f1117] overflow-x-hidden">
 
     {{-- ===== MOBILE SIDEBAR OVERLAY ===== --}}
     <div id="sidebar-overlay"
-         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
          onclick="closeSidebar()"></div>
 
     {{-- ===== MOBILE DRAWER SIDEBAR ===== --}}
     <aside id="mobile-sidebar"
-           class="fixed inset-y-0 left-0 z-50 w-64 bg-[#13151c] border-r border-white/[0.06] flex flex-col lg:hidden">
+           class="fixed inset-y-0 left-0 z-50 w-64 bg-[#13151c] border-r border-white/[0.06] flex flex-col md:hidden">
         @include('layouts._sidebar-nav')
     </aside>
 
     {{-- ===== MAIN LAYOUT ===== --}}
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden overflow-x-hidden">
 
         {{-- ===== DESKTOP SIDEBAR (hidden on mobile) ===== --}}
-        <aside class="hidden lg:flex w-[220px] flex-shrink-0 bg-[#13151c] border-r border-white/[0.06] flex-col h-full dark:bg-[#13151c] dark:border-white/[0.06]">
+        <aside class="hidden md:flex w-[220px] flex-shrink-0 bg-[#13151c] border-r border-white/[0.06] flex-col h-full dark:bg-[#13151c] dark:border-white/[0.06]">
             @include('layouts._sidebar-nav')
         </aside>
 
         {{-- ===== MAIN AREA ===== --}}
-        <div class="flex-1 flex flex-col overflow-hidden min-w-0">
+        <div class="flex-1 flex flex-col overflow-hidden overflow-x-hidden min-w-0 w-full">
 
             {{-- Top Bar --}}
             <header class="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-[#0f1117] border-b border-white/[0.06] flex-shrink-0 dark:bg-[#0f1117] dark:border-white/[0.06]">
@@ -81,7 +81,7 @@
                 <div class="flex items-center gap-3 min-w-0">
                     {{-- Hamburger — mobile only --}}
                     <button onclick="openSidebar()"
-                            class="lg:hidden flex-shrink-0 w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                            class="md:hidden flex-shrink-0 w-8 h-8 bg-white/[0.04] border border-white/[0.06] rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                             aria-label="Open menu">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -137,7 +137,7 @@
             </header>
 
             {{-- Scrollable content --}}
-            <main class="flex-1 overflow-y-auto px-3 sm:px-5 lg:px-8 py-4 sm:py-6 lg:py-7 space-y-4 sm:space-y-6 dark:bg-[#0f1117]">
+            <main class="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 lg:px-8 py-4 sm:py-6 lg:py-7 space-y-4 sm:space-y-6 dark:bg-[#0f1117] w-full min-w-0">
                 {{ $slot }}
             </main>
         </div>
