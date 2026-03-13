@@ -66,6 +66,8 @@ class DashboardController extends Controller
 
     public function claim(Order $order)
     {
+        $this->authorize('claim', $order);
+
         try {
             $this->workflowService->claim($order, auth()->user());
             $order->update(['claimed_at' => now()]);
@@ -77,9 +79,7 @@ class DashboardController extends Controller
 
     public function unclaim(Order $order)
     {
-        if ($order->claimed_by !== auth()->id()) {
-            return back()->with('error', 'You cannot release an order you have not claimed.');
-        }
+        $this->authorize('unclaim', $order);
 
         $order->update([
             'claimed_by' => null,
@@ -96,8 +96,10 @@ class DashboardController extends Controller
 
         try {
             if ($request->status === OrderStatus::Processing->value) {
+                $this->authorize('process', $order);
                 $this->workflowService->startProcessing($order, auth()->user());
             } elseif ($request->status === OrderStatus::Delivered->value) {
+                $this->authorize('deliver', $order);
                 $this->workflowService->deliver($order, auth()->user());
             }
 
@@ -109,6 +111,8 @@ class DashboardController extends Controller
 
     public function uploadReport(Request $request, Order $order)
     {
+        $this->authorize('uploadReport', $order);
+
         $request->validate([
             'ai_report'   => 'required|file|mimes:pdf|max:102400',
             'plag_report' => 'required|file|mimes:pdf|max:102400',

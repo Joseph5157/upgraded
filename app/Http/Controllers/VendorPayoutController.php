@@ -12,6 +12,8 @@ class VendorPayoutController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', VendorPayout::class);
+
         $payoutRate = config('services.portal.vendor_payout_per_order');
 
         // All vendors
@@ -51,6 +53,8 @@ class VendorPayoutController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', VendorPayout::class);
+
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:0.01',

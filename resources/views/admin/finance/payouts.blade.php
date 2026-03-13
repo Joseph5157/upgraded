@@ -96,11 +96,13 @@
                                     @endif
                                 </td>
                                 <td class="py-6 text-right px-4">
+                                    @can('create', \App\Models\VendorPayout::class)
                                     <button
                                         onclick="openPayModal({{ $row['vendor']->id }}, '{{ addslashes($row['vendor']->name) }}', {{ $row['balance'] }})"
                                         class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-xl border border-indigo-500/15 transition-all flex items-center gap-1.5">
                                         <i data-lucide="send" class="w-3.5 h-3.5"></i> Pay
                                     </button>
+                                    @endcan
                                 </td>
                             </tr>
                         @empty

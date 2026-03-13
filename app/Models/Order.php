@@ -20,6 +20,7 @@ class Order extends Model
         'source',
         'created_by_user_id',
         'client_link_id',
+        'release_count',
     ];
 
     protected $casts = [

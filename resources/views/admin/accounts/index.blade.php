@@ -140,34 +140,46 @@
                                             id="dropdown-{{ $vendor->id }}"
                                             class="hidden absolute right-0 top-10 z-50 bg-white border border-[#E2E6EA] rounded-2xl shadow-xl shadow-black/5 py-2 min-w-[180px] dark:bg-[#13151c] dark:border-white/10">
                                             @if($vendor->trashed())
+                                                @can('restore', $vendor)
                                                 <button type="button" onclick="setRestoreTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all">
                                                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Restore Account
                                                 </button>
+                                                @endcan
+                                                @can('forceDelete', $vendor)
                                                 <button type="button" onclick="setForceDeleteTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="skull" class="w-3.5 h-3.5"></i> Permanently Delete
                                                 </button>
+                                                @endcan
                                             @elseif($vendor->isFrozen())
+                                                @can('unfreeze', $vendor)
                                                 <button type="button" onclick="submitUnfreeze({{ $vendor->id }})"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-green-600 hover:bg-green-50 dark:hover:bg-green-500/10 transition-all">
                                                     <i data-lucide="unlock" class="w-3.5 h-3.5"></i> Unfreeze Account
                                                 </button>
+                                                @endcan
+                                                @can('delete', $vendor)
                                                 <div class="border-t border-[#E8ECF0] dark:border-white/5 my-1"></div>
                                                 <button type="button" onclick="setDeleteTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}', '{{ addslashes($vendor->email) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Account
                                                 </button>
+                                                @endcan
                                             @else
+                                                @can('freeze', $vendor)
                                                 <button type="button" onclick="setFreezeTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}', '{{ addslashes($vendor->email) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all">
                                                     <i data-lucide="lock" class="w-3.5 h-3.5"></i> Freeze Account
                                                 </button>
+                                                @endcan
+                                                @can('delete', $vendor)
                                                 <div class="border-t border-[#E8ECF0] dark:border-white/5 my-1"></div>
                                                 <button type="button" onclick="setDeleteTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}', '{{ addslashes($vendor->email) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Account
                                                 </button>
+                                                @endcan
                                             @endif
                                         </div>
                                     </div>
@@ -267,34 +279,46 @@
                                             id="dropdown-{{ $client->id }}"
                                             class="hidden absolute right-0 top-10 z-50 bg-white border border-[#E2E6EA] rounded-2xl shadow-xl shadow-black/5 py-2 min-w-[180px] dark:bg-[#13151c] dark:border-white/10">
                                             @if($client->trashed())
+                                                @can('restore', $client)
                                                 <button type="button" onclick="setRestoreTarget({{ $client->id }}, '{{ addslashes($client->name) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all">
                                                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Restore Account
                                                 </button>
+                                                @endcan
+                                                @can('forceDelete', $client)
                                                 <button type="button" onclick="setForceDeleteTarget({{ $client->id }}, '{{ addslashes($client->name) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="skull" class="w-3.5 h-3.5"></i> Permanently Delete
                                                 </button>
+                                                @endcan
                                             @elseif($client->isFrozen())
+                                                @can('unfreeze', $client)
                                                 <button type="button" onclick="submitUnfreeze({{ $client->id }})"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-green-600 hover:bg-green-50 dark:hover:bg-green-500/10 transition-all">
                                                     <i data-lucide="unlock" class="w-3.5 h-3.5"></i> Unfreeze Account
                                                 </button>
+                                                @endcan
+                                                @can('delete', $client)
                                                 <div class="border-t border-[#E8ECF0] dark:border-white/5 my-1"></div>
                                                 <button type="button" onclick="setDeleteTarget({{ $client->id }}, '{{ addslashes($client->name) }}', '{{ addslashes($client->email) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Account
                                                 </button>
+                                                @endcan
                                             @else
+                                                @can('freeze', $client)
                                                 <button type="button" onclick="setFreezeTarget({{ $client->id }}, '{{ addslashes($client->name) }}', '{{ addslashes($client->email) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all">
                                                     <i data-lucide="lock" class="w-3.5 h-3.5"></i> Freeze Account
                                                 </button>
+                                                @endcan
+                                                @can('delete', $client)
                                                 <div class="border-t border-[#E8ECF0] dark:border-white/5 my-1"></div>
                                                 <button type="button" onclick="setDeleteTarget({{ $client->id }}, '{{ addslashes($client->name) }}', '{{ addslashes($client->email) }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Account
                                                 </button>
+                                                @endcan
                                             @endif
                                         </div>
                                     </div>

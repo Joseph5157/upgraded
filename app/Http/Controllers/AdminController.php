@@ -12,12 +12,10 @@ class AdminController extends Controller
 {
     public function storeAccount(Request $request)
     {
-        // SECURITY CHECK 1: Only super admin can create admins
-        if ($request->role === 'admin' && ! auth()->user()->isSuperAdmin()) {
-            abort(403, 'Only SYSTEM_ROOT can create admin accounts.');
-        }
+        // Authorization: ensure the caller has permission to create an account with this role
+        $this->authorize('create', [User::class, $request->role]);
 
-        // SECURITY CHECK 2: Super admin password confirmation required for admin creation
+        // SECURITY CHECK: Super admin password confirmation required for admin creation
         if ($request->role === 'admin') {
             $request->validate([
                 'super_password' => ['required', 'string'],
@@ -89,9 +87,7 @@ class AdminController extends Controller
 
     public function promoteSuperAdmin(Request $request, User $user)
     {
-        if (! auth()->user()->isSuperAdmin()) {
-            abort(403);
-        }
+        $this->authorize('create-admin');
 
         if (User::where('is_super_admin', true)->where('id', '!=', $user->id)->exists()) {
             return back()->withErrors(['error' => 'A SYSTEM_ROOT already exists.']);

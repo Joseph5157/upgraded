@@ -13,20 +13,27 @@ class AutoReleaseOrdersCommand extends Command
 
     public function handle(): int
     {
-        $released = Order::where('status', OrderStatus::Processing)
+        // Fetch individually so we can increment release_count per order.
+        // release_count > 0 means a vendor already submitted to Turnitin —
+        // the client is not eligible for an automatic credit-slot refund.
+        $orders = Order::where('status', OrderStatus::Processing)
             ->whereNotNull('claimed_by')
             ->where('due_at', '<', now())
-            ->update([
-                'claimed_by' => null,
-                'claimed_at' => null,
-                'status'     => OrderStatus::Pending,
-            ]);
+            ->get();
 
-        if ($released > 0) {
-            $this->info("Released {$released} overdue order(s) back to the pending pool.");
-        } else {
-            $this->info('No overdue orders to release.');
+        foreach ($orders as $order) {
+            $order->update([
+                'claimed_by'    => null,
+                'claimed_at'    => null,
+                'status'        => OrderStatus::Pending,
+                'release_count' => $order->release_count + 1,
+            ]);
         }
+
+        $released = $orders->count();
+        $released > 0
+            ? $this->info("Released {$released} overdue order(s) back to the pending pool.")
+            : $this->info('No overdue orders to release.');
 
         return Command::SUCCESS;
     }

@@ -24,6 +24,13 @@ class RefundController extends Controller
             return back()->with('error', 'Refunds can only be requested for cancelled orders.');
         }
 
+        // A vendor already submitted the files to Turnitin (release_count > 0).
+        // The Turnitin submission was consumed — automatic credit refund is blocked.
+        // The client must contact admin for a manual review.
+        if ($order->release_count > 0) {
+            return back()->with('error', 'A vendor already processed this order in Turnitin. Automatic credit refund is not available — please contact admin for a manual review.');
+        }
+
         if ($order->refundRequest) {
             return back()->with('error', 'A refund request has already been submitted for this order.');
         }
@@ -46,6 +53,8 @@ class RefundController extends Controller
     // Admin approves refund — refunds the credit slot
     public function approve(Request $request, RefundRequest $refundRequest)
     {
+        $this->authorize('approve', $refundRequest);
+
         $request->validate([
             'admin_note' => 'nullable|string|max:500',
         ]);
@@ -76,6 +85,8 @@ class RefundController extends Controller
     // Admin rejects refund
     public function reject(Request $request, RefundRequest $refundRequest)
     {
+        $this->authorize('reject', $refundRequest);
+
         $request->validate([
             'admin_note' => 'nullable|string|max:500',
         ]);

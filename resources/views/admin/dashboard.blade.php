@@ -277,9 +277,9 @@
                         Type</label>
                     <select name="role" id="modal-role" onchange="toggleRoleFields()" required
                         class="w-full bg-[#F0F2F5] border border-[#E2E6EA] rounded-xl px-4 py-3 text-sm text-gray-900 focus:outline-none focus:border-red-500/50 appearance-none dark:bg-white/5 dark:border-white/10 dark:text-white">
-                        @if(auth()->user()->isSuperAdmin())
+                        @can('create-admin')
                         <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }} class="bg-[#FAFBFC]">System Admin</option>
-                        @endif
+                        @endcan
                         <option value="vendor" {{ old('role') === 'vendor' ? 'selected' : '' }} class="bg-[#FAFBFC]">
                             Processing Vendor</option>
                         <option value="client" {{ old('role') === 'client' ? 'selected' : '' }} class="bg-[#FAFBFC]">

@@ -38,7 +38,7 @@ class ClientDashboardController extends Controller
             $ordersQuery->where('created_by_user_id', $user->id);
         }
 
-        $orders = $ordersQuery->with(['report', 'files', 'client'])
+        $orders = $ordersQuery->with(['report', 'files', 'client', 'refundRequest'])
             ->latest()
             ->get();
 
@@ -131,7 +131,9 @@ class ClientDashboardController extends Controller
             abort(403);
         }
 
-        if ($order->claimed_by !== null) {
+        // Block cancellation only if the order is claimed AND the SLA has NOT expired.
+        // If the deadline has passed (vendor missed SLA), the client is allowed to force-cancel.
+        if ($order->claimed_by !== null && !$order->is_overdue) {
             return back()->with('error', 'This order has already been claimed by an agent and cannot be cancelled.');
         }
 

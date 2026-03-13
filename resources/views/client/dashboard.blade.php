@@ -475,7 +475,12 @@
                                             @php
                                                 $existingRefund = $order->refundRequest ?? null;
                                             @endphp
-                                            @if(!$existingRefund)
+                                            @if($order->release_count > 0)
+                                                {{-- Vendor already submitted to Turnitin — no auto-refund --}}
+                                                <span class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/[0.08] text-amber-400 text-[10px] font-bold rounded-lg border border-amber-500/[0.15]" title="A vendor processed this order in Turnitin. Contact admin for manual review.">
+                                                    <i data-lucide="alert-circle" class="w-3 h-3"></i> Contact Admin
+                                                </span>
+                                            @elseif(!$existingRefund)
                                                 <button onclick="openRefundModal({{ $order->id }})"
                                                     class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/[0.08] hover:bg-indigo-500/[0.15] text-indigo-400 text-[10px] font-bold rounded-lg border border-indigo-500/[0.15] transition-all">
                                                     <i data-lucide="refresh-cw" class="w-3 h-3"></i> Request Refund
@@ -508,7 +513,7 @@
                                                 @endif
                                             </div>
 
-                                            @if($order->due_at->isPast())
+                                            @if($order->due_at && $order->due_at->isPast())
                                                 <form method="POST" action="{{ route('client.orders.cancel', $order) }}">
                                                     @csrf
                                                     <button type="submit"

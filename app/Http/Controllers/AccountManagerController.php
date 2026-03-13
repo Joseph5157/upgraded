@@ -41,18 +41,7 @@ class AccountManagerController extends Controller
      */
     public function freeze(Request $request, User $user): RedirectResponse
     {
-        if ($user->role === 'admin') {
-            if (!auth()->user()->isSuperAdmin()) {
-                abort(403, 'Only SYSTEM_ROOT can freeze admin accounts.');
-            }
-            if ($user->isSuperAdmin()) {
-                abort(403, 'SYSTEM_ROOT account cannot be frozen.');
-            }
-        }
-
-        if ($user->id === auth()->id()) {
-            abort(403, 'You cannot freeze your own account.');
-        }
+        $this->authorize('freeze', $user);
 
         $request->validate([
             'reason' => ['required', 'string', 'max:255'],
@@ -78,6 +67,8 @@ class AccountManagerController extends Controller
      */
     public function unfreeze(User $user): RedirectResponse
     {
+        $this->authorize('unfreeze', $user);
+
         $user->update([
             'status'        => 'active',
             'frozen_at'     => null,
@@ -94,18 +85,7 @@ class AccountManagerController extends Controller
      */
     public function destroy(Request $request, User $user): RedirectResponse
     {
-        if ($user->role === 'admin') {
-            if (!auth()->user()->isSuperAdmin()) {
-                abort(403, 'Only SYSTEM_ROOT can delete admin accounts.');
-            }
-            if ($user->isSuperAdmin()) {
-                abort(403, 'SYSTEM_ROOT account cannot be deleted.');
-            }
-        }
-
-        if ($user->id === auth()->id()) {
-            abort(403, 'You cannot delete your own account.');
-        }
+        $this->authorize('delete', $user);
 
         if (! Hash::check($request->password, auth()->user()->password)) {
             return back()->withErrors(['password' => 'Incorrect password.']);
@@ -157,6 +137,8 @@ class AccountManagerController extends Controller
     public function restore(int $id): RedirectResponse
     {
         $user = User::withTrashed()->findOrFail($id);
+        $this->authorize('restore', $user);
+
         $user->restore();
 
         return back()->with('success', 'Account restored successfully.');
@@ -172,14 +154,7 @@ class AccountManagerController extends Controller
         }
 
         $user = User::withTrashed()->findOrFail($id);
-
-        if ($user->role === 'admin') {
-            abort(403, 'Cannot permanently delete admin accounts.');
-        }
-
-        if ($user->id === auth()->id()) {
-            abort(403, 'You cannot delete your own account.');
-        }
+        $this->authorize('forceDelete', $user);
 
         DB::table('sessions')
             ->where('user_id', $user->id)

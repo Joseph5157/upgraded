@@ -54,6 +54,7 @@
                         <td class="px-6 py-4 text-right">
                             @if($refund->status === 'pending')
                                 <div class="flex items-center justify-end gap-2">
+                                    @can('approve', $refund)
                                     <form method="POST" action="{{ route('admin.refunds.approve', $refund) }}">
                                         @csrf
                                         <button type="submit"
@@ -61,6 +62,8 @@
                                             Approve
                                         </button>
                                     </form>
+                                    @endcan
+                                    @can('reject', $refund)
                                     <form method="POST" action="{{ route('admin.refunds.reject', $refund) }}">
                                         @csrf
                                         <button type="submit"
@@ -68,6 +71,7 @@
                                             Reject
                                         </button>
                                     </form>
+                                    @endcan
                                 </div>
                             @else
                                 <span class="text-[9px] text-[#9CA3AF]">{{ $refund->resolved_at?->diffForHumans() }}</span>
