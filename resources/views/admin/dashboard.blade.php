@@ -173,7 +173,7 @@
                                     <span
                                         class="text-[10px] text-slate-500 font-mono flex-shrink-0">{{ $order->created_at->diffForHumans() }}</span>
                                 </div>
-                                <p class="text-[10px] text-slate-400 font-mono line-clamp-1">{{ $order->client->name }} &bull; {{ $order->files_count }} files</p>
+                                <p class="text-[10px] text-slate-400 font-mono line-clamp-1">{{ $order->client?->name ?? 'Unknown' }} &bull; {{ $order->files_count }} files</p>
                                 @if($order->vendor)
                                     <p class="text-[9px] text-red-500/50 font-bold uppercase tracking-widest">&rarr; {{ $order->vendor->name }}</p>
                                 @endif

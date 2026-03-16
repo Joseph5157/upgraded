@@ -106,9 +106,9 @@ class AccountManagerController extends Controller
                     'claimed_at' => null,
                 ]);
 
-            // Refund cancelled slots back to the client
+            // Restore consumed slot counter for orders that never completed
             if ($cancelledCount > 0) {
-                $client->increment('slots', $cancelledCount);
+                $client->decrement('slots_consumed', $cancelledCount);
             }
         }
 
