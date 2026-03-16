@@ -4,36 +4,6 @@
         <x-announcements-banner />
     </div>
 
-    {{-- ===== EARNINGS BANNER ===== --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 p-4 sm:p-5 bg-[#0f0f14] dark:bg-[#0f0f14] border border-white/[0.06] rounded-2xl">
-        <div class="flex flex-col gap-1">
-            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Delivered</p>
-            <p class="text-xl sm:text-3xl font-extrabold text-white font-mono tabular-nums">{{ $stats['total_delivered'] }}</p>
-            <p class="text-[10px] text-slate-500 font-semibold hidden sm:block">Orders completed</p>
-        </div>
-        <div class="flex flex-col gap-1">
-            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Earned</p>
-            <p class="text-xl sm:text-3xl font-extrabold text-emerald-400 font-mono tabular-nums">₹{{ number_format($stats['total_earned'], 0) }}</p>
-            <p class="text-[10px] text-slate-500 font-semibold hidden sm:block">₹{{ number_format(config('services.portal.vendor_payout_per_order', 30), 0) }} per order</p>
-        </div>
-        <div class="flex flex-col gap-1">
-            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">Payout</p>
-            <p class="text-xl sm:text-3xl font-extrabold font-mono tabular-nums @if($stats['balance'] > 0) text-amber-400 @else text-slate-600 @endif">
-                ₹{{ number_format($stats['balance'], 0) }}
-            </p>
-            <p class="text-[10px] text-slate-500 font-semibold hidden sm:block">₹{{ number_format($stats['total_paid'], 0) }} paid</p>
-        </div>
-        <div class="col-span-3 flex justify-end pt-2 border-t border-white/[0.06] mt-2">
-            <a href="{{ route('vendor.earnings') }}"
-                class="flex items-center gap-1.5 text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest transition-colors">
-                View Full Statement
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-            </a>
-        </div>
-    </div>
-
     {{-- ===== STAT CARDS ===== --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
 
@@ -68,7 +38,7 @@
             <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">In Progress</p>
         </div>
 
-        {{-- Total Checked Today --}}
+        {{-- Today Delivered --}}
         <div
             class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-3 sm:p-5 hover:border-emerald-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
             <div class="flex items-start justify-between mb-3 sm:mb-4">
@@ -78,13 +48,13 @@
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <span class="text-[9px] font-bold text-emerald-400 bg-emerald-400/5 border border-emerald-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">All Time</span>
+                <span class="text-[9px] font-bold text-emerald-400 bg-emerald-400/5 border border-emerald-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Today</span>
             </div>
-            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['total_delivered'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Total Delivered</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['total_checked_today'] }}</p>
+            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Delivered Today</p>
         </div>
 
-        {{-- Overdue --}}
+        {{-- Overdue + Total Delivered --}}
         <div
             class="group bg-[#FAFBFC] border @if($stats['overdue_count'] > 0) border-red-500/20 @else border-[#E2E6EA] @endif rounded-2xl p-3 sm:p-5 hover:border-red-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
             <div class="flex items-start justify-between mb-3 sm:mb-4">
@@ -103,6 +73,10 @@
             <p class="text-2xl sm:text-3xl font-bold @if($stats['overdue_count'] > 0) text-red-400 @else text-[#1A1D23] dark:text-white @endif tabular-nums">
                 {{ $stats['overdue_count'] }}</p>
             <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Overdue Tasks</p>
+            <div class="mt-2 pt-2 border-t border-white/[0.05] hidden sm:block">
+                <p class="text-[9px] text-slate-500 uppercase tracking-widest font-semibold">Total Delivered</p>
+                <p class="text-sm font-bold text-slate-300 tabular-nums mt-0.5">{{ $stats['total_delivered'] }}</p>
+            </div>
         </div>
     </div>
 

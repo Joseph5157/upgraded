@@ -21,26 +21,17 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         // Auto-Release is now handled by the orders:auto-release scheduled command.
-        // Vendor Dashboard Logic
-        $payoutRate    = config('services.portal.vendor_payout_per_order', 30);
-        $totalEarned   = $user->delivered_orders_count * $payoutRate;
-        $totalPaid     = \App\Models\VendorPayout::where('user_id', $user->id)->sum('amount');
-        $balance       = max(0, $totalEarned - $totalPaid);
-
         $stats = [
-            'available_pool'       => Order::where('status', OrderStatus::Pending)->whereNull('claimed_by')->count(),
-            'active_jobs'          => Order::where('status', OrderStatus::Processing)->where('claimed_by', $user->id)->count(),
-            'total_checked_today'  => Order::where('status', OrderStatus::Delivered)
+            'available_pool'      => Order::where('status', OrderStatus::Pending)->whereNull('claimed_by')->count(),
+            'active_jobs'         => Order::where('status', OrderStatus::Processing)->where('claimed_by', $user->id)->count(),
+            'total_checked_today' => Order::where('status', OrderStatus::Delivered)
                 ->where('claimed_by', $user->id)
                 ->whereDate('delivered_at', today())
                 ->count(),
-            'overdue_count'        => Order::whereNotIn('status', [OrderStatus::Delivered, OrderStatus::Cancelled])
+            'overdue_count'       => Order::whereNotIn('status', [OrderStatus::Delivered, OrderStatus::Cancelled])
                 ->where('due_at', '<', now())
                 ->count(),
-            'total_delivered'      => $user->delivered_orders_count,
-            'total_earned'         => $totalEarned,
-            'total_paid'           => $totalPaid,
-            'balance'              => $balance,
+            'total_delivered'     => $user->delivered_orders_count,
         ];
 
         $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
