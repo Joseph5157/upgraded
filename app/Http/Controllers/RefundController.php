@@ -65,8 +65,8 @@ class RefundController extends Controller
 
         $client = $refundRequest->client;
 
-        // Refund the credit slot by incrementing slots available
-        $client->increment('slots');
+        // Restore the credit slot by decrementing slots_consumed
+        $client->decrement('slots_consumed');
 
         // Reactivate client if they were suspended
         if ($client->status === 'suspended') {

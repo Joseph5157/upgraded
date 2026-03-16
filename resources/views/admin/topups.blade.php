@@ -58,7 +58,7 @@
                             </div>
                             <div>
                                 <h4 class="text-sm font-bold text-slate-200">{{ $topup->client->name }}</h4>
-                                <p class="text-[10px] text-slate-500 font-mono mt-0.5">{{ $topup->client->email ?? '—' }}</p>
+                                <p class="text-[10px] text-slate-500 font-mono mt-0.5">{{ $topup->client->user?->email ?? '—' }}</p>
                             </div>
                         </div>
 

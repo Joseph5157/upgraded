@@ -16,7 +16,7 @@
         </div>
         <div class="flex items-center gap-3">
             <span class="text-[9px] font-bold text-slate-600 uppercase tracking-widest font-mono">Vendor Rate:
-                ₹{{ number_format(\App\Http\Controllers\BillingController::VENDOR_PAYOUT_PER_ORDER, 0) }}/order</span>
+                ₹{{ number_format($payoutRate, 0) }}/order</span>
         </div>
     </div>
 
@@ -44,7 +44,7 @@
                     <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Vendor Payouts</p>
                     <h2 class="text-3xl font-bold text-white font-mono">₹{{ number_format($todayPayouts, 0) }}</h2>
                     <p class="text-[10px] text-slate-600 font-mono">@
-                        ₹{{ number_format(\App\Http\Controllers\BillingController::VENDOR_PAYOUT_PER_ORDER, 0) }}/order
+                        ₹{{ number_format($payoutRate, 0) }}/order
                     </p>
                 </div>
 
@@ -130,7 +130,6 @@
         <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl">
             <div class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-4">
-                    <div
                     <div class="w-10 h-10 bg-indigo-500/15 rounded-2xl flex items-center justify-center text-indigo-500">
                         <i data-lucide="book-open" class="w-5 h-5"></i>
                     </div>

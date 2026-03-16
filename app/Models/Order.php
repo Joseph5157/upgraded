@@ -21,6 +21,7 @@ class Order extends Model
         'created_by_user_id',
         'client_link_id',
         'release_count',
+        'claimed_at',
     ];
 
     protected $casts = [

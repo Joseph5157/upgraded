@@ -10,8 +10,6 @@ use Illuminate\Http\Request;
 
 class BillingController extends Controller
 {
-    const VENDOR_PAYOUT_PER_ORDER = 50; // ₹50 per order
-
     public function index()
     {
         $payoutRate = config('services.portal.vendor_payout_per_order');
@@ -42,6 +40,7 @@ class BillingController extends Controller
         $ledgers = DailyLedger::orderByDesc('date')->paginate(20);
 
         return view('admin.billing.index', compact(
+            'payoutRate',
             'todayRevenue',
             'todayPayouts',
             'todayProfit',
