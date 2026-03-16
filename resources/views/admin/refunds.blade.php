@@ -1,9 +1,9 @@
-﻿<x-admin-layout>
+<x-admin-layout>
 
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-lg font-bold text-[#1A1D23] tracking-tight">Refund Requests</h1>
-            <p class="text-[10px] text-[#9CA3AF] uppercase tracking-[0.25em] mt-0.5 font-mono">CLIENT CREDIT RECOVERIES</p>
+            <h1 class="text-lg font-bold text-white tracking-tight">Refund Requests</h1>
+            <p class="text-[10px] text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">CLIENT CREDIT RECOVERIES</p>
         </div>
     </div>
 
@@ -13,11 +13,11 @@
         </div>
     @endif
 
-    <div class="bg-white border border-[#E8ECF0] rounded-2xl overflow-hidden">
+    <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl overflow-hidden">
         <div class="overflow-x-auto">
         <table class="w-full text-left">
             <thead>
-                <tr class="text-[9px] text-[#9CA3AF] font-bold uppercase tracking-[0.25em] border-b border-[#E8ECF0]">
+                <tr class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/[0.04]">
                     <th class="pb-4 px-6 pt-5">Client</th>
                     <th class="pb-4 px-4 pt-5">Order</th>
                     <th class="pb-4 px-4 pt-5">Reason</th>
@@ -26,21 +26,21 @@
                     <th class="pb-4 px-6 pt-5 text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-[#E8ECF0]">
+            <tbody class="divide-y divide-white/[0.04]">
                 @forelse($refunds as $refund)
-                    <tr class="hover:bg-white/[0.01] transition-all">
+                    <tr class="hover:bg-white/[0.02] transition-all">
                         <td class="px-6 py-4">
-                            <p class="text-xs font-bold text-[#1A1D23]">{{ $refund->client->name }}</p>
-                            <p class="text-[9px] text-[#9CA3AF] font-mono">{{ $refund->user->email }}</p>
+                            <p class="text-xs font-bold text-slate-300">{{ $refund->client->name }}</p>
+                            <p class="text-[9px] text-slate-500 font-mono">{{ $refund->user->email }}</p>
                         </td>
                         <td class="px-4 py-4">
-                            <span class="text-[10px] font-mono text-[#6B7280]">#{{ $refund->order_id }}</span>
+                            <span class="text-[10px] font-mono text-slate-400">#{{ $refund->order_id }}</span>
                         </td>
                         <td class="px-4 py-4 max-w-[200px]">
-                            <p class="text-[10px] text-[#6B7280] truncate">{{ $refund->reason ?? '—' }}</p>
+                            <p class="text-[10px] text-slate-400 truncate">{{ $refund->reason ?? '—' }}</p>
                         </td>
                         <td class="px-4 py-4">
-                            <span class="text-[10px] text-[#9CA3AF] font-mono">{{ $refund->created_at->diffForHumans() }}</span>
+                            <span class="text-[10px] text-slate-500 font-mono">{{ $refund->created_at->diffForHumans() }}</span>
                         </td>
                         <td class="px-4 py-4">
                             @if($refund->status === 'pending')
@@ -74,13 +74,13 @@
                                     @endcan
                                 </div>
                             @else
-                                <span class="text-[9px] text-[#9CA3AF]">{{ $refund->resolved_at?->diffForHumans() }}</span>
+                                <span class="text-[9px] text-slate-500">{{ $refund->resolved_at?->diffForHumans() }}</span>
                             @endif
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-14 text-center text-xs text-[#9CA3AF]">No refund requests yet.</td>
+                        <td colspan="6" class="px-6 py-14 text-center text-xs text-slate-500">No refund requests yet.</td>
                     </tr>
                 @endforelse
             </tbody>
