@@ -1,29 +1,3 @@
-:root {
-  --bg-app: #f6f7fb;
-  --bg-surface: #ffffff;
-  --bg-subtle: #f1f3f9;
-  --border-soft: #e6e8f0;
-  --text-heading: #0f172a;
-  --text-body: #334155;
-  --text-muted: #64748b;
-  --brand: #4f46e5;
-}
-
-html, body {
-  color: var(--text-body);
-}
-
-.font-premium-heading {
-  font-family: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
-  color: var(--text-heading);
-}
-
-.font-premium-body {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-}
-
-.bg-app-soft { background-color: var(--bg-app); }
-.bg-surface-soft { background-color: var(--bg-surface); }
-.bg-subtle-soft { background-color: var(--bg-subtle); }
-.border-soft { border-color: var(--border-soft); }
-.text-muted-soft { color: var(--text-muted); }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
