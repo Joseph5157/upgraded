@@ -68,16 +68,6 @@ class OrderPolicy
     }
 
     /**
-     * Determine if the client user can cancel the order.
-     */
-    public function cancel(User $user, Order $order): bool
-    {
-        return $user->role === 'client'
-            && (int) $user->client_id === (int) $order->client_id
-            && $order->status !== OrderStatus::Delivered;
-    }
-
-    /**
      * Determine if the client user can delete the order.
      */
     public function delete(User $user, Order $order): bool

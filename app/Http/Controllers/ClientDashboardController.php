@@ -122,49 +122,6 @@ class ClientDashboardController extends Controller
         return redirect()->route('client.dashboard')->with('success', 'Order created successfully. Tracking ID: ' . $tokenView);
     }
 
-    public function cancel(Order $order)
-    {
-        $user = Auth::user();
-        $client = $user->client;
-
-        if ($order->client_id !== $client->id || $order->created_by_user_id !== $user->id) {
-            abort(403);
-        }
-
-        // Block cancellation only if the order is claimed AND the SLA has NOT expired.
-        // If the deadline has passed (vendor missed SLA), the client is allowed to force-cancel.
-        if ($order->claimed_by !== null && !$order->is_overdue) {
-            return back()->with('error', 'This order has already been claimed by an agent and cannot be cancelled.');
-        }
-
-        DB::transaction(function () use ($order, $client) {
-            $order->update([
-                'status'     => OrderStatus::Cancelled,
-                'claimed_by' => null,
-                'claimed_at' => null,
-            ]);
-
-            // Delete all files from disk permanently
-            foreach ($order->files as $file) {
-                Storage::delete($file->file_path);
-            }
-
-            // Delete the entire order folder
-            Storage::deleteDirectory('orders/' . $order->id);
-
-            // Delete file records from database
-            $order->files()->delete();
-
-            // On cancel: decrement consumed because service was never rendered
-            $client->decrement('slots_consumed');
-            if ($client->status === 'suspended' && $client->fresh()->slots_consumed < $client->slots) {
-                $client->update(['status' => 'active']);
-            }
-        });
-
-        return back()->with('success', 'Order cancelled. Your credit slot has been refunded.');
-    }
-
     public function destroyFile(Order $order, OrderFile $file)
     {
         $user = Auth::user();

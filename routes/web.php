@@ -57,10 +57,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:client', 'account.status'])->prefix('client')->name('client.')->group(function () {
         Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
         Route::post('/dashboard/upload', [ClientDashboardController::class, 'store'])->name('dashboard.upload');
-        Route::post('/orders/{order}/cancel', [ClientDashboardController::class, 'cancel'])->name('orders.cancel');
         Route::delete('/orders/{order}/delete', [ClientDashboardController::class, 'destroy'])->name('orders.delete');
         Route::delete('/orders/{order}/files/{file}', [ClientDashboardController::class, 'destroyFile'])->name('orders.files.delete');
-        Route::post('/orders/{order}/refund', [RefundController::class, 'store'])->name('orders.refund');
         Route::post('/topup', [TopupRequestController::class, 'store'])->name('topup.store');
         Route::get('/subscription', [ClientSubscriptionController::class, 'index'])->name('subscription');
     });

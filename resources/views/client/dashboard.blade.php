@@ -480,16 +480,11 @@
                                                 <span class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/[0.08] text-amber-400 text-[10px] font-bold rounded-lg border border-amber-500/[0.15]" title="A vendor processed this order in Turnitin. Contact admin for manual review.">
                                                     <i data-lucide="alert-circle" class="w-3 h-3"></i> Contact Admin
                                                 </span>
-                                            @elseif(!$existingRefund)
-                                                <button onclick="openRefundModal({{ $order->id }})"
-                                                    class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/[0.08] hover:bg-indigo-500/[0.15] text-indigo-400 text-[10px] font-bold rounded-lg border border-indigo-500/[0.15] transition-all">
-                                                    <i data-lucide="refresh-cw" class="w-3 h-3"></i> Request Refund
-                                                </button>
-                                            @elseif($existingRefund->status === 'pending')
+                                            @elseif($existingRefund && $existingRefund->status === 'pending')
                                                 <span class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/[0.08] text-amber-400 text-[10px] font-bold rounded-lg border border-amber-500/[0.15]">
                                                     <i data-lucide="clock" class="w-3 h-3"></i> Refund Pending
                                                 </span>
-                                            @elseif($existingRefund->status === 'approved')
+                                            @elseif($existingRefund && $existingRefund->status === 'approved')
                                                 <span class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/[0.08] text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-500/[0.15]">
                                                     <i data-lucide="check-circle" class="w-3 h-3"></i> Refund Approved
                                                 </span>
@@ -513,29 +508,6 @@
                                                 @endif
                                             </div>
 
-                                            @if($order->due_at && $order->due_at->isPast())
-                                                <form method="POST" action="{{ route('client.orders.cancel', $order) }}">
-                                                    @csrf
-                                                    <button type="submit"
-                                                        onclick="return confirm('Cancel this order? Your credit slot will be refunded.')"
-                                                        class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/[0.08] hover:bg-red-500/[0.15] text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-red-500/[0.15] transition-all">
-                                                        <i data-lucide="x-circle" class="w-3 h-3"></i> Cancel
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <div id="timer-wrap-{{ $order->id }}"
-                                                    class="inline-flex flex-col items-center gap-0.5 px-4 py-2 bg-indigo-500/[0.08] rounded-xl border border-indigo-500/[0.18]"
-                                                    style="min-width:80px">
-                                                    <div class="flex items-center gap-1.5">
-                                                        <i data-lucide="clock" class="w-3.5 h-3.5 text-indigo-400"></i>
-                                                        <span class="countdown-timer text-[18px] font-mono font-extrabold text-indigo-300 tabular-nums tracking-tight leading-none"
-                                                            data-due="{{ $order->due_at->toIso8601String() }}"
-                                                            data-order-id="{{ $order->id }}"
-                                                            data-cancel-url="{{ route('client.orders.cancel', $order) }}">--:--</span>
-                                                    </div>
-                                                    <span class="text-[8px] font-bold text-indigo-500/60 uppercase tracking-widest">SLA Timer</span>
-                                                </div>
-                                            @endif
                                         </div>
                                     @endif
                                 </div>
@@ -650,48 +622,7 @@
         </div>
     </div>
 
-    {{-- 
-         REFUND MODAL
-     --}}
-    <div id="refund-modal"
-        class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onclick="if(event.target===this)this.classList.add('hidden')">
-        <div class="bg-[#0f0f14] border border-white/[0.08] rounded-3xl w-full max-w-md p-7 shadow-2xl" onclick="event.stopPropagation()">
-
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-indigo-500/[0.1] rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/[0.2]">
-                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-[15px] font-bold text-white">Request Refund</h3>
-                        <p class="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">Credit Slot Recovery</p>
-                    </div>
-                </div>
-                <button onclick="document.getElementById('refund-modal').classList.add('hidden')"
-                    class="text-slate-600 hover:text-slate-300 transition-colors p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <form id="refund-form" action="#" method="POST" class="space-y-5">
-                @csrf
-                <div>
-                    <label class="block text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-2">Reason for Refund</label>
-                    <textarea name="reason" rows="3" required
-                        placeholder="Explain why you are requesting a refund..."
-                        class="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors placeholder-slate-700 resize-none"></textarea>
-                </div>
-                <button type="submit"
-                    class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold uppercase tracking-[0.25em] rounded-xl transition-all flex justify-center items-center gap-2">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                    Submit Refund Request
-                </button>
-            </form>
-        </div>
-    </div>
-
-    {{-- 
+    {{--
          UPLOAD STAGING
      --}}
     <script>
@@ -750,36 +681,7 @@
     <script>
         lucide.createIcons();
 
-        //  Timers 
-        function updateTimers() {
-            document.querySelectorAll('.countdown-timer').forEach(timer => {
-                const dueAt     = new Date(timer.dataset.due).getTime();
-                const diff      = dueAt - Date.now();
-                const orderId   = timer.dataset.orderId;
-                const cancelUrl = timer.dataset.cancelUrl;
-                const wrap      = document.getElementById('timer-wrap-' + orderId);
-
-                if (diff <= 0 && wrap) {
-                    wrap.outerHTML = `
-                        <form method="POST" action="${cancelUrl}" onsubmit="return confirm('Cancel this order? Your credit slot will be refunded.')">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="flex items-center gap-1.5 px-4 py-2.5 bg-red-500/[0.08] hover:bg-red-500/[0.15] text-red-400 text-[11px] font-bold uppercase tracking-widest rounded-xl border border-red-500/[0.2] transition-all">
-                                <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> Cancel Order
-                            </button>
-                        </form>`;
-                    lucide.createIcons();
-                    return;
-                }
-
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                timer.textContent = `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-            });
-        }
-        setInterval(updateTimers, 1000);
-        updateTimers();
-
-        //  Top-up 
+        //  Top-up
         const pricePerSlot = {{ $client->price_per_file ?? 0 }};
 
         function setSlots(n) {
@@ -792,11 +694,6 @@
             document.getElementById('price-display').textContent = '₹' + (n * pricePerSlot).toLocaleString('en-IN');
         }
 
-        //  Refund Modal 
-        function openRefundModal(orderId) {
-            document.getElementById('refund-form').action = '/client/orders/' + orderId + '/refund';
-            document.getElementById('refund-modal').classList.remove('hidden');
-        }
     </script>
 </body>
 </html>
