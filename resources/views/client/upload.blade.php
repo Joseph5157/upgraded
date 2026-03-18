@@ -129,7 +129,7 @@
                             <label for="files"
                                 class="group block border-2 border-dashed border-white/5 rounded-3xl p-12 text-center hover:border-indigo-600/50 transition-all cursor-pointer bg-white/[0.02]">
                                 <input type="file" name="files[]" id="files" multiple required class="hidden"
-                                    onchange="this.form.submit()">
+                                    onchange="updateFileCount(this)">
                                 <div
                                     class="w-16 h-16 bg-indigo-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                                     <i data-lucide="cloud-upload" class="w-8 h-8 text-indigo-500"></i>
@@ -144,6 +144,13 @@
                                         Non-Repository</span>
                                 </div>
                             </label>
+                            <div id="file-info" class="hidden mt-4 items-center justify-between gap-3">
+                                <span id="file-count-text" class="text-[11px] text-slate-400 font-semibold"></span>
+                                <button type="submit"
+                                    class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold rounded-xl transition-all">
+                                    Submit Order
+                                </button>
+                            </div>
                         </form>
                     @endif
 
@@ -213,15 +220,15 @@
                                 <td class="py-6">
                                     <span
                                         class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border
-                                                                @if($order->status == 'delivered') bg-green-500/5 text-green-500 border-green-500/10
+                                                                @if($order->status->value === 'delivered') bg-green-500/5 text-green-500 border-green-500/10
                                                                 @elseif($order->computed_status == 'overdue') bg-red-500/5 text-red-500 border-red-500/10
-                                                                @elseif($order->status == 'processing') bg-blue-500/5 text-blue-400 border-blue-500/10
+                                                                @elseif($order->status->value === 'processing') bg-blue-500/5 text-blue-400 border-blue-500/10
                                                                 @else bg-slate-500/5 text-slate-400 border-slate-500/10 @endif">
-                                        @if($order->status == 'delivered')
+                                        @if($order->status->value === 'delivered')
                                             Ready
                                         @elseif($order->computed_status == 'overdue')
                                             Overdue
-                                        @elseif($order->status == 'processing')
+                                        @elseif($order->status->value === 'processing')
                                             Processing
                                         @else
                                             Pending
@@ -230,22 +237,7 @@
                                 </td>
                                 <td class="py-6">
                                     <div class="flex justify-end gap-3">
-                                        @if($order->ai_percentage !== null)
-                                            <div
-                                                class="px-4 py-1.5 bg-red-500/5 text-red-500 rounded-xl text-[10px] font-bold border border-red-500/10 flex items-center gap-2">
-                                                <i data-lucide="cpu" class="w-3 h-3"></i> AI: {{ (int) $order->ai_percentage }}%
-                                            </div>
-                                        @endif
-
-                                        @if($order->plag_percentage !== null)
-                                            <div
-                                                class="px-4 py-1.5 bg-blue-500/5 text-blue-400 rounded-xl text-[10px] font-bold border border-blue-500/10 flex items-center gap-2">
-                                                <i data-lucide="fingerprint" class="w-3 h-3"></i> Plag:
-                                                {{ (int) $order->plag_percentage }}%
-                                            </div>
-                                        @endif
-
-                                        @if($order->status == 'delivered' && $order->report)
+                                        @if($order->status->value === 'delivered' && $order->report)
                                             <a href="{{ route('client.download', $order->token_view) }}"
                                                 class="px-4 py-1.5 bg-[#ffd700]/5 text-[#ffd700] rounded-xl text-[10px] font-bold border border-[#ffd700]/10 flex items-center gap-2 hover:bg-[#ffd700]/10 transition-all">
                                                 <i data-lucide="download" class="w-3 h-3"></i> Report
@@ -343,6 +335,20 @@
 
     <script>
         lucide.createIcons();
+
+        function updateFileCount(input) {
+            const count = input.files.length;
+            const info  = document.getElementById('file-info');
+            const text  = document.getElementById('file-count-text');
+            if (count > 0) {
+                text.textContent = count + ' file' + (count > 1 ? 's' : '') + ' selected';
+                info.classList.remove('hidden');
+                info.classList.add('flex');
+            } else {
+                info.classList.add('hidden');
+                info.classList.remove('flex');
+            }
+        }
 
         function updateTimers() {
             const timers = document.querySelectorAll('.countdown-timer');

@@ -47,8 +47,7 @@ class OrderController extends Controller
                     throw new \Exception('Your plan has expired on ' . $client->plan_expiry->format('d M Y') . '. Please contact Admin to renew.');
                 }
 
-                $totalOrders = $client->orders()->count();
-                if ($client->status === 'suspended' || $totalOrders >= $client->slots) {
+                if ($client->status === 'suspended' || $client->slots_consumed >= $client->slots) {
                     throw new \Exception('Insufficient credits. You have reached your limit of ' . $client->slots . ' files. Please contact Admin for a refill.');
                 }
 
@@ -72,7 +71,11 @@ class OrderController extends Controller
                     ]);
                 }
 
-                if ($client->orders()->count() >= $client->slots) {
+                // Increment permanent consumed counter — consistent with account-based uploads
+                $client->increment('slots_consumed');
+
+                // Suspend if consumed all slots
+                if ($client->fresh()->slots_consumed >= $client->slots) {
                     $client->update(['status' => 'suspended']);
                 }
 
@@ -124,10 +127,11 @@ class OrderController extends Controller
             $order->report()->delete();
             $order->delete();
 
-            // Unsuspend client if deleting a non-delivered order brought them back under the limit
+            // Restore slot and potentially un-suspend if order was not delivered (service not rendered)
             if (!$wasDelivered) {
                 $client = \App\Models\Client::find($link->client_id);
-                if ($client->status === 'suspended' && $client->orders()->count() < $client->slots) {
+                $client->decrement('slots_consumed');
+                if ($client->status === 'suspended' && $client->fresh()->slots_consumed < $client->slots) {
                     $client->update(['status' => 'active']);
                 }
             }

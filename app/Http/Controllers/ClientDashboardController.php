@@ -88,7 +88,8 @@ class ClientDashboardController extends Controller
                 ]);
 
                 foreach ($request->file('files') as $file) {
-                    $originalName = $file->getClientOriginalName();
+                    $originalName = basename($file->getClientOriginalName());
+                    $originalName = preg_replace('/[^\w.\-]/', '_', $originalName);
                     $path = $file->storeAs('orders/' . $order->id, $originalName);
                     OrderFile::create([
                         'order_id'  => $order->id,
@@ -133,6 +134,10 @@ class ClientDashboardController extends Controller
 
         if ($file->order_id !== $order->id) {
             abort(403);
+        }
+
+        if (in_array($order->status, [\App\Enums\OrderStatus::Processing, \App\Enums\OrderStatus::Delivered])) {
+            abort(403, 'Files cannot be deleted while the order is being processed or has been delivered.');
         }
 
         Storage::delete($file->file_path);

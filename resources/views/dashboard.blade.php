@@ -562,35 +562,45 @@
             progressBar.classList.remove('hidden');
             progressBar.classList.add('flex');
 
-            const xhr = new XMLHttpRequest();
+            // Refresh CSRF token first to handle long-lived sessions
+            fetch('/csrf-refresh')
+                .then(r => r.json())
+                .then(data => {
+                    const tokenField = form.querySelector('input[name="_token"]');
+                    if (tokenField) tokenField.value = data.token;
+                })
+                .catch(() => { /* proceed with existing token on fetch failure */ })
+                .finally(() => {
+                    const xhr = new XMLHttpRequest();
 
-            xhr.upload.onprogress = function (e) {
-                if (!e.lengthComputable) return;
-                const pct = Math.round((e.loaded / e.total) * 100);
-                fill.style.width    = pct + '%';
-                pctText.textContent = pct + '%';
-            };
+                    xhr.upload.onprogress = function (e) {
+                        if (!e.lengthComputable) return;
+                        const pct = Math.round((e.loaded / e.total) * 100);
+                        fill.style.width    = pct + '%';
+                        pctText.textContent = pct + '%';
+                    };
 
-            xhr.onload = function () {
-                // Follow the redirect URL that the server returned after processing
-                window.location.href = xhr.responseURL || window.location.href;
-            };
+                    xhr.onload = function () {
+                        // Follow the redirect URL that the server returned after processing
+                        window.location.href = xhr.responseURL || window.location.href;
+                    };
 
-            xhr.onerror = function () {
-                // Re-enable on network error
-                submitBtn.disabled  = false;
-                cancelBtn.disabled  = false;
-                submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
-                progressBar.classList.add('hidden');
-                progressBar.classList.remove('flex');
-                readyStrip.classList.remove('hidden');
-                readyStrip.classList.add('flex');
-                alert('Network error — please try again.');
-            };
+                    xhr.onerror = function () {
+                        // Re-enable on network error
+                        submitBtn.disabled  = false;
+                        cancelBtn.disabled  = false;
+                        submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
+                        progressBar.classList.add('hidden');
+                        progressBar.classList.remove('flex');
+                        readyStrip.classList.remove('hidden');
+                        readyStrip.classList.add('flex');
+                        alert('Network error — please try again.');
+                    };
 
-            xhr.open('POST', form.action);
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            xhr.send(new FormData(form));
+                    xhr.open('POST', form.action);
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    xhr.send(new FormData(form));
+                });
         }
     </script>
 

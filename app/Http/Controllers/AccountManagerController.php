@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -95,13 +96,13 @@ class AccountManagerController extends Controller
             $client = $user->client;
 
             $cancelledCount = Order::where('client_id', $client->id)
-                ->whereIn('status', ['pending', 'processing'])
+                ->whereIn('status', [OrderStatus::Pending->value, OrderStatus::Processing->value])
                 ->count();
 
             Order::where('client_id', $client->id)
-                ->whereIn('status', ['pending', 'processing'])
+                ->whereIn('status', [OrderStatus::Pending->value, OrderStatus::Processing->value])
                 ->update([
-                    'status'     => 'cancelled',
+                    'status'     => OrderStatus::Cancelled->value,
                     'claimed_by' => null,
                     'claimed_at' => null,
                 ]);
@@ -114,11 +115,11 @@ class AccountManagerController extends Controller
 
         if ($user->role === 'vendor') {
             Order::where('claimed_by', $user->id)
-                ->whereIn('status', ['pending', 'processing'])
+                ->whereIn('status', [OrderStatus::Pending->value, OrderStatus::Processing->value])
                 ->update([
                     'claimed_by' => null,
                     'claimed_at' => null,
-                    'status'     => 'pending',
+                    'status'     => OrderStatus::Pending->value,
                 ]);
         }
 

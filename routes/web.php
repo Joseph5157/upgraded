@@ -48,7 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('csrf.refresh');
 
     // Vendor/Admin Dashboard Routes
-    Route::middleware(['role:vendor', 'account.status'])->group(function () {
+    Route::middleware(['role:vendor,admin', 'account.status'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/orders/{order}/claim', [DashboardController::class, 'claim'])->name('orders.claim');
         Route::post('/orders/{order}/unclaim', [DashboardController::class, 'unclaim'])->name('orders.unclaim');

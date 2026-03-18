@@ -14,7 +14,7 @@ class RoleMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (!Auth::check()) {
             return redirect()->route('login');
@@ -22,8 +22,8 @@ class RoleMiddleware
 
         $user = Auth::user();
 
-        // Exact role match only — never let a wrong role through
-        if ($user->role === $role) {
+        // Allow if the user's role is in the permitted roles list
+        if (in_array($user->role, $roles)) {
             return $next($request);
         }
 

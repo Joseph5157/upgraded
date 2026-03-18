@@ -43,7 +43,7 @@ class NotificationService
 
     private function buildOrderNotificationMessage(Order $order): string
     {
-        $clientName = $order->client->name ?? 'Unknown Client';
+        $clientName = $this->escapeMarkdown($order->client->name ?? 'Unknown Client');
         $dueTime = $order->due_at ? $order->due_at->format('M d, Y H:i') : 'Not set';
         $trackingId = $order->token_view;
         
@@ -56,7 +56,7 @@ class NotificationService
         $message .= " *Source:* " . ucfirst($order->source) . "\n";
         
         if ($order->notes) {
-            $notes = mb_substr($order->notes, 0, 100);
+            $notes = $this->escapeMarkdown(mb_substr($order->notes, 0, 100));
             $message .= " *Notes:* {$notes}\n";
         }
         
@@ -68,6 +68,11 @@ class NotificationService
         $message .= "\n [Open Dashboard]({$dashboardUrl})";
         
         return $message;
+    }
+
+    private function escapeMarkdown(string $text): string
+    {
+        return str_replace(['_', '*', '[', '`'], ['\_', '\*', '\[', '\`'], $text);
     }
 
     public function notifyOrderStatusChange(Order $order, string $oldStatus, string $newStatus): void
@@ -91,11 +96,11 @@ class NotificationService
 
             $message = "{$statusEmoji} *Order Status Updated*\n\n";
             $message .= " *Order:* #{$order->id}\n";
-            $message .= " *Client:* {$order->client->name}\n";
+            $message .= " *Client:* " . $this->escapeMarkdown($order->client->name) . "\n";
             $message .= " *Status:* {$oldStatus}  *{$newStatus}*\n";
             
             if ($order->vendor) {
-                $message .= " *Vendor:* {$order->vendor->name}\n";
+                $message .= " *Vendor:* " . $this->escapeMarkdown($order->vendor->name) . "\n";
             }
 
             Http::timeout(5)

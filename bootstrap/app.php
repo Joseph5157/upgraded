@@ -19,9 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckAccountStatus::class,
         ]);
-        $middleware->validateCsrfTokens(except: [
-            'u/*', // Exempt public link uploads (use token auth)
-        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
