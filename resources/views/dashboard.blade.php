@@ -462,15 +462,26 @@
                         <p class="text-[10px] text-emerald-400 font-semibold">Both reports selected — ready to submit.</p>
                     </div>
 
+                    {{-- Upload progress bar (shown during XHR upload) --}}
+                    <div id="upload-progress-{{ $order->id }}" class="hidden flex-col gap-1.5 px-3.5 py-2.5 bg-indigo-500/[0.06] border border-indigo-500/[0.12] rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <p class="text-[10px] text-indigo-400 font-semibold">Uploading reports…</p>
+                            <span id="upload-progress-text-{{ $order->id }}" class="text-[10px] text-indigo-400 font-bold tabular-nums">0%</span>
+                        </div>
+                        <div class="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                            <div id="upload-progress-fill-{{ $order->id }}" class="h-full bg-indigo-500 rounded-full transition-[width] duration-150" style="width:0%"></div>
+                        </div>
+                    </div>
+
                     {{-- Buttons --}}
                     <div class="flex gap-3 pt-1">
-                        <button type="button"
+                        <button type="button" id="cancel-btn-{{ $order->id }}"
                             onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.add('hidden')"
                             class="px-5 py-2.5 text-[11px] font-semibold text-slate-500 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-xl transition-all border border-white/[0.06]">
                             Cancel
                         </button>
-                        <button type="submit"
-                            onclick="this.disabled=true; this.innerHTML='<svg class=\'w-3.5 h-3.5 animate-spin\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\'\'/></svg> Uploading…';"
+                        <button type="button" id="submit-btn-{{ $order->id }}"
+                            onclick="submitUploadForm({{ $order->id }})"
                             class="flex-1 py-2.5 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
                             <i data-lucide="send" class="w-3.5 h-3.5"></i>
                             Submit Both Reports
@@ -531,6 +542,55 @@
                 bar.classList.remove('hidden');
                 bar.classList.add('flex');
             }
+        }
+
+        function submitUploadForm(orderId) {
+            const modal       = document.getElementById('upload-modal-' + orderId);
+            const form        = modal.querySelector('form');
+            const submitBtn   = document.getElementById('submit-btn-' + orderId);
+            const cancelBtn   = document.getElementById('cancel-btn-' + orderId);
+            const readyStrip  = document.getElementById('progress-' + orderId);
+            const progressBar = document.getElementById('upload-progress-' + orderId);
+            const fill        = document.getElementById('upload-progress-fill-' + orderId);
+            const pctText     = document.getElementById('upload-progress-text-' + orderId);
+
+            // Lock the UI
+            submitBtn.disabled = true;
+            cancelBtn.disabled = true;
+            submitBtn.innerHTML = 'Uploading…';
+            readyStrip.classList.add('hidden');
+            progressBar.classList.remove('hidden');
+            progressBar.classList.add('flex');
+
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.onprogress = function (e) {
+                if (!e.lengthComputable) return;
+                const pct = Math.round((e.loaded / e.total) * 100);
+                fill.style.width    = pct + '%';
+                pctText.textContent = pct + '%';
+            };
+
+            xhr.onload = function () {
+                // Follow the redirect URL that the server returned after processing
+                window.location.href = xhr.responseURL || window.location.href;
+            };
+
+            xhr.onerror = function () {
+                // Re-enable on network error
+                submitBtn.disabled  = false;
+                cancelBtn.disabled  = false;
+                submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
+                progressBar.classList.add('hidden');
+                progressBar.classList.remove('flex');
+                readyStrip.classList.remove('hidden');
+                readyStrip.classList.add('flex');
+                alert('Network error — please try again.');
+            };
+
+            xhr.open('POST', form.action);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.send(new FormData(form));
         }
     </script>
 

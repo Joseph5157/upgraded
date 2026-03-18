@@ -118,11 +118,13 @@ class DashboardController extends Controller
                 'plag_report_path' => $plagPath,
             ]);
 
-            if ($order->fresh()->status === OrderStatus::Pending) {
-                $this->workflowService->startProcessing($order->fresh(), auth()->user());
+            $freshOrder = $order->fresh();
+            if ($freshOrder->status === OrderStatus::Pending) {
+                $this->workflowService->startProcessing($freshOrder, auth()->user());
+                $freshOrder->refresh();
             }
 
-            $this->workflowService->deliver($order->fresh(), auth()->user());
+            $this->workflowService->deliver($freshOrder, auth()->user());
 
             return back()->with('success', 'Both reports uploaded. Order delivered successfully.');
         } catch (\Exception $e) {
