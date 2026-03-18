@@ -126,9 +126,9 @@ class DashboardController extends Controller
 
             $this->workflowService->deliver($freshOrder, auth()->user());
 
-            return back()->with('success', 'Both reports uploaded. Order delivered successfully.');
+            return redirect()->route('dashboard')->with('success', 'Both reports uploaded. Order delivered successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect()->route('dashboard')->with('error', $e->getMessage());
         }
     }
 
