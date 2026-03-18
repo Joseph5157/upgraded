@@ -172,6 +172,20 @@
         document.querySelectorAll('#mobile-sidebar a').forEach(function(el) {
             el.addEventListener('click', closeSidebar);
         });
+        // CSRF token refresh — silently renew every 30 minutes so long sessions never 419
+        function refreshCsrfToken() {
+            fetch('/csrf-refresh', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    document.querySelectorAll('input[name="_token"]').forEach(function(el) {
+                        el.value = data.token;
+                    });
+                    var meta = document.querySelector('meta[name="csrf-token"]');
+                    if (meta) meta.setAttribute('content', data.token);
+                })
+                .catch(function() {});
+        }
+        setInterval(refreshCsrfToken, 30 * 60 * 1000);
     </script>
 </body>
 

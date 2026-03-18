@@ -42,6 +42,11 @@ Route::middleware('throttle:30,1')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // CSRF token refresh endpoint — keeps long-lived sessions valid
+    Route::get('/csrf-refresh', function () {
+        return response()->json(['token' => csrf_token()]);
+    })->name('csrf.refresh');
+
     // Vendor/Admin Dashboard Routes
     Route::middleware(['role:vendor', 'account.status'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
