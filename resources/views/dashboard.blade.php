@@ -98,25 +98,6 @@
                                 class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/15 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{{ $myWorkspace->count() }}</span>
                         @endif
                     </div>
-                    @if($myWorkspace->count() > 0)
-                        @php
-                            $minutes = $myWorkspace->map(function ($order) {
-                                return $order->due_at ? max(0, now()->diffInMinutes($order->due_at, false)) : 0;
-                            })->sort()->values()->pipe(function ($sorted) {
-                                $count = $sorted->count();
-                                if ($count === 0) return 0;
-                                $middle = floor($count / 2);
-                                return $count % 2 ? $sorted[$middle] : ($sorted[$middle - 1] + $sorted[$middle]) / 2;
-                            });
-                        @endphp
-                        <div class="flex items-center gap-1.5 text-[10px] font-semibold @if($minutes < 5) text-red-400 @else text-[#6B7280] @endif">
-                            <svg class="w-3 h-3 @if($minutes < 5) text-red-500 @else text-indigo-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            ~{{ round($minutes) }} min ETA (Median)
-                        </div>
-                    @endif
                 </div>
 
                 {{-- Table --}}
@@ -126,7 +107,6 @@
                         <tr
                             class="text-[9px] text-gray-400 font-semibold uppercase tracking-widest border-b border-gray-100 dark:text-slate-600 dark:border-white/[0.04]">
                             <th class="text-left px-3 sm:px-6 py-3 font-semibold">File</th>
-                            <th class="text-center px-2 sm:px-4 py-3 font-semibold hidden sm:table-cell">Timer</th>
                             <th class="text-center px-2 sm:px-4 py-3 font-semibold hidden sm:table-cell">Status</th>
                             <th class="text-right px-3 sm:px-6 py-3 font-semibold">Actions</th>
                         </tr>
@@ -163,16 +143,6 @@
                                             @endif
                                         </div>
                                     </div>
-                                </td>
-                                <td class="px-2 sm:px-4 py-3 sm:py-4 text-center hidden sm:table-cell">
-                                    @if($isOverdue)
-                                        <span
-                                            class="text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-lg animate-pulse">Overdue</span>
-                                    @else
-                                        <span
-                                            class="workspace-timer text-xs font-mono font-bold text-indigo-400 tabular-nums bg-indigo-500/5 border border-indigo-500/10 px-2 py-1 rounded-lg"
-                                            data-due="{{ $order->due_at?->toIso8601String() }}">--:--</span>
-                                    @endif
                                 </td>
                                 <td class="px-2 sm:px-4 py-3 sm:py-4 text-center hidden sm:table-cell">
                                     @if($isOverdue)
@@ -511,20 +481,56 @@
     @endif
 @endforeach
 
-    {{-- Workspace timers --}}
     <script>
-        function updateWorkspaceTimers() {
-            document.querySelectorAll('.workspace-timer').forEach(el => {
-                if (!el.dataset.due) return;
-                const diff = new Date(el.dataset.due).getTime() - Date.now();
-                if (diff <= 0) { el.textContent = '00:00'; return; }
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-            });
+        function previewFile(input, previewId, labelId, color, orderId) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const preview = document.getElementById(previewId);
+            const label   = document.getElementById(labelId);
+            const name    = file.name.length > 24 ? file.name.slice(0, 21) + '...' : file.name;
+
+            const colorMap = {
+                red: {
+                    text:         'text-red-400',
+                    iconBg:       'bg-red-500/[0.12]',
+                    iconBorder:   'border-red-500/[0.25]',
+                    labelBorder:  'border-red-500/30',
+                    labelBg:      'bg-red-500/[0.05]',
+                },
+                amber: {
+                    text:         'text-amber-400',
+                    iconBg:       'bg-amber-500/[0.12]',
+                    iconBorder:   'border-amber-500/[0.25]',
+                    labelBorder:  'border-amber-500/30',
+                    labelBg:      'bg-amber-500/[0.05]',
+                },
+            };
+            const c = colorMap[color];
+
+            // Replace zone content with checkmark + filename
+            preview.innerHTML = `
+                <div class="w-9 h-9 ${c.iconBg} rounded-xl flex items-center justify-center border ${c.iconBorder}">
+                    <svg class="w-4 h-4 ${c.text}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <span class="text-[9px] font-bold ${c.text} tracking-wide text-center leading-tight max-w-full px-1 break-all">${name}</span>
+            `;
+
+            // Swap zone to "selected" state — solid border + tinted bg
+            label.classList.remove('border-dashed', 'border-white/[0.08]', 'bg-white/[0.03]');
+            label.classList.add(c.labelBorder, c.labelBg);
+
+            // Show the green "ready to submit" strip when BOTH files are chosen
+            const aiInput   = document.querySelector('#ai-label-'   + orderId + ' input[type="file"]');
+            const plagInput = document.querySelector('#plag-label-' + orderId + ' input[type="file"]');
+            const bar       = document.getElementById('progress-' + orderId);
+            if (aiInput && plagInput && aiInput.files.length && plagInput.files.length) {
+                bar.classList.remove('hidden');
+                bar.classList.add('flex');
+            }
         }
-        setInterval(updateWorkspaceTimers, 1000);
-        updateWorkspaceTimers();
     </script>
 
 </x-vendor-layout>

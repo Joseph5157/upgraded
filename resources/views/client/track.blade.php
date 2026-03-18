@@ -72,8 +72,11 @@
                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                 </div>
                 <h2 class="text-xl font-bold">Processing...</h2>
-                <p class="text-slate-400">Our agents are working on your documents. This page will auto-refresh when
-                    complete.</p>
+                <p class="text-slate-400">Our agents are working on your documents. This page checks for updates automatically.</p>
+                <div class="flex items-center justify-center gap-2 mt-1">
+                    <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                    <span id="refresh-badge" class="text-[11px] font-semibold text-blue-400 tracking-wide">Checking for updates in 60s…</span>
+                </div>
             </div>
         @endif
 
@@ -122,11 +125,23 @@
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
-        // Auto-refresh when status is not delivered
+        // Auto-refresh with live badge — stops once delivered
         if (status !== 'delivered') {
-            setTimeout(() => {
-                window.location.reload();
-            }, 60000); // 60 seconds — consistent with client dashboard
+            let refreshIn = 60;
+            const badge = document.getElementById('refresh-badge');
+
+            const pollTick = setInterval(() => {
+                refreshIn--;
+                if (badge) {
+                    badge.textContent = refreshIn > 0
+                        ? `Checking for updates in ${refreshIn}s…`
+                        : 'Checking…';
+                }
+                if (refreshIn <= 0) {
+                    clearInterval(pollTick);
+                    window.location.reload();
+                }
+            }, 1000);
         }
     </script>
 </body>
