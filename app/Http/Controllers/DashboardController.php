@@ -134,9 +134,15 @@ class DashboardController extends Controller
 
     public function downloadFile(Order $order, \App\Models\OrderFile $file)
     {
-        // Only vendors/admins can download order files
+        // Ensure the file belongs to this order
         if ($file->order_id !== $order->id) {
             abort(404);
+        }
+
+        // Only the vendor who claimed this order (or an admin) may download its files
+        $user = auth()->user();
+        if ($user->role !== 'admin' && (int) $order->claimed_by !== (int) $user->id) {
+            abort(403);
         }
 
         if (!Storage::exists($file->file_path)) {

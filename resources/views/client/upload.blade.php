@@ -114,28 +114,38 @@
                     </div>
                     <p class="text-[10px] font-bold text-slate-500 mb-6 font-mono">MAX 3MB | 30,000 WORDS</p>
 
-                    <form action="{{ route('client.store', $link->token) }}" method="POST"
-                        enctype="multipart/form-data">
-                        @csrf
-                        <label for="files"
-                            class="group block border-2 border-dashed border-white/5 rounded-3xl p-12 text-center hover:border-indigo-600/50 transition-all cursor-pointer bg-white/[0.02]">
-                            <input type="file" name="files[]" id="files" multiple required class="hidden"
-                                onchange="this.form.submit()">
-                            <div
-                                class="w-16 h-16 bg-indigo-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                <i data-lucide="cloud-upload" class="w-8 h-8 text-indigo-500"></i>
+                    @if($client->plan_expiry && $client->plan_expiry->isPast())
+                        <div class="border-2 border-dashed border-red-500/20 rounded-3xl p-12 text-center bg-red-500/[0.03]">
+                            <div class="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="ban" class="w-8 h-8 text-red-500/60"></i>
                             </div>
-                            <h3 class="text-white font-bold mb-1">Click to Browse</h3>
-                            <p class="text-[10px] text-slate-500 font-mono uppercase">Supports PDF, DOC, DOCX</p>
+                            <h3 class="text-red-400 font-bold mb-1">Plan Expired</h3>
+                            <p class="text-[10px] text-slate-500 font-mono uppercase">Contact Admin to renew your plan</p>
+                        </div>
+                    @else
+                        <form action="{{ route('client.store', $link->token) }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <label for="files"
+                                class="group block border-2 border-dashed border-white/5 rounded-3xl p-12 text-center hover:border-indigo-600/50 transition-all cursor-pointer bg-white/[0.02]">
+                                <input type="file" name="files[]" id="files" multiple required class="hidden"
+                                    onchange="this.form.submit()">
+                                <div
+                                    class="w-16 h-16 bg-indigo-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <i data-lucide="cloud-upload" class="w-8 h-8 text-indigo-500"></i>
+                                </div>
+                                <h3 class="text-white font-bold mb-1">Click to Browse</h3>
+                                <p class="text-[10px] text-slate-500 font-mono uppercase">Supports PDF, DOC, DOCX</p>
 
-                            <div
-                                class="mt-6 inline-flex items-center gap-2 bg-green-500/5 px-4 py-2 rounded-full border border-green-500/10">
-                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                                <span class="text-[10px] text-green-500 font-bold uppercase tracking-widest">100%
-                                    Non-Repository</span>
-                            </div>
-                        </label>
-                    </form>
+                                <div
+                                    class="mt-6 inline-flex items-center gap-2 bg-green-500/5 px-4 py-2 rounded-full border border-green-500/10">
+                                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                                    <span class="text-[10px] text-green-500 font-bold uppercase tracking-widest">100%
+                                        Non-Repository</span>
+                                </div>
+                            </label>
+                        </form>
+                    @endif
 
                     <div class="mt-8 space-y-4">
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Turnitin Scan Filters:

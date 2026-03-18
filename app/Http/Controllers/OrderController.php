@@ -43,6 +43,10 @@ class OrderController extends Controller
                 // Lock the client row to prevent concurrent slot over-use
                 $client = \App\Models\Client::where('id', $link->client_id)->lockForUpdate()->first();
 
+                if ($client->plan_expiry && $client->plan_expiry->isPast()) {
+                    throw new \Exception('Your plan has expired on ' . $client->plan_expiry->format('d M Y') . '. Please contact Admin to renew.');
+                }
+
                 $totalOrders = $client->orders()->count();
                 if ($client->status === 'suspended' || $totalOrders >= $client->slots) {
                     throw new \Exception('Insufficient credits. You have reached your limit of ' . $client->slots . ' files. Please contact Admin for a refill.');
@@ -98,7 +102,9 @@ class OrderController extends Controller
             abort(403);
         }
 
-        DB::transaction(function () use ($order) {
+        $wasDelivered = $order->status === OrderStatus::Delivered;
+
+        DB::transaction(function () use ($order, $link, $wasDelivered) {
             foreach ($order->files as $file) {
                 Storage::delete($file->file_path);
             }
@@ -117,6 +123,14 @@ class OrderController extends Controller
             $order->files()->delete();
             $order->report()->delete();
             $order->delete();
+
+            // Unsuspend client if deleting a non-delivered order brought them back under the limit
+            if (!$wasDelivered) {
+                $client = \App\Models\Client::find($link->client_id);
+                if ($client->status === 'suspended' && $client->orders()->count() < $client->slots) {
+                    $client->update(['status' => 'active']);
+                }
+            }
         });
 
         return redirect()->route('client.upload', $token)->with('success', 'Order deleted successfully.');
