@@ -473,6 +473,12 @@
                         </div>
                     </div>
 
+                    {{-- Error strip (shown on server-side failure) --}}
+                    <div id="error-strip-{{ $order->id }}" class="hidden items-center gap-2.5 px-3.5 py-2.5 bg-red-500/[0.06] border border-red-500/[0.15] rounded-xl">
+                        <svg class="w-3.5 h-3.5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p id="error-msg-{{ $order->id }}" class="text-[10px] text-red-400 font-semibold"></p>
+                    </div>
+
                     {{-- Buttons --}}
                     <div class="flex gap-3 pt-1">
                         <button type="button" id="cancel-btn-{{ $order->id }}"
@@ -482,7 +488,8 @@
                         </button>
                         <button type="button" id="submit-btn-{{ $order->id }}"
                             onclick="submitUploadForm({{ $order->id }})"
-                            class="flex-1 py-2.5 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
+                            disabled
+                            class="flex-1 py-2.5 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
                             <i data-lucide="send" class="w-3.5 h-3.5"></i>
                             Submit Both Reports
                         </button>
@@ -534,13 +541,15 @@
             label.classList.remove('border-dashed', 'border-white/[0.08]', 'bg-white/[0.03]');
             label.classList.add(c.labelBorder, c.labelBg);
 
-            // Show the green "ready to submit" strip when BOTH files are chosen
+            // Show the green "ready to submit" strip and enable Submit when BOTH files are chosen
             const aiInput   = document.querySelector('#ai-label-'   + orderId + ' input[type="file"]');
             const plagInput = document.querySelector('#plag-label-' + orderId + ' input[type="file"]');
             const bar       = document.getElementById('progress-' + orderId);
+            const btn       = document.getElementById('submit-btn-' + orderId);
             if (aiInput && plagInput && aiInput.files.length && plagInput.files.length) {
                 bar.classList.remove('hidden');
                 bar.classList.add('flex');
+                if (btn) btn.disabled = false;
             }
         }
 
@@ -581,8 +590,63 @@
                     };
 
                     xhr.onload = function () {
-                        // Follow the redirect URL that the server returned after processing
-                        window.location.href = xhr.responseURL || window.location.href;
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            // Try to parse as JSON (our AJAX handler response)
+                            try {
+                                const data = JSON.parse(xhr.responseText);
+                                if (data.error) {
+                                    // Server returned a business-logic error — show it in the modal
+                                    const errStrip = document.getElementById('error-strip-' + orderId);
+                                    const errMsg   = document.getElementById('error-msg-' + orderId);
+                                    if (errStrip && errMsg) {
+                                        errMsg.textContent = data.error;
+                                        errStrip.classList.remove('hidden');
+                                        errStrip.classList.add('flex');
+                                    }
+                                    submitBtn.disabled  = false;
+                                    cancelBtn.disabled  = false;
+                                    submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
+                                    progressBar.classList.add('hidden');
+                                    progressBar.classList.remove('flex');
+                                    return;
+                                }
+                                // Success — stash the message for display after redirect
+                                if (data.success) sessionStorage.setItem('upload_success', data.success);
+                                window.location.href = data.redirect || xhr.responseURL || '/dashboard';
+                                return;
+                            } catch (e) {
+                                // Not JSON — XHR followed a normal redirect, navigate to final URL
+                            }
+                            window.location.href = xhr.responseURL || window.location.href;
+                        } else {
+                            // HTTP 4xx / 5xx — re-enable the form and show an inline error
+                            submitBtn.disabled  = false;
+                            cancelBtn.disabled  = false;
+                            submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
+                            progressBar.classList.add('hidden');
+                            progressBar.classList.remove('flex');
+                            readyStrip.classList.remove('hidden');
+                            readyStrip.classList.add('flex');
+
+                            const errStrip = document.getElementById('error-strip-' + orderId);
+                            const errMsg   = document.getElementById('error-msg-' + orderId);
+                            if (errStrip && errMsg) {
+                                let msg = 'Upload failed. Please try again.';
+                                if (xhr.status === 419) {
+                                    msg = 'Session expired — please refresh the page and try again.';
+                                } else if (xhr.status === 422) {
+                                    try {
+                                        const d = JSON.parse(xhr.responseText);
+                                        msg = d.error || d.message || (d.errors && Object.values(d.errors)[0]?.[0]) || msg;
+                                    } catch (e) {}
+                                } else if (xhr.status === 403) {
+                                    msg = 'You are not authorized to upload for this order.';
+                                }
+                                errMsg.textContent = msg;
+                                errStrip.classList.remove('hidden');
+                                errStrip.classList.add('flex');
+                            }
+                        }
                     };
 
                     xhr.onerror = function () {

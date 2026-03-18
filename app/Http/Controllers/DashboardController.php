@@ -124,6 +124,10 @@ class DashboardController extends Controller
             $aiPath   = $request->file('ai_report')->store('reports/' . $order->id . '/ai');
             $plagPath = $request->file('plag_report')->store('reports/' . $order->id . '/plag');
 
+            if (!$aiPath || !$plagPath) {
+                throw new \Exception('Failed to save the report files to storage. Please try again or contact support.');
+            }
+
             $this->workflowService->uploadReport($order, auth()->user(), [
                 'ai_report_path'   => $aiPath,
                 'plag_report_path' => $plagPath,
@@ -137,8 +141,19 @@ class DashboardController extends Controller
 
             $this->workflowService->deliver($freshOrder, auth()->user());
 
+            if ($request->ajax()) {
+                return response()->json([
+                    'redirect' => route('dashboard'),
+                    'success'  => 'Both reports uploaded. Order delivered successfully.',
+                ]);
+            }
+
             return redirect()->route('dashboard')->with('success', 'Both reports uploaded. Order delivered successfully.');
         } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
+
             return redirect()->route('dashboard')->with('error', $e->getMessage());
         }
     }

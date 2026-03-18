@@ -172,6 +172,18 @@
         document.querySelectorAll('#mobile-sidebar a').forEach(function(el) {
             el.addEventListener('click', closeSidebar);
         });
+        // Show success flash stored by XHR-based report uploads (sessionStorage avoids flash consumption bug)
+        (function () {
+            var msg = sessionStorage.getItem('upload_success');
+            if (!msg) return;
+            sessionStorage.removeItem('upload_success');
+            var main = document.querySelector('main');
+            if (!main) return;
+            var el = document.createElement('div');
+            el.className = 'flex items-center gap-3 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-400 text-xs font-semibold';
+            el.innerHTML = '<svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg><span>' + msg + '</span>';
+            main.insertBefore(el, main.firstChild);
+        })();
         // CSRF token refresh — silently renew every 30 minutes so long sessions never 419
         function refreshCsrfToken() {
             fetch('/csrf-refresh', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })

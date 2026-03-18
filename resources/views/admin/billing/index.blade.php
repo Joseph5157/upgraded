@@ -140,9 +140,6 @@
                     </div>
                 </div>
                 <div class="flex gap-3">
-                    <form action="/admin/billing/close" method="POST" class="inline">
-                        @csrf
-                    </form>
                     <p class="text-[9px] text-slate-600 font-bold mt-2">Run <code
                             class="bg-white/5 px-1.5 py-0.5 rounded font-mono text-indigo-400 border border-white/10">php artisan app:close-day</code>
                         to save today's snapshot.</p>
