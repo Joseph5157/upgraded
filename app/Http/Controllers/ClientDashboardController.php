@@ -16,10 +16,23 @@ use Illuminate\Support\Facades\Storage;
 class ClientDashboardController extends Controller
 {
     protected $notificationService;
+    protected string $storageDisk = 'r2';
 
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
+    }
+
+    protected function downloadFromDisk(string $path, string $downloadName)
+    {
+        $stream = Storage::disk($this->storageDisk)->readStream($path);
+
+        return response()->streamDownload(function () use ($stream) {
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, $downloadName);
     }
     public function index()
     {
@@ -90,10 +103,11 @@ class ClientDashboardController extends Controller
                 foreach ($request->file('files') as $file) {
                     $originalName = basename($file->getClientOriginalName());
                     $originalName = preg_replace('/[^\w.\-]/', '_', $originalName);
-                    $path = $file->storeAs('orders/' . $order->id, $originalName);
+                    $path = $file->storeAs('orders/' . $order->id, $originalName, $this->storageDisk);
                     OrderFile::create([
                         'order_id'  => $order->id,
                         'file_path' => $path,
+                        'disk'      => $this->storageDisk,
                     ]);
                 }
 
@@ -140,7 +154,7 @@ class ClientDashboardController extends Controller
             abort(403, 'Files cannot be deleted while the order is being processed or has been delivered.');
         }
 
-        Storage::delete($file->file_path);
+        Storage::disk($file->disk ?: $this->storageDisk)->delete($file->file_path);
         $file->delete();
 
         return back()->with('success', 'File deleted successfully.');
@@ -161,19 +175,24 @@ class ClientDashboardController extends Controller
         DB::transaction(function () use ($order, $client, $wasDelivered) {
             // Delete uploaded files from disk
             foreach ($order->files as $file) {
-                Storage::delete($file->file_path);
+                Storage::disk($file->disk ?: $this->storageDisk)->delete($file->file_path);
             }
-            Storage::deleteDirectory('orders/' . $order->id);
+            foreach ($order->files->pluck('disk')->filter()->push($this->storageDisk)->unique() as $disk) {
+                Storage::disk($disk)->deleteDirectory('orders/' . $order->id);
+            }
 
             // Delete report PDFs from disk (AI + Plag)
             if ($order->report) {
                 if ($order->report->ai_report_path) {
-                    Storage::delete($order->report->ai_report_path);
+                    Storage::disk($order->report->ai_report_disk ?: $this->storageDisk)->delete($order->report->ai_report_path);
                 }
                 if ($order->report->plag_report_path) {
-                    Storage::delete($order->report->plag_report_path);
+                    Storage::disk($order->report->plag_report_disk ?: $this->storageDisk)->delete($order->report->plag_report_path);
                 }
-                Storage::deleteDirectory('reports/' . $order->id);
+                collect([$order->report->ai_report_disk, $order->report->plag_report_disk, $this->storageDisk])
+                    ->filter()
+                    ->unique()
+                    ->each(fn ($disk) => Storage::disk($disk)->deleteDirectory('reports/' . $order->id));
             }
 
             // Delete DB records

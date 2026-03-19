@@ -89,7 +89,9 @@ class OrderWorkflowService
                 ['order_id' => $order->id],
                 [
                     'ai_report_path'   => $data['ai_report_path'],
+                    'ai_report_disk'   => $data['ai_report_disk'] ?? 'r2',
                     'plag_report_path' => $data['plag_report_path'],
+                    'plag_report_disk' => $data['plag_report_disk'] ?? 'r2',
                 ]
             );
 

@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
     protected $workflowService;
+    protected string $storageDisk = 'r2';
 
     public function __construct(\App\Services\OrderWorkflowService $workflowService)
     {
@@ -120,9 +122,21 @@ class DashboardController extends Controller
             'plag_report' => 'required|file|mimes:pdf|max:102400',
         ]);
 
+        $disk = $this->storageDisk;
+        $aiPath = null;
+        $plagPath = null;
+
         try {
-            $aiPath   = $request->file('ai_report')->store('reports/' . $order->id . '/ai');
-            $plagPath = $request->file('plag_report')->store('reports/' . $order->id . '/plag');
+            $aiPath = $request->file('ai_report')->store('reports/' . $order->id . '/ai', $disk);
+
+            try {
+                $plagPath = $request->file('plag_report')->store('reports/' . $order->id . '/plag', $disk);
+            } catch (\Throwable $e) {
+                if ($aiPath) {
+                    Storage::disk($disk)->delete($aiPath);
+                }
+                throw $e;
+            }
 
             if (!$aiPath || !$plagPath) {
                 throw new \Exception('Failed to save the report files to storage. Please try again or contact support.');
@@ -130,7 +144,9 @@ class DashboardController extends Controller
 
             $this->workflowService->uploadReport($order, auth()->user(), [
                 'ai_report_path'   => $aiPath,
+                'ai_report_disk'   => $disk,
                 'plag_report_path' => $plagPath,
+                'plag_report_disk' => $disk,
             ]);
 
             $freshOrder = $order->fresh();
@@ -149,12 +165,25 @@ class DashboardController extends Controller
             }
 
             return redirect()->route('dashboard')->with('success', 'Both reports uploaded. Order delivered successfully.');
-        } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json(['error' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            Log::error('Vendor report upload failed.', [
+                'order_id' => $order->id,
+                'user_id' => auth()->id(),
+                'disk' => $disk,
+                'message' => $e->getMessage(),
+                'exception' => get_class($e),
+            ]);
+
+            $message = $e->getMessage();
+            if ($message === '' || str_contains(strtolower($message), 's3') || str_contains(strtolower($message), 'flysystem') || str_contains(strtolower($message), 'unable to write')) {
+                $message = 'Report upload failed while saving files to storage. Please try again. If the issue continues, contact admin.';
             }
 
-            return redirect()->route('dashboard')->with('error', $e->getMessage());
+            if ($request->ajax()) {
+                return response()->json(['error' => $message], 422);
+            }
+
+            return redirect()->route('dashboard')->with('error', $message);
         }
     }
 
@@ -171,10 +200,19 @@ class DashboardController extends Controller
             abort(403);
         }
 
-        if (!Storage::exists($file->file_path)) {
+        $disk = $file->disk ?: $this->storageDisk;
+
+        if (!Storage::disk($disk)->exists($file->file_path)) {
             return back()->with('error', 'File not found on storage. It may have been uploaded before the storage volume was attached. Please ask the client to re-upload.');
         }
 
-        return Storage::download($file->file_path, basename($file->file_path));
+        $stream = Storage::disk($disk)->readStream($file->file_path);
+
+        return response()->streamDownload(function () use ($stream) {
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, basename($file->file_path));
     }
 }

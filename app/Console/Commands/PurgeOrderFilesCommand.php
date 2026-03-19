@@ -29,21 +29,26 @@ class PurgeOrderFilesCommand extends Command
         foreach ($orders as $order) {
             // Delete client-uploaded files
             foreach ($order->files as $file) {
-                Storage::delete($file->file_path);
+                Storage::disk($file->disk ?: 'r2')->delete($file->file_path);
                 $file->delete();
                 $deletedFiles++;
             }
-            Storage::deleteDirectory('orders/' . $order->id);
+            foreach ($order->files->pluck('disk')->filter()->push('r2')->unique() as $disk) {
+                Storage::disk($disk)->deleteDirectory('orders/' . $order->id);
+            }
 
             // Delete report PDFs (AI + Plag)
             if ($order->report) {
                 if ($order->report->ai_report_path) {
-                    Storage::delete($order->report->ai_report_path);
+                    Storage::disk($order->report->ai_report_disk ?: 'r2')->delete($order->report->ai_report_path);
                 }
                 if ($order->report->plag_report_path) {
-                    Storage::delete($order->report->plag_report_path);
+                    Storage::disk($order->report->plag_report_disk ?: 'r2')->delete($order->report->plag_report_path);
                 }
-                Storage::deleteDirectory('reports/' . $order->id);
+                collect([$order->report->ai_report_disk, $order->report->plag_report_disk, 'r2'])
+                    ->filter()
+                    ->unique()
+                    ->each(fn ($disk) => Storage::disk($disk)->deleteDirectory('reports/' . $order->id));
             }
 
             $deletedOrders++;

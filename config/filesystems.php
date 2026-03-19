@@ -68,7 +68,6 @@ return [
             'region'                  => 'auto',
             'bucket'                  => env('R2_BUCKET'),
             'endpoint'                => env('R2_ENDPOINT'),
-            'token'                   => env('R2_TOKEN'),
             'use_path_style_endpoint' => false,
             'throw'                   => true,
             'report'                  => false,

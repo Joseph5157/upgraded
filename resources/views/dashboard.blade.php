@@ -501,9 +501,64 @@
 @endforeach
 
     <script>
+        const MAX_REPORT_SIZE = 100 * 1024 * 1024;
+
+        function setUploadError(orderId, message) {
+            const errStrip = document.getElementById('error-strip-' + orderId);
+            const errMsg   = document.getElementById('error-msg-' + orderId);
+            if (!errStrip || !errMsg) return;
+            errMsg.textContent = message;
+            errStrip.classList.remove('hidden');
+            errStrip.classList.add('flex');
+        }
+
+        function clearUploadError(orderId) {
+            const errStrip = document.getElementById('error-strip-' + orderId);
+            if (!errStrip) return;
+            errStrip.classList.add('hidden');
+            errStrip.classList.remove('flex');
+        }
+
+        function resetUploadUi(orderId) {
+            const submitBtn   = document.getElementById('submit-btn-' + orderId);
+            const cancelBtn   = document.getElementById('cancel-btn-' + orderId);
+            const readyStrip  = document.getElementById('progress-' + orderId);
+            const progressBar = document.getElementById('upload-progress-' + orderId);
+
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
+            }
+            if (cancelBtn) cancelBtn.disabled = false;
+            if (progressBar) {
+                progressBar.classList.add('hidden');
+                progressBar.classList.remove('flex');
+            }
+            if (readyStrip) {
+                readyStrip.classList.remove('hidden');
+                readyStrip.classList.add('flex');
+            }
+            if (window.lucide && lucide.createIcons) lucide.createIcons();
+        }
+
         function previewFile(input, previewId, labelId, color, orderId) {
             const file = input.files[0];
             if (!file) return;
+
+            clearUploadError(orderId);
+
+            const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+            if (!isPdf) {
+                input.value = '';
+                setUploadError(orderId, 'Only PDF files can be uploaded for vendor reports.');
+                return;
+            }
+
+            if (file.size > MAX_REPORT_SIZE) {
+                input.value = '';
+                setUploadError(orderId, 'Each report must be 100MB or smaller.');
+                return;
+            }
 
             const preview = document.getElementById(previewId);
             const label   = document.getElementById(labelId);
@@ -563,6 +618,8 @@
             const fill        = document.getElementById('upload-progress-fill-' + orderId);
             const pctText     = document.getElementById('upload-progress-text-' + orderId);
 
+            clearUploadError(orderId);
+
             // Lock the UI
             submitBtn.disabled = true;
             cancelBtn.disabled = true;
@@ -595,19 +652,8 @@
                             try {
                                 const data = JSON.parse(xhr.responseText);
                                 if (data.error) {
-                                    // Server returned a business-logic error — show it in the modal
-                                    const errStrip = document.getElementById('error-strip-' + orderId);
-                                    const errMsg   = document.getElementById('error-msg-' + orderId);
-                                    if (errStrip && errMsg) {
-                                        errMsg.textContent = data.error;
-                                        errStrip.classList.remove('hidden');
-                                        errStrip.classList.add('flex');
-                                    }
-                                    submitBtn.disabled  = false;
-                                    cancelBtn.disabled  = false;
-                                    submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
-                                    progressBar.classList.add('hidden');
-                                    progressBar.classList.remove('flex');
+                                    setUploadError(orderId, data.error);
+                                    resetUploadUi(orderId);
                                     return;
                                 }
                                 // Success — stash the message for display after redirect
@@ -620,45 +666,30 @@
                             window.location.href = xhr.responseURL || window.location.href;
                         } else {
                             // HTTP 4xx / 5xx — re-enable the form and show an inline error
-                            submitBtn.disabled  = false;
-                            cancelBtn.disabled  = false;
-                            submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
-                            progressBar.classList.add('hidden');
-                            progressBar.classList.remove('flex');
-                            readyStrip.classList.remove('hidden');
-                            readyStrip.classList.add('flex');
+                            resetUploadUi(orderId);
 
-                            const errStrip = document.getElementById('error-strip-' + orderId);
-                            const errMsg   = document.getElementById('error-msg-' + orderId);
-                            if (errStrip && errMsg) {
-                                let msg = 'Upload failed. Please try again.';
-                                if (xhr.status === 419) {
-                                    msg = 'Session expired — please refresh the page and try again.';
-                                } else if (xhr.status === 422) {
-                                    try {
-                                        const d = JSON.parse(xhr.responseText);
-                                        msg = d.error || d.message || (d.errors && Object.values(d.errors)[0]?.[0]) || msg;
-                                    } catch (e) {}
-                                } else if (xhr.status === 403) {
-                                    msg = 'You are not authorized to upload for this order.';
-                                }
-                                errMsg.textContent = msg;
-                                errStrip.classList.remove('hidden');
-                                errStrip.classList.add('flex');
+                            let msg = 'Upload failed. Please try again.';
+                            if (xhr.status === 419) {
+                                msg = 'Session expired — please refresh the page and try again.';
+                            } else if (xhr.status === 422) {
+                                try {
+                                    const d = JSON.parse(xhr.responseText);
+                                    msg = d.error || d.message || (d.errors && Object.values(d.errors)[0]?.[0]) || msg;
+                                } catch (e) {}
+                            } else if (xhr.status === 403) {
+                                msg = 'You are not authorized to upload for this order.';
+                            } else if (xhr.status === 413) {
+                                msg = 'One of the files is too large for the server to accept. Please upload smaller PDFs.';
+                            } else if (xhr.status >= 500) {
+                                msg = 'Server error while saving reports. Please try again in a moment.';
                             }
+                            setUploadError(orderId, msg);
                         }
                     };
 
                     xhr.onerror = function () {
-                        // Re-enable on network error
-                        submitBtn.disabled  = false;
-                        cancelBtn.disabled  = false;
-                        submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
-                        progressBar.classList.add('hidden');
-                        progressBar.classList.remove('flex');
-                        readyStrip.classList.remove('hidden');
-                        readyStrip.classList.add('flex');
-                        alert('Network error — please try again.');
+                        resetUploadUi(orderId);
+                        setUploadError(orderId, 'Network or storage connection error. Please try again.');
                     };
 
                     xhr.open('POST', form.action);

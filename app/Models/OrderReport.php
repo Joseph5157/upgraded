@@ -9,7 +9,9 @@ class OrderReport extends Model
     protected $fillable = [
         'order_id',
         'ai_report_path',
+        'ai_report_disk',
         'plag_report_path',
+        'plag_report_disk',
     ];
 
     public function order()

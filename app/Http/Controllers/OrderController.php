@@ -16,10 +16,23 @@ use Illuminate\Support\Facades\Storage;
 class OrderController extends Controller
 {
     protected $notificationService;
+    protected string $storageDisk = 'r2';
 
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
+    }
+
+    protected function downloadFromDisk(string $path, string $downloadName, string $disk)
+    {
+        $stream = Storage::disk($disk)->readStream($path);
+
+        return response()->streamDownload(function () use ($stream) {
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, $downloadName);
     }
     public function showUpload($token)
     {
@@ -66,10 +79,11 @@ class OrderController extends Controller
                 ]);
 
                 foreach ($request->file('files') as $file) {
-                    $path = $file->store('orders/' . $order->id);
+                    $path = $file->store('orders/' . $order->id, $this->storageDisk);
                     OrderFile::create([
                         'order_id'  => $order->id,
                         'file_path' => $path,
+                        'disk'      => $this->storageDisk,
                     ]);
                 }
 
@@ -111,18 +125,23 @@ class OrderController extends Controller
 
         DB::transaction(function () use ($order, $link, $wasDelivered) {
             foreach ($order->files as $file) {
-                Storage::delete($file->file_path);
+                Storage::disk($file->disk ?: $this->storageDisk)->delete($file->file_path);
             }
-            Storage::deleteDirectory('orders/' . $order->id);
+            foreach ($order->files->pluck('disk')->filter()->push($this->storageDisk)->unique() as $disk) {
+                Storage::disk($disk)->deleteDirectory('orders/' . $order->id);
+            }
 
             if ($order->report) {
                 if ($order->report->ai_report_path) {
-                    Storage::delete($order->report->ai_report_path);
+                    Storage::disk($order->report->ai_report_disk ?: $this->storageDisk)->delete($order->report->ai_report_path);
                 }
                 if ($order->report->plag_report_path) {
-                    Storage::delete($order->report->plag_report_path);
+                    Storage::disk($order->report->plag_report_disk ?: $this->storageDisk)->delete($order->report->plag_report_path);
                 }
-                Storage::deleteDirectory('reports/' . $order->id);
+                collect([$order->report->ai_report_disk, $order->report->plag_report_disk, $this->storageDisk])
+                    ->filter()
+                    ->unique()
+                    ->each(fn ($disk) => Storage::disk($disk)->deleteDirectory('reports/' . $order->id));
             }
 
             $order->files()->delete();
@@ -160,13 +179,15 @@ class OrderController extends Controller
 
         if ($type === 'plag') {
             if (!$order->report->plag_report_path) abort(404);
-            if (!Storage::exists($order->report->plag_report_path)) abort(404);
-            return Storage::download($order->report->plag_report_path, 'plagiarism-report-' . $order->id . '.pdf');
+            $disk = $order->report->plag_report_disk ?: $this->storageDisk;
+            if (!Storage::disk($disk)->exists($order->report->plag_report_path)) abort(404);
+            return $this->downloadFromDisk($order->report->plag_report_path, 'plagiarism-report-' . $order->id . '.pdf', $disk);
         }
 
         if (!$order->report->ai_report_path) abort(404);
-        if (!Storage::exists($order->report->ai_report_path)) abort(404);
+        $disk = $order->report->ai_report_disk ?: $this->storageDisk;
+        if (!Storage::disk($disk)->exists($order->report->ai_report_path)) abort(404);
         $order->update(['is_downloaded' => true]);
-        return Storage::download($order->report->ai_report_path, 'ai-report-' . $order->id . '.pdf');
+        return $this->downloadFromDisk($order->report->ai_report_path, 'ai-report-' . $order->id . '.pdf', $disk);
     }
 }
