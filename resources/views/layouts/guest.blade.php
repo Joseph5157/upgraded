@@ -7,7 +7,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="icon" type="image/png" href="/favicon.png">
 
-        <title>{{ config('app.name', 'Laravel') }} — Sign In</title>
+        <title>PlagExpert — Sign In</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
