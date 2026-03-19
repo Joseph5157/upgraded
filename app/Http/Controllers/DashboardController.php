@@ -120,6 +120,18 @@ class DashboardController extends Controller
         $request->validate([
             'ai_report'   => 'required|file|mimes:pdf|max:102400',
             'plag_report' => 'required|file|mimes:pdf|max:102400',
+        ], [
+            'ai_report.required' => 'Please select the AI detection report PDF.',
+            'ai_report.file' => 'AI report must be a valid file.',
+            'ai_report.uploaded' => 'AI report failed to upload. Keep each report under 100MB and try again.',
+            'ai_report.mimes' => 'AI report must be a PDF file.',
+            'ai_report.max' => 'AI report must be 100MB or smaller.',
+
+            'plag_report.required' => 'Please select the plagiarism report PDF.',
+            'plag_report.file' => 'Plagiarism report must be a valid file.',
+            'plag_report.uploaded' => 'Plagiarism report failed to upload. Keep each report under 100MB and try again.',
+            'plag_report.mimes' => 'Plagiarism report must be a PDF file.',
+            'plag_report.max' => 'Plagiarism report must be 100MB or smaller.',
         ]);
 
         $disk = $this->storageDisk;
