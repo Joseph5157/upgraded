@@ -19,16 +19,16 @@
 
         <style>
             .brand-gradient {
-                background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 75%, #6366f1 100%);
+                background: linear-gradient(150deg, #0f0c29 0%, #1e1b4b 35%, #2d2a6e 70%, #312e81 100%);
             }
             .grid-pattern {
                 background-image:
-                    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+                    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
                 background-size: 40px 40px;
             }
-            .glow-circle {
-                background: radial-gradient(circle, rgba(99,102,241,0.4) 0%, transparent 70%);
+            .panel-text-shadow {
+                text-shadow: 0 2px 12px rgba(0,0,0,0.5);
             }
             .input-field {
                 transition: border-color 0.2s, box-shadow 0.2s;
@@ -58,10 +58,9 @@
             <!-- Left Panel — Branding -->
             <div class="hidden lg:flex lg:w-1/2 brand-gradient grid-pattern relative overflow-hidden flex-col justify-between p-12">
 
-                <!-- Decorative glow blobs -->
-                <div class="absolute top-[-80px] left-[-80px] w-80 h-80 glow-circle opacity-60"></div>
-                <div class="absolute bottom-[-60px] right-[-60px] w-96 h-96 glow-circle opacity-40"></div>
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] glow-circle opacity-20"></div>
+                <!-- Decorative accent blobs (subtle, dark-friendly) -->
+                <div class="absolute top-0 right-0 w-72 h-72 rounded-full opacity-10" style="background: radial-gradient(circle, #818cf8 0%, transparent 70%);"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10" style="background: radial-gradient(circle, #6366f1 0%, transparent 70%);"></div>
 
                 <!-- Logo -->
                 <div class="relative z-10">
@@ -72,15 +71,15 @@
 
                 <!-- Center copy -->
                 <div class="relative z-10">
-                    <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-6">
+                    <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span class="text-white/80 text-xs font-medium tracking-wide uppercase">Portal Access</span>
+                        <span class="text-white text-xs font-semibold tracking-widest uppercase panel-text-shadow">Portal Access</span>
                     </div>
-                    <h1 class="text-4xl xl:text-5xl font-extrabold text-white leading-tight mb-4">
+                    <h1 class="text-4xl xl:text-5xl font-extrabold text-white leading-tight mb-4 panel-text-shadow">
                         Your workspace,<br>
-                        <span class="text-indigo-300">all in one place.</span>
+                        <span style="color: #a5b4fc;">all in one place.</span>
                     </h1>
-                    <p class="text-indigo-200 text-lg leading-relaxed max-w-sm">
+                    <p class="text-slate-300 text-lg leading-relaxed max-w-sm panel-text-shadow">
                         Manage orders, track progress, and collaborate — securely and efficiently.
                     </p>
                 </div>
@@ -88,18 +87,18 @@
                 <!-- Bottom stats -->
                 <div class="relative z-10 flex items-center gap-8">
                     <div>
-                        <p class="text-white text-2xl font-bold">100%</p>
-                        <p class="text-indigo-300 text-xs mt-0.5">Secure Access</p>
+                        <p class="text-white text-2xl font-bold panel-text-shadow">100%</p>
+                        <p class="text-slate-300 text-xs mt-0.5">Secure Access</p>
                     </div>
                     <div class="w-px h-10 bg-white/20"></div>
                     <div>
-                        <p class="text-white text-2xl font-bold">24 / 7</p>
-                        <p class="text-indigo-300 text-xs mt-0.5">Availability</p>
+                        <p class="text-white text-2xl font-bold panel-text-shadow">24 / 7</p>
+                        <p class="text-slate-300 text-xs mt-0.5">Availability</p>
                     </div>
                     <div class="w-px h-10 bg-white/20"></div>
                     <div>
-                        <p class="text-white text-2xl font-bold">Fast</p>
-                        <p class="text-indigo-300 text-xs mt-0.5">Processing</p>
+                        <p class="text-white text-2xl font-bold panel-text-shadow">Fast</p>
+                        <p class="text-slate-300 text-xs mt-0.5">Processing</p>
                     </div>
                 </div>
             </div>
