@@ -186,7 +186,7 @@
         {{--  ANNOUNCEMENTS BANNER  --}}
         <x-announcements-banner />
 
-        <div class="px-8 py-7 max-w-[1380px] mx-auto space-y-7">
+        <div class="px-6 py-5 max-w-[1380px] mx-auto space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
 
             {{-- Flash --}}
             @if(session('success'))
@@ -200,7 +200,7 @@
             @php $remaining = max(0, $client->slots - $client->fresh()->slots_consumed); @endphp
 
             @if($remaining > 10)
-                <div class="flex items-center gap-4 px-5 py-4 rounded-2xl border border-emerald-500/[0.15] bg-gradient-to-r from-emerald-500/[0.06] to-transparent">
+                <div class="flex items-center gap-4 px-5 py-3 rounded-2xl border border-emerald-500/[0.15] bg-gradient-to-r from-emerald-500/[0.06] to-transparent">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" style="box-shadow:0 0 10px rgba(52,211,153,0.5)"></span>
                     <div>
                         <p class="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400">Credit Status</p>
@@ -208,7 +208,7 @@
                     </div>
                 </div>
             @elseif($remaining > 0)
-                <div class="flex items-center gap-4 px-5 py-4 rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/[0.06] to-transparent">
+                <div class="flex items-center gap-4 px-5 py-3 rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/[0.06] to-transparent">
                     <span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0 pulse-dot" style="box-shadow:0 0 10px rgba(251,191,36,0.5)"></span>
                     <div>
                         <p class="text-[9px] font-black uppercase tracking-[0.25em] text-amber-400">Credit Status</p>
@@ -217,7 +217,7 @@
                     <span class="ml-auto text-[8px] font-black uppercase tracking-widest text-amber-500/70 bg-amber-500/[0.08] border border-amber-500/[0.15] px-2.5 py-1 rounded-lg">Low</span>
                 </div>
             @else
-                <div class="flex items-center gap-4 px-5 py-4 rounded-2xl border border-red-500/20 bg-gradient-to-r from-red-500/[0.06] to-transparent">
+                <div class="flex items-center gap-4 px-5 py-3 rounded-2xl border border-red-500/20 bg-gradient-to-r from-red-500/[0.06] to-transparent">
                     <span class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 pulse-dot" style="box-shadow:0 0 10px rgba(239,68,68,0.5)"></span>
                     <div>
                         <p class="text-[9px] font-black uppercase tracking-[0.25em] text-red-400">Credit Status</p>
@@ -231,9 +231,9 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
                 {{-- Credits Card --}}
-                <div class="card card-glow p-6 rounded-2xl relative overflow-hidden">
+                <div class="card card-glow p-5 rounded-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-28 h-28 bg-indigo-500/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
-                    <div class="flex justify-between items-start mb-5">
+                    <div class="flex justify-between items-start mb-4">
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">
                             Credits Used &nbsp;<span class="font-mono text-slate-500">{{ $client->slots_consumed }}</span>
                         </p>
@@ -241,11 +241,11 @@
                             <i data-lucide="coins" class="w-4 h-4"></i>
                         </div>
                     </div>
-                    <h3 class="text-[2.75rem] font-extrabold text-white leading-none font-mono tracking-tight">
+                    <h3 class="text-[2.35rem] font-extrabold text-white leading-none font-mono tracking-tight">
                         {{ max(0, $client->slots - $client->slots_consumed) }}
                     </h3>
                     <p class="text-[11px] text-slate-400 mt-1.5 font-medium">Remaining Credits</p>
-                    <div class="mt-5">
+                    <div class="mt-4">
                         <button onclick="document.getElementById('topup-modal').classList.remove('hidden')"
                             class="px-4 py-1.5 bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors shadow-lg shadow-indigo-500/20">
                             Top Up
@@ -254,30 +254,30 @@
                 </div>
 
                 {{-- Active Orders Card --}}
-                <div class="card card-glow p-6 rounded-2xl relative overflow-hidden">
+                <div class="card card-glow p-5 rounded-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-28 h-28 bg-blue-500/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
-                    <div class="flex justify-between items-start mb-5">
+                    <div class="flex justify-between items-start mb-4">
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Active Orders</p>
                         <div class="w-8 h-8 bg-blue-500/[0.1] rounded-lg flex items-center justify-center text-blue-400 border border-blue-500/[0.15]">
                             <i data-lucide="activity" class="w-4 h-4"></i>
                         </div>
                     </div>
-                    <h3 class="text-[2.75rem] font-extrabold text-white leading-none font-mono tracking-tight">
+                    <h3 class="text-[2.35rem] font-extrabold text-white leading-none font-mono tracking-tight">
                         {{ $orders->where('status', '!=', 'delivered')->count() }}
                     </h3>
                     <p class="text-[11px] text-slate-400 mt-1.5 font-medium">In Processing Flow</p>
                 </div>
 
                 {{-- Plan Status Card --}}
-                <div class="card card-glow p-6 rounded-2xl relative overflow-hidden">
+                <div class="card card-glow p-5 rounded-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-28 h-28 bg-emerald-500/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
-                    <div class="flex justify-between items-start mb-5">
+                    <div class="flex justify-between items-start mb-4">
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Plan Status</p>
                         <div class="w-8 h-8 @if($client->plan_expiry && $client->plan_expiry->isPast()) bg-red-500/[0.1] text-red-400 border-red-500/[0.15] @else bg-emerald-500/[0.1] text-emerald-400 border-emerald-500/[0.15] @endif rounded-lg flex items-center justify-center border">
                             <i data-lucide="shield-check" class="w-4 h-4"></i>
                         </div>
                     </div>
-                    <h3 class="text-2xl font-extrabold text-white leading-none tracking-tight">
+                    <h3 class="text-[1.65rem] font-extrabold text-white leading-none tracking-tight">
                         @if($client->plan_expiry && $client->plan_expiry->isPast()) Expired @else Professional @endif
                     </h3>
                     <p class="text-[11px] text-slate-400 mt-1.5 font-medium">
@@ -287,12 +287,12 @@
             </div>
 
             {{--  MAIN GRID: UPLOAD + ACTIVITY  --}}
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
                 {{-- UPLOAD SECTION --}}
                 <div class="lg:col-span-7">
-                    <div class="card rounded-3xl p-7">
-                        <div class="flex justify-between items-start mb-7">
+                    <div class="card rounded-3xl p-5 xl:p-6">
+                        <div class="flex justify-between items-start mb-5">
                             <div>
                                 <h2 class="text-[17px] font-bold text-white tracking-tight">Secure Upload</h2>
                                 <p class="text-[11px] text-slate-400 mt-1">Submit your document for non-repository scanning</p>
@@ -306,9 +306,9 @@
                             @csrf
 
                             {{-- STEP 1: Drop zone --}}
-                            <label for="files" id="drop-zone" class="upload-zone group block rounded-[1.5rem] p-10 text-center cursor-pointer transition-all">
+                            <label for="files" id="drop-zone" class="upload-zone group block rounded-[1.5rem] px-8 py-7 text-center cursor-pointer transition-all">
                                 <input type="file" name="files[]" id="files" multiple required class="hidden" onchange="handleFileSelect(this)">
-                                <div id="drop-icon" class="w-16 h-16 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-5 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
+                                <div id="drop-icon" class="w-14 h-14 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
                                     <i data-lucide="file-plus" class="w-8 h-8 text-indigo-400"></i>
                                 </div>
                                 <h3 class="text-[15px] font-bold text-white/90 mb-1.5">Drop files here or click</h3>
@@ -316,7 +316,7 @@
                             </label>
 
                             {{-- STEP 2: File preview + notes + submit (hidden until files selected) --}}
-                            <div id="upload-stage" class="hidden mt-4 space-y-3">
+                            <div id="upload-stage" class="hidden mt-3 space-y-3">
 
                                 {{-- Selected files preview --}}
                                 <div id="file-preview" class="bg-white/[0.03] border border-white/[0.06] rounded-2xl divide-y divide-white/[0.04]"></div>
@@ -328,7 +328,7 @@
                                         Instructions for Vendor
                                         <span class="text-slate-600 font-medium normal-case tracking-normal">(optional)</span>
                                     </label>
-                                    <textarea name="notes" id="notes-input" rows="3"
+                                    <textarea name="notes" id="notes-input" rows="2"
                                         placeholder="e.g. Please check for AI content in Chapter 2, priority is plagiarism scan..."
                                         class="w-full bg-white/[0.03] border border-white/[0.07] hover:border-indigo-500/30 focus:border-indigo-500/50 rounded-xl px-4 py-3 text-[12px] text-white placeholder-slate-700 focus:outline-none transition-all resize-none leading-relaxed"></textarea>
                                     <p id="notes-counter" class="text-[9px] text-slate-700 text-right font-mono">0 / 1000</p>
@@ -350,7 +350,7 @@
                             </div>
                         </form>
 
-                        <div class="mt-6 grid grid-cols-2 gap-3">
+                        <div class="mt-4 grid grid-cols-2 gap-3">
                             <div class="p-3.5 bg-emerald-500/[0.05] rounded-xl border border-emerald-500/[0.1] flex items-center gap-3">
                                 <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
                                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
@@ -374,7 +374,7 @@
                         <span class="text-[7px] font-black uppercase tracking-widest text-indigo-400/40 bg-indigo-500/[0.05] border border-indigo-500/[0.08] px-2 py-0.5 rounded cursor-not-allowed">Coming Soon</span>
                     </div>
 
-                    <div class="space-y-3 overflow-y-auto scrollbar-thin max-h-[540px] pr-0.5">
+                    <div class="space-y-3 overflow-y-auto scrollbar-thin max-h-[500px] pr-0.5">
                         @forelse($orders as $order)
                             <div class="card card-glow p-4 rounded-2xl group">
 
