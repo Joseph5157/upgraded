@@ -54,6 +54,7 @@
                 <div class="absolute bottom-0 left-0 w-64 h-64 rounded-full" style="background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);"></div>
 
                 <!-- Logo -->
+                <!-- Logo -->
                 <div class="relative z-10">
                     <a href="/" class="inline-block">
                         <x-application-logo class="w-32 h-auto drop-shadow-lg" />
@@ -61,8 +62,8 @@
                 </div>
 
                 <!-- Center copy -->
-                <div class="relative z-10">
-                    <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);">
+                <div class="relative z-10 flex-1 flex flex-col justify-center py-12">
+                    <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 w-fit" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);">
                         <span class="w-2 h-2 rounded-full animate-pulse" style="background:#34d399;"></span>
                         <span class="text-xs font-semibold tracking-widest uppercase panel-text-shadow" style="color:#ffffff;">Portal Access</span>
                     </div>
@@ -109,7 +110,7 @@
                 </div>
 
                 <p class="mt-10 text-center text-xs text-gray-400">
-                    &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+                    &copy; {{ date('Y') }} PlagExpert. All rights reserved.
                 </p>
             </div>
 
