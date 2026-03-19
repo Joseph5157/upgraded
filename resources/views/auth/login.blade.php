@@ -12,8 +12,8 @@
 
         <!-- Header -->
         <div class="mb-8">
-            <h2 class="text-3xl font-bold text-gray-900">Welcome back</h2>
-            <p class="text-gray-500 text-sm mt-1">Sign in to your account to continue</p>
+            <h2 class="text-3xl font-bold" style="color:#111827;">Welcome back</h2>
+            <p class="text-sm mt-1" style="color:#4b5563;">Sign in to your account to continue</p>
         </div>
 
         <!-- Frozen account alert -->
@@ -40,7 +40,7 @@
 
         <!-- Email -->
         <div class="mb-5">
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+            <label for="email" class="block text-sm font-semibold mb-1.5" style="color:#111827;">Email address</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,7 +56,8 @@
                     autofocus
                     autocomplete="username"
                     placeholder="you@example.com"
-                    class="input-field w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-gray-900 text-sm placeholder-gray-400 bg-gray-50 focus:bg-white {{ $errors->has('email') && !$isFrozenError ? 'border-red-400 bg-red-50' : '' }}"
+                    style="color:#111827; background:#f9fafb; border: 1.5px solid #d1d5db;"
+                    class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl text-sm {{ $errors->has('email') && !$isFrozenError ? 'border-red-400 bg-red-50' : '' }}"
                 />
             </div>
             @if(!$isFrozenError)
@@ -67,7 +68,7 @@
         <!-- Password -->
         <div class="mb-5">
             <div class="flex items-center justify-between mb-1.5">
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <label for="password" class="block text-sm font-semibold" style="color:#111827;">Password</label>
                 @if (Route::has('password.request'))
                     <a href="{{ route('password.request') }}" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
                         Forgot password?
@@ -87,7 +88,8 @@
                     required
                     autocomplete="current-password"
                     placeholder="••••••••"
-                    class="input-field w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl text-gray-900 text-sm placeholder-gray-400 bg-gray-50 focus:bg-white {{ $errors->has('password') ? 'border-red-400 bg-red-50' : '' }}"
+                    style="color:#111827; background:#f9fafb; border: 1.5px solid #d1d5db;"
+                    class="input-field w-full pl-10 pr-10 py-2.5 rounded-xl text-sm {{ $errors->has('password') ? 'border-red-400 bg-red-50' : '' }}"
                 />
                 <!-- Toggle password visibility -->
                 <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
@@ -105,7 +107,7 @@
             <label for="remember_me" class="inline-flex items-center gap-2.5 cursor-pointer select-none">
                 <input id="remember_me" type="checkbox" name="remember"
                     class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition">
-                <span class="text-sm text-gray-600">Keep me signed in</span>
+                <span class="text-sm" style="color:#374151;">Keep me signed in</span>
             </label>
         </div>
 
