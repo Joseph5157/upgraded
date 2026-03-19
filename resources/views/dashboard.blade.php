@@ -657,13 +657,13 @@
                                     return;
                                 }
                                 // Success — stash the message for display after redirect
-                                if (data.success) sessionStorage.setItem('upload_success', data.success);
-                                window.location.href = data.redirect || xhr.responseURL || '/dashboard';
+                                try { if (data.success) sessionStorage.setItem('upload_success', data.success); } catch (_) {}
+                                window.location.href = data.redirect || '/dashboard';
                                 return;
                             } catch (e) {
                                 // Not JSON — XHR followed a normal redirect, navigate to final URL
                             }
-                            window.location.href = xhr.responseURL || window.location.href;
+                            window.location.href = '/dashboard';
                         } else {
                             // HTTP 4xx / 5xx — re-enable the form and show an inline error
                             resetUploadUi(orderId);
