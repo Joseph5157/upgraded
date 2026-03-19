@@ -6,21 +6,21 @@ use App\Models\Client;
 use App\Models\Order;
 use App\Models\OrderFile;
 use App\Enums\OrderStatus;
-use App\Services\NotificationService;
+use App\Services\CreateClientOrderService;
+use App\Services\DeleteClientOrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ClientDashboardController extends Controller
 {
-    protected $notificationService;
-    protected string $storageDisk = 'r2';
+    protected string $storageDisk;
 
-    public function __construct(NotificationService $notificationService)
-    {
-        $this->notificationService = $notificationService;
+    public function __construct(
+        protected CreateClientOrderService $createOrderService,
+        protected DeleteClientOrderService $deleteOrderService,
+    ) {
+        $this->storageDisk = config('filesystems.default', 'r2');
     }
 
     protected function downloadFromDisk(string $path, string $downloadName)
@@ -60,7 +60,7 @@ class ClientDashboardController extends Controller
 
     public function store(Request $request)
     {
-        $user = Auth::user();
+        $user   = Auth::user();
         $client = $user->client;
 
         if (!$client) {
@@ -74,67 +74,20 @@ class ClientDashboardController extends Controller
         ]);
 
         try {
-            $orderId = null;
-            $tokenView = DB::transaction(function () use ($client, $request, $user, &$orderId) {
-                // Lock the client row to prevent race conditions on slot checks
-                $client = Client::where('id', $client->id)->lockForUpdate()->first();
-
-                if ($client->plan_expiry && $client->plan_expiry->isPast()) {
-                    throw new \Exception('Your plan has expired on ' . $client->plan_expiry->format('d M Y') . '. Please contact Admin to renew.');
-                }
-
-                if ($client->status === 'suspended' || $client->slots_consumed >= $client->slots) {
-                    throw new \Exception('Insufficient credits. You have reached your limit of ' . $client->slots . ' files. Please contact Admin for a refill.');
-                }
-
-                $tokenView = Str::random(32);
-
-                $order = Order::create([
-                    'client_id'          => $client->id,
-                    'token_view'         => $tokenView,
-                    'files_count'        => count($request->file('files')),
+            $order = $this->createOrderService->execute(
+                $client,
+                $request->file('files'),
+                'account',
+                [
                     'notes'              => $request->input('notes') ?: null,
-                    'status'             => OrderStatus::Pending,
-                    'due_at'             => now()->addMinutes(config('services.portal.default_sla_minutes', 20)),
-                    'source'             => 'account',
                     'created_by_user_id' => $user->id,
-                ]);
-
-                foreach ($request->file('files') as $file) {
-                    $originalName = basename($file->getClientOriginalName());
-                    $originalName = preg_replace('/[^\w.\-]/', '_', $originalName);
-                    $path = $file->storeAs('orders/' . $order->id, $originalName, $this->storageDisk);
-                    OrderFile::create([
-                        'order_id'  => $order->id,
-                        'file_path' => $path,
-                        'disk'      => $this->storageDisk,
-                    ]);
-                }
-
-                // Increment permanent consumed counter — never decremented
-                $client->increment('slots_consumed');
-
-                // Suspend if consumed all slots
-                if ($client->slots_consumed >= $client->slots) {
-                    $client->update(['status' => 'suspended']);
-                }
-
-                // Store order ID for notification after transaction
-                $orderId = $order->id;
-
-                return $tokenView;
-            });
-
-            // Send Telegram notification to vendors (after transaction commits)
-            if ($orderId) {
-                $order = Order::find($orderId);
-                $this->notificationService->notifyVendorsNewOrder($order);
-            }
+                ],
+            );
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('client.dashboard')->with('success', 'Order created successfully. Tracking ID: ' . $tokenView);
+        return redirect()->route('client.dashboard')->with('success', 'Order created successfully. Tracking ID: ' . $order->token_view);
     }
 
     public function destroyFile(Order $order, OrderFile $file)
@@ -169,49 +122,11 @@ class ClientDashboardController extends Controller
             abort(403);
         }
 
-        // Capture delivered status BEFORE deletion
-        $wasDelivered = $order->status === \App\Enums\OrderStatus::Delivered;
+        $slotRestored = $this->deleteOrderService->execute($order, $client);
 
-        DB::transaction(function () use ($order, $client, $wasDelivered) {
-            // Delete uploaded files from disk
-            foreach ($order->files as $file) {
-                Storage::disk($file->disk ?: $this->storageDisk)->delete($file->file_path);
-            }
-            foreach ($order->files->pluck('disk')->filter()->push($this->storageDisk)->unique() as $disk) {
-                Storage::disk($disk)->deleteDirectory('orders/' . $order->id);
-            }
-
-            // Delete report PDFs from disk (AI + Plag)
-            if ($order->report) {
-                if ($order->report->ai_report_path) {
-                    Storage::disk($order->report->ai_report_disk ?: $this->storageDisk)->delete($order->report->ai_report_path);
-                }
-                if ($order->report->plag_report_path) {
-                    Storage::disk($order->report->plag_report_disk ?: $this->storageDisk)->delete($order->report->plag_report_path);
-                }
-                collect([$order->report->ai_report_disk, $order->report->plag_report_disk, $this->storageDisk])
-                    ->filter()
-                    ->unique()
-                    ->each(fn ($disk) => Storage::disk($disk)->deleteDirectory('reports/' . $order->id));
-            }
-
-            // Delete DB records
-            $order->files()->delete();
-            $order->report()->delete();
-            $order->delete();
-
-            // Only restore slot if order was NOT delivered (service not rendered)
-            if (!$wasDelivered) {
-                $client->decrement('slots_consumed');
-                if ($client->status === 'suspended' && $client->fresh()->slots_consumed < $client->slots) {
-                    $client->update(['status' => 'active']);
-                }
-            }
-        });
-
-        $message = $wasDelivered
-            ? 'Order and all files permanently deleted.'
-            : 'Order deleted. Your credit slot has been restored.';
+        $message = $slotRestored
+            ? 'Order deleted. Your credit slot has been restored.'
+            : 'Order and all files permanently deleted.';
 
         return back()->with('success', $message);
     }

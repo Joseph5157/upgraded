@@ -4,23 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\ClientLink;
 use App\Models\Order;
-use App\Models\OrderFile;
 use App\Enums\OrderStatus;
 use App\Rules\ValidTurnstile;
-use App\Services\NotificationService;
+use App\Services\CreateClientOrderService;
+use App\Services\DeleteClientOrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
-    protected $notificationService;
-    protected string $storageDisk = 'r2';
+    protected string $storageDisk;
 
-    public function __construct(NotificationService $notificationService)
-    {
-        $this->notificationService = $notificationService;
+    public function __construct(
+        protected CreateClientOrderService $createOrderService,
+        protected DeleteClientOrderService $deleteOrderService,
+    ) {
+        $this->storageDisk = config('filesystems.default', 'r2');
     }
 
     protected function downloadFromDisk(string $path, string $downloadName, string $disk)
@@ -53,64 +52,17 @@ class OrderController extends Controller
         ]);
 
         try {
-            $orderId = null;
-            $tokenView = DB::transaction(function () use ($link, $request, &$orderId) {
-                // Lock the client row to prevent concurrent slot over-use
-                $client = \App\Models\Client::where('id', $link->client_id)->lockForUpdate()->first();
-
-                if ($client->plan_expiry && $client->plan_expiry->isPast()) {
-                    throw new \Exception('Your plan has expired on ' . $client->plan_expiry->format('d M Y') . '. Please contact Admin to renew.');
-                }
-
-                if ($client->status === 'suspended' || $client->slots_consumed >= $client->slots) {
-                    throw new \Exception('Insufficient credits. You have reached your limit of ' . $client->slots . ' files. Please contact Admin for a refill.');
-                }
-
-                $tokenView = Str::random(32);
-
-                $order = Order::create([
-                    'client_id'      => $client->id,
-                    'token_view'     => $tokenView,
-                    'files_count'    => count($request->file('files')),
-                    'status'         => OrderStatus::Pending,
-                    'due_at'         => now()->addMinutes(config('services.portal.default_sla_minutes', 20)),
-                    'source'         => 'link',
-                    'client_link_id' => $link->id,
-                ]);
-
-                foreach ($request->file('files') as $file) {
-                    $path = $file->store('orders/' . $order->id, $this->storageDisk);
-                    OrderFile::create([
-                        'order_id'  => $order->id,
-                        'file_path' => $path,
-                        'disk'      => $this->storageDisk,
-                    ]);
-                }
-
-                // Increment permanent consumed counter — consistent with account-based uploads
-                $client->increment('slots_consumed');
-
-                // Suspend if consumed all slots
-                if ($client->fresh()->slots_consumed >= $client->slots) {
-                    $client->update(['status' => 'suspended']);
-                }
-
-                // Store order ID for notification after transaction
-                $orderId = $order->id;
-
-                return $tokenView;
-            });
-
-            // Send Telegram notification to vendors (after transaction commits)
-            if ($orderId) {
-                $order = Order::find($orderId);
-                $this->notificationService->notifyVendorsNewOrder($order);
-            }
+            $order = $this->createOrderService->execute(
+                $link->client,
+                $request->file('files'),
+                'link',
+                ['client_link_id' => $link->id],
+            );
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('client.track', $tokenView);
+        return redirect()->route('client.track', $order->token_view);
     }
 
     public function destroyOrder(Request $request, $token, Order $order)
@@ -121,42 +73,7 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $wasDelivered = $order->status === OrderStatus::Delivered;
-
-        DB::transaction(function () use ($order, $link, $wasDelivered) {
-            foreach ($order->files as $file) {
-                Storage::disk($file->disk ?: $this->storageDisk)->delete($file->file_path);
-            }
-            foreach ($order->files->pluck('disk')->filter()->push($this->storageDisk)->unique() as $disk) {
-                Storage::disk($disk)->deleteDirectory('orders/' . $order->id);
-            }
-
-            if ($order->report) {
-                if ($order->report->ai_report_path) {
-                    Storage::disk($order->report->ai_report_disk ?: $this->storageDisk)->delete($order->report->ai_report_path);
-                }
-                if ($order->report->plag_report_path) {
-                    Storage::disk($order->report->plag_report_disk ?: $this->storageDisk)->delete($order->report->plag_report_path);
-                }
-                collect([$order->report->ai_report_disk, $order->report->plag_report_disk, $this->storageDisk])
-                    ->filter()
-                    ->unique()
-                    ->each(fn ($disk) => Storage::disk($disk)->deleteDirectory('reports/' . $order->id));
-            }
-
-            $order->files()->delete();
-            $order->report()->delete();
-            $order->delete();
-
-            // Restore slot and potentially un-suspend if order was not delivered (service not rendered)
-            if (!$wasDelivered) {
-                $client = \App\Models\Client::find($link->client_id);
-                $client->decrement('slots_consumed');
-                if ($client->status === 'suspended' && $client->fresh()->slots_consumed < $client->slots) {
-                    $client->update(['status' => 'active']);
-                }
-            }
-        });
+        $this->deleteOrderService->execute($order, $link->client);
 
         return redirect()->route('client.upload', $token)->with('success', 'Order deleted successfully.');
     }
