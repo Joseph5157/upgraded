@@ -75,17 +75,17 @@
                 <div class="absolute bottom-[-6rem] left-[-4rem] w-[28rem] h-[28rem] rounded-full" style="background: radial-gradient(circle, rgba(99,102,241,0.16) 0%, transparent 72%);"></div>
 
                 <div class="relative z-10 flex min-h-screen w-full px-14 py-12 xl:px-16 xl:py-14">
-                    <div class="hero-copy flex min-h-full flex-col justify-between">
+                    <div class="hero-copy flex min-h-full flex-col justify-center">
 
                         <!-- Logo -->
-                        <div>
+                        <div class="mb-12 xl:mb-14">
                             <a href="/" class="inline-flex items-center">
                                 <x-application-logo class="h-16 w-auto rounded-sm bg-white px-2 py-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]" />
                             </a>
                         </div>
 
                         <!-- Center copy -->
-                        <div class="flex-1 flex flex-col justify-center py-12 xl:py-16">
+                        <div class="flex flex-col justify-center py-4 xl:py-6">
                             <div class="inline-flex items-center gap-3 rounded-full px-5 py-2.5 mb-10 w-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);">
                                 <span class="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_0_5px_rgba(52,211,153,0.12)]" style="background:#48c7a8;"></span>
                                 <span class="text-[0.8rem] font-semibold tracking-[0.18em] uppercase" style="color:#f8fafc;">Secure Client Portal</span>
@@ -100,7 +100,7 @@
                         </div>
 
                         <!-- Bottom highlights -->
-                        <div class="border-y px-0 py-6" style="border-color:rgba(255,255,255,0.10);">
+                        <div class="mt-10 border-y px-0 py-6" style="border-color:rgba(255,255,255,0.10);">
                             <div class="grid grid-cols-3 gap-5 items-center">
                                 <div class="flex items-center gap-4 pr-4">
                                     <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
