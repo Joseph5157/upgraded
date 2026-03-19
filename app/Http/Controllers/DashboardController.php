@@ -137,6 +137,7 @@ class DashboardController extends Controller
         $disk = $this->storageDisk;
         $aiPath = null;
         $plagPath = null;
+        $reportPersisted = false;
 
         try {
             $aiPath = $request->file('ai_report')->store('reports/' . $order->id . '/ai', $disk);
@@ -160,6 +161,7 @@ class DashboardController extends Controller
                 'plag_report_path' => $plagPath,
                 'plag_report_disk' => $disk,
             ]);
+            $reportPersisted = true;
 
             $freshOrder = $order->fresh();
             if ($freshOrder->status === OrderStatus::Pending) {
@@ -178,6 +180,35 @@ class DashboardController extends Controller
 
             return redirect()->route('dashboard')->with('success', 'Both reports uploaded. Order delivered successfully.');
         } catch (\Throwable $e) {
+            // If report metadata was not persisted, clean up uploaded blobs to avoid orphan files.
+            if (!$reportPersisted) {
+                if ($aiPath) {
+                    try {
+                        Storage::disk($disk)->delete($aiPath);
+                    } catch (\Throwable $cleanupError) {
+                        Log::warning('Failed to clean up AI report after upload failure.', [
+                            'order_id' => $order->id,
+                            'path' => $aiPath,
+                            'disk' => $disk,
+                            'message' => $cleanupError->getMessage(),
+                        ]);
+                    }
+                }
+
+                if ($plagPath) {
+                    try {
+                        Storage::disk($disk)->delete($plagPath);
+                    } catch (\Throwable $cleanupError) {
+                        Log::warning('Failed to clean up plagiarism report after upload failure.', [
+                            'order_id' => $order->id,
+                            'path' => $plagPath,
+                            'disk' => $disk,
+                            'message' => $cleanupError->getMessage(),
+                        ]);
+                    }
+                }
+            }
+
             Log::error('Vendor report upload failed.', [
                 'order_id' => $order->id,
                 'user_id' => auth()->id(),
@@ -192,7 +223,7 @@ class DashboardController extends Controller
             }
 
             if ($request->ajax()) {
-                return response()->json(['error' => $message], 422);
+                return response()->json(['error' => $message], 500);
             }
 
             return redirect()->route('dashboard')->with('error', $message);

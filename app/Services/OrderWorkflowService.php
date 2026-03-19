@@ -106,22 +106,24 @@ class OrderWorkflowService
     {
         $this->assertVendorOrAdmin($order, $user, 'deliver');
 
-        if ($order->status === OrderStatus::Delivered) {
-            throw new Exception("This order has already been delivered and cannot be re-delivered.");
-        }
-
-        if ($order->status !== OrderStatus::Processing) {
-            throw new Exception("Order must be in 'processing' status before delivery. Current status: '{$order->status->value}'.");
-        }
-
-        $report = $order->report()->first();
-        if (!$report || !$report->ai_report_path || !$report->plag_report_path) {
-            throw new Exception("Both the AI report and Plagiarism report PDFs must be uploaded before delivery.");
-        }
-
         DB::transaction(function () use ($order, $user) {
-            $oldStatus = $order->status->value;
-            $order->update([
+            $lockedOrder = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            if ($lockedOrder->status === OrderStatus::Delivered) {
+                throw new Exception("This order has already been delivered and cannot be re-delivered.");
+            }
+
+            if ($lockedOrder->status !== OrderStatus::Processing) {
+                throw new Exception("Order must be in 'processing' status before delivery. Current status: '{$lockedOrder->status->value}'.");
+            }
+
+            $report = $lockedOrder->report()->first();
+            if (!$report || !$report->ai_report_path || !$report->plag_report_path) {
+                throw new Exception("Both the AI report and Plagiarism report PDFs must be uploaded before delivery.");
+            }
+
+            $oldStatus = $lockedOrder->status->value;
+            $lockedOrder->update([
                 'status'       => OrderStatus::Delivered,
                 'delivered_at' => now(),
             ]);
@@ -130,7 +132,7 @@ class OrderWorkflowService
             // This count is NEVER decremented — even if client deletes the order later.
             $user->increment('delivered_orders_count');
 
-            $this->logActivity($order, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
+            $this->logActivity($lockedOrder, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
         });
     }
 
