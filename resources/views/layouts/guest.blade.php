@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
-        <script>document.documentElement.classList.add('dark');</script>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -22,17 +21,17 @@
         <style>
             body { font-family: 'Inter', sans-serif; }
             .input-field {
-                background: rgba(255,255,255,0.04);
-                border: 1.5px solid rgba(255,255,255,0.08);
-                color: #e2e8f0;
+                background: #ffffff;
+                border: 1.5px solid #dbe3f0;
+                color: #0f172a;
                 transition: border-color 0.2s, box-shadow 0.2s;
             }
-            .input-field::placeholder { color: #475569; }
+            .input-field::placeholder { color: #94a3b8; }
             .input-field:focus {
                 border-color: #6366f1;
-                box-shadow: 0 0 0 3px rgba(99,102,241,0.18);
+                box-shadow: 0 0 0 4px rgba(99,102,241,0.12);
                 outline: none;
-                background: rgba(99,102,241,0.06);
+                background: #ffffff;
             }
             .login-btn {
                 background: linear-gradient(135deg, #4338ca, #6366f1);
@@ -44,107 +43,113 @@
                 box-shadow: 0 8px 25px rgba(99,102,241,0.35);
             }
             .login-btn:active { transform: translateY(0); }
-            .panel-text-shadow { text-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+            .panel-text-shadow { text-shadow: 0 12px 34px rgba(67, 56, 202, 0.18); }
+            .hero-shell {
+                background:
+                    radial-gradient(circle at 78% 22%, rgba(123, 97, 255, 0.16), transparent 26%),
+                    radial-gradient(circle at 82% 78%, rgba(79, 70, 229, 0.14), transparent 30%),
+                    linear-gradient(135deg, #f6f4ff 0%, #f0eeff 50%, #ebe8ff 100%);
+            }
+            .hero-copy {
+                max-width: 700px;
+            }
+            .hero-copy p {
+                text-wrap: balance;
+            }
             ::-webkit-scrollbar { width: 4px; }
             ::-webkit-scrollbar-track { background: transparent; }
             ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 99px; }
         </style>
     </head>
-    <body class="font-sans antialiased" style="background:#0f1117;">
+    <body class="font-sans antialiased" style="background:#f8fafc;">
         <div class="min-h-screen flex">
 
             <!-- Left Panel — Branding -->
-            <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-12" style="background: linear-gradient(150deg, #0c0a1e 0%, #11103a 35%, #1a1855 70%, #1e1a6e 100%);">
+            <div class="hero-shell hidden lg:flex lg:w-[58%] relative overflow-hidden" >
 
                 <!-- Grid overlay -->
-                <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 40px 40px;"></div>
+                <div class="absolute inset-0 opacity-60" style="background-image: linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px); background-size: 40px 40px;"></div>
 
                 <!-- Decorative accent blobs -->
-                <div class="absolute top-0 right-0 w-96 h-96 rounded-full" style="background: radial-gradient(circle, rgba(129,140,248,0.12) 0%, transparent 70%);"></div>
-                <div class="absolute bottom-0 left-0 w-80 h-80 rounded-full" style="background: radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%);"></div>
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full" style="background: radial-gradient(circle, rgba(168,85,247,0.06) 0%, transparent 70%);"></div>
+                <div class="absolute top-0 right-0 w-[34rem] h-[34rem] rounded-full" style="background: radial-gradient(circle, rgba(129,140,248,0.22) 0%, transparent 70%);"></div>
+                <div class="absolute bottom-[-6rem] left-[-4rem] w-[28rem] h-[28rem] rounded-full" style="background: radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 72%);"></div>
 
-                <!-- Logo -->
-                <div class="relative z-10 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base" style="background:#4f46e5; color:#fff;">P</div>
-                    <div>
-                        <p class="text-sm font-bold panel-text-shadow" style="color:#ffffff;">PlagExpert</p>
-                        <p class="text-[10px] uppercase tracking-widest" style="color:#64748b;">Agent Portal</p>
-                    </div>
-                </div>
+                <div class="relative z-10 flex min-h-screen w-full px-12 py-10 xl:px-14 xl:py-12">
+                    <div class="hero-copy flex min-h-full flex-col justify-between">
 
-                <!-- Center copy -->
-                <div class="relative z-10 flex-1 flex flex-col justify-center py-12">
-                    <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6 w-fit" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);">
-                        <span class="w-2 h-2 rounded-full animate-pulse" style="background:#34d399;"></span>
-                        <span class="text-xs font-semibold tracking-widest uppercase" style="color:#94a3b8;">Secure Client Portal</span>
-                    </div>
-                    <h1 class="text-4xl xl:text-5xl font-extrabold leading-tight mb-5 panel-text-shadow" style="color:#ffffff;">
-                        Plagiarism &amp; AI Reports,<br>
-                        <span style="color:#a5b4fc;">all in one place.</span>
-                    </h1>
-                    <p class="text-base leading-relaxed max-w-sm" style="color:#64748b;">
-                        Upload, track, and receive your plagiarism and AI reports through a secure, fully API automated system — designed for speed, accuracy, and zero manual delays.
-                    </p>
-                </div>
+                        <!-- Logo -->
+                        <div>
+                            <a href="/" class="inline-flex items-center">
+                                <x-application-logo class="h-16 w-auto rounded-sm bg-white px-2 py-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]" />
+                            </a>
+                        </div>
 
-                <!-- Bottom highlights -->
-                <div class="relative z-10 flex items-center gap-6">
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(99,102,241,0.15);">
-                            <svg class="w-3.5 h-3.5" style="color:#a5b4fc;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                            </svg>
+                        <!-- Center copy -->
+                        <div class="flex-1 flex flex-col justify-center py-10 xl:py-14">
+                            <div class="inline-flex items-center gap-3 rounded-full px-5 py-2 mb-10 w-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]" style="background: rgba(255,255,255,0.55); border: 1px solid rgba(99,102,241,0.18);">
+                                <span class="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_0_5px_rgba(52,211,153,0.12)]" style="background:#48c7a8;"></span>
+                                <span class="text-xs font-semibold tracking-[0.18em] uppercase" style="color:#4338ca;">Secure Client Portal</span>
+                            </div>
+                            <h1 class="text-[4rem] leading-[1.02] font-extrabold mb-7 panel-text-shadow tracking-[-0.04em]" style="color:#0f172a;">
+                                Plagiarism &amp; AI Reports,<br>
+                                <span style="color:#5b5fe8;">all in one place.</span>
+                            </h1>
+                            <p class="text-[1.02rem] leading-[1.9] max-w-[43rem]" style="color:#5b6476;">
+                                Upload, track, and receive your plagiarism and AI reports through a secure, fully API automated system — designed for speed, accuracy, and zero manual delays.
+                            </p>
                         </div>
-                        <div>
-                            <p class="text-xs font-bold panel-text-shadow" style="color:#ffffff;">100% Confidential</p>
-                        </div>
-                    </div>
-                    <div class="w-px h-8" style="background:rgba(255,255,255,0.1);"></div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(52,211,153,0.12);">
-                            <svg class="w-3.5 h-3.5" style="color:#34d399;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold panel-text-shadow" style="color:#ffffff;">Zero Repository Storage</p>
-                        </div>
-                    </div>
-                    <div class="w-px h-8" style="background:rgba(255,255,255,0.1);"></div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style="background:rgba(251,191,36,0.12);">
-                            <svg class="w-3.5 h-3.5" style="color:#fbbf24;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold panel-text-shadow" style="color:#ffffff;">API-Integrated System</p>
+
+                        <!-- Bottom highlights -->
+                        <div class="border-y py-6" style="border-color:rgba(99,102,241,0.12);">
+                            <div class="grid grid-cols-3 gap-6 items-center">
+                                <div class="flex items-center gap-4 pr-4">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
+                                        <svg class="w-4.5 h-4.5" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-[0.95rem] font-semibold leading-none" style="color:#1e293b;">100% Confidential</p>
+                                </div>
+                                <div class="flex items-center gap-4 px-4 border-x" style="border-color:rgba(99,102,241,0.12);">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
+                                        <svg class="w-4.5 h-4.5" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-[0.95rem] font-semibold leading-none" style="color:#1e293b;">Zero Repository Storage</p>
+                                </div>
+                                <div class="flex items-center gap-4 pl-4">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
+                                        <svg class="w-4.5 h-4.5" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-[0.95rem] font-semibold leading-none" style="color:#1e293b;">API-Integrated System</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Right Panel — Form -->
-            <div class="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 py-12 sm:px-12" style="background:#0f1117;">
+            <div class="w-full lg:w-[42%] flex flex-col justify-center items-center px-6 py-12 sm:px-10 xl:px-12" style="background:#f8fafc;">
 
                 <!-- Mobile logo -->
-                <div class="lg:hidden mb-8 flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm" style="background:#4f46e5; color:#fff;">P</div>
-                    <div>
-                        <p class="text-sm font-bold" style="color:#ffffff;">PlagExpert</p>
-                        <p class="text-[10px] uppercase tracking-widest" style="color:#64748b;">Agent Portal</p>
-                    </div>
+                <div class="lg:hidden mb-8 flex items-center justify-center">
+                    <a href="/" class="inline-flex items-center">
+                        <x-application-logo class="h-14 w-auto rounded-sm bg-white px-2 py-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]" />
+                    </a>
                 </div>
 
-                <div class="w-full max-w-md">
+                <div class="w-full max-w-[30rem]">
                     <!-- Card -->
-                    <div class="rounded-2xl p-7 sm:p-9" style="background:#13151c; border:1px solid rgba(255,255,255,0.06);">
+                    <div class="rounded-[1.75rem] p-7 sm:p-9 shadow-[0_24px_60px_rgba(15,23,42,0.10)]" style="background:#ffffff; border:1px solid #e2e8f0;">
                         {{ $slot }}
                     </div>
                 </div>
 
-                <p class="mt-8 text-center text-xs" style="color:#334155;">
+                <p class="mt-8 text-center text-xs" style="color:#64748b;">
                     &copy; {{ date('Y') }} PlagExpert. All rights reserved.
                 </p>
             </div>
