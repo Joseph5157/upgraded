@@ -46,12 +46,12 @@
             .panel-text-shadow { text-shadow: 0 12px 34px rgba(67, 56, 202, 0.18); }
             .hero-shell {
                 background:
-                    radial-gradient(circle at 78% 22%, rgba(123, 97, 255, 0.16), transparent 26%),
-                    radial-gradient(circle at 82% 78%, rgba(79, 70, 229, 0.14), transparent 30%),
-                    linear-gradient(135deg, #f6f4ff 0%, #f0eeff 50%, #ebe8ff 100%);
+                    radial-gradient(circle at 76% 20%, rgba(108, 99, 255, 0.24), transparent 24%),
+                    radial-gradient(circle at 85% 75%, rgba(88, 76, 255, 0.18), transparent 28%),
+                    linear-gradient(135deg, #17103c 0%, #221755 48%, #24185b 100%);
             }
             .hero-copy {
-                max-width: 700px;
+                max-width: 680px;
             }
             .hero-copy p {
                 text-wrap: balance;
@@ -68,13 +68,13 @@
             <div class="hero-shell hidden lg:flex lg:w-[58%] relative overflow-hidden" >
 
                 <!-- Grid overlay -->
-                <div class="absolute inset-0 opacity-60" style="background-image: linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px); background-size: 40px 40px;"></div>
+                <div class="absolute inset-0 opacity-18" style="background-image: linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px); background-size: 40px 40px;"></div>
 
                 <!-- Decorative accent blobs -->
-                <div class="absolute top-0 right-0 w-[34rem] h-[34rem] rounded-full" style="background: radial-gradient(circle, rgba(129,140,248,0.22) 0%, transparent 70%);"></div>
-                <div class="absolute bottom-[-6rem] left-[-4rem] w-[28rem] h-[28rem] rounded-full" style="background: radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 72%);"></div>
+                <div class="absolute top-0 right-0 w-[34rem] h-[34rem] rounded-full" style="background: radial-gradient(circle, rgba(129,140,248,0.24) 0%, transparent 70%);"></div>
+                <div class="absolute bottom-[-6rem] left-[-4rem] w-[28rem] h-[28rem] rounded-full" style="background: radial-gradient(circle, rgba(99,102,241,0.16) 0%, transparent 72%);"></div>
 
-                <div class="relative z-10 flex min-h-screen w-full px-12 py-10 xl:px-14 xl:py-12">
+                <div class="relative z-10 flex min-h-screen w-full px-14 py-12 xl:px-16 xl:py-14">
                     <div class="hero-copy flex min-h-full flex-col justify-between">
 
                         <!-- Logo -->
@@ -85,38 +85,38 @@
                         </div>
 
                         <!-- Center copy -->
-                        <div class="flex-1 flex flex-col justify-center py-10 xl:py-14">
-                            <div class="inline-flex items-center gap-3 rounded-full px-5 py-2 mb-10 w-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]" style="background: rgba(255,255,255,0.55); border: 1px solid rgba(99,102,241,0.18);">
+                        <div class="flex-1 flex flex-col justify-center py-12 xl:py-16">
+                            <div class="inline-flex items-center gap-3 rounded-full px-5 py-2.5 mb-10 w-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);">
                                 <span class="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_0_5px_rgba(52,211,153,0.12)]" style="background:#48c7a8;"></span>
-                                <span class="text-xs font-semibold tracking-[0.18em] uppercase" style="color:#4338ca;">Secure Client Portal</span>
+                                <span class="text-[0.8rem] font-semibold tracking-[0.18em] uppercase" style="color:#f8fafc;">Secure Client Portal</span>
                             </div>
-                            <h1 class="text-[4rem] leading-[1.02] font-extrabold mb-7 panel-text-shadow tracking-[-0.04em]" style="color:#0f172a;">
-                                Plagiarism &amp; AI Reports,<br>
-                                <span style="color:#5b5fe8;">all in one place.</span>
+                            <h1 class="text-[4rem] leading-[1.02] font-extrabold mb-7 panel-text-shadow tracking-[-0.045em]" style="color:#f8fafc;">
+                                <span style="color:#f8fafc;">Plagiarism &amp; AI Reports,</span><br>
+                                <span style="color:#b8b7ff;">all in one place.</span>
                             </h1>
-                            <p class="text-[1.02rem] leading-[1.9] max-w-[43rem]" style="color:#5b6476;">
+                            <p class="text-[1.08rem] leading-[1.95] max-w-[38rem] font-medium" style="color:#d4d0e7;">
                                 Upload, track, and receive your plagiarism and AI reports through a secure, fully API automated system — designed for speed, accuracy, and zero manual delays.
                             </p>
                         </div>
 
                         <!-- Bottom highlights -->
-                        <div class="border-y py-6" style="border-color:rgba(99,102,241,0.12);">
-                            <div class="grid grid-cols-3 gap-6 items-center">
+                        <div class="border-y px-0 py-6" style="border-color:rgba(255,255,255,0.10);">
+                            <div class="grid grid-cols-3 gap-5 items-center">
                                 <div class="flex items-center gap-4 pr-4">
                                     <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
                                         <svg class="w-4.5 h-4.5" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     </div>
-                                    <p class="text-[0.95rem] font-semibold leading-none" style="color:#1e293b;">100% Confidential</p>
+                                    <p class="text-[0.95rem] font-semibold leading-tight" style="color:#ffffff;">100% Confidential</p>
                                 </div>
-                                <div class="flex items-center gap-4 px-4 border-x" style="border-color:rgba(99,102,241,0.12);">
+                                <div class="flex items-center gap-4 px-4 border-x" style="border-color:rgba(255,255,255,0.10);">
                                     <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
                                         <svg class="w-4.5 h-4.5" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     </div>
-                                    <p class="text-[0.95rem] font-semibold leading-none" style="color:#1e293b;">Zero Repository Storage</p>
+                                    <p class="text-[0.95rem] font-semibold leading-tight" style="color:#ffffff;">Zero Repository Storage</p>
                                 </div>
                                 <div class="flex items-center gap-4 pl-4">
                                     <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
@@ -124,7 +124,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     </div>
-                                    <p class="text-[0.95rem] font-semibold leading-none" style="color:#1e293b;">API-Integrated System</p>
+                                    <p class="text-[0.95rem] font-semibold leading-tight" style="color:#ffffff;">API-Integrated System</p>
                                 </div>
                             </div>
                         </div>
