@@ -18,17 +18,8 @@
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
         <style>
-            .brand-gradient {
-                background: linear-gradient(150deg, #0f0c29 0%, #1e1b4b 35%, #2d2a6e 70%, #312e81 100%);
-            }
-            .grid-pattern {
-                background-image:
-                    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-                background-size: 40px 40px;
-            }
             .panel-text-shadow {
-                text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+                text-shadow: 0 2px 8px rgba(0,0,0,0.6);
             }
             .input-field {
                 transition: border-color 0.2s, box-shadow 0.2s;
@@ -56,11 +47,11 @@
         <div class="min-h-screen flex">
 
             <!-- Left Panel — Branding -->
-            <div class="hidden lg:flex lg:w-1/2 brand-gradient grid-pattern relative overflow-hidden flex-col justify-between p-12">
+            <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden flex-col justify-between p-12" style="background: linear-gradient(150deg, #0f0c29 0%, #1a1744 35%, #2d2a6e 70%, #312e81 100%); background-image: linear-gradient(150deg, #0f0c29 0%, #1a1744 35%, #2d2a6e 70%, #312e81 100%), linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: cover, 40px 40px, 40px 40px;">
 
-                <!-- Decorative accent blobs (subtle, dark-friendly) -->
-                <div class="absolute top-0 right-0 w-72 h-72 rounded-full opacity-10" style="background: radial-gradient(circle, #818cf8 0%, transparent 70%);"></div>
-                <div class="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-10" style="background: radial-gradient(circle, #6366f1 0%, transparent 70%);"></div>
+                <!-- Decorative accent blobs -->
+                <div class="absolute top-0 right-0 w-72 h-72 rounded-full" style="background: radial-gradient(circle, rgba(129,140,248,0.15) 0%, transparent 70%);"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 rounded-full" style="background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);"></div>
 
                 <!-- Logo -->
                 <div class="relative z-10">
@@ -71,15 +62,15 @@
 
                 <!-- Center copy -->
                 <div class="relative z-10">
-                    <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span class="text-white text-xs font-semibold tracking-widest uppercase panel-text-shadow">Portal Access</span>
+                    <div class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);">
+                        <span class="w-2 h-2 rounded-full animate-pulse" style="background:#34d399;"></span>
+                        <span class="text-xs font-semibold tracking-widest uppercase panel-text-shadow" style="color:#ffffff;">Portal Access</span>
                     </div>
-                    <h1 class="text-4xl xl:text-5xl font-extrabold text-white leading-tight mb-4 panel-text-shadow">
+                    <h1 class="text-4xl xl:text-5xl font-extrabold leading-tight mb-4 panel-text-shadow" style="color:#ffffff;">
                         Your workspace,<br>
-                        <span style="color: #a5b4fc;">all in one place.</span>
+                        <span style="color:#a5b4fc;">all in one place.</span>
                     </h1>
-                    <p class="text-slate-300 text-lg leading-relaxed max-w-sm panel-text-shadow">
+                    <p class="text-lg leading-relaxed max-w-sm panel-text-shadow" style="color:#cbd5e1;">
                         Manage orders, track progress, and collaborate — securely and efficiently.
                     </p>
                 </div>
@@ -87,18 +78,18 @@
                 <!-- Bottom stats -->
                 <div class="relative z-10 flex items-center gap-8">
                     <div>
-                        <p class="text-white text-2xl font-bold panel-text-shadow">100%</p>
-                        <p class="text-slate-300 text-xs mt-0.5">Secure Access</p>
+                        <p class="text-2xl font-bold panel-text-shadow" style="color:#ffffff;">100%</p>
+                        <p class="text-xs mt-0.5" style="color:#94a3b8;">Secure Access</p>
                     </div>
-                    <div class="w-px h-10 bg-white/20"></div>
+                    <div class="w-px h-10" style="background:rgba(255,255,255,0.2);"></div>
                     <div>
-                        <p class="text-white text-2xl font-bold panel-text-shadow">24 / 7</p>
-                        <p class="text-slate-300 text-xs mt-0.5">Availability</p>
+                        <p class="text-2xl font-bold panel-text-shadow" style="color:#ffffff;">24 / 7</p>
+                        <p class="text-xs mt-0.5" style="color:#94a3b8;">Availability</p>
                     </div>
-                    <div class="w-px h-10 bg-white/20"></div>
+                    <div class="w-px h-10" style="background:rgba(255,255,255,0.2);"></div>
                     <div>
-                        <p class="text-white text-2xl font-bold panel-text-shadow">Fast</p>
-                        <p class="text-slate-300 text-xs mt-0.5">Processing</p>
+                        <p class="text-2xl font-bold panel-text-shadow" style="color:#ffffff;">Fast</p>
+                        <p class="text-xs mt-0.5" style="color:#94a3b8;">Processing</p>
                     </div>
                 </div>
             </div>
