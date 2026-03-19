@@ -6,6 +6,7 @@ use App\Models\ClientLink;
 use App\Models\Order;
 use App\Models\OrderFile;
 use App\Enums\OrderStatus;
+use App\Rules\ValidTurnstile;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -33,8 +34,9 @@ class OrderController extends Controller
         $link = ClientLink::where('token', $token)->where('is_active', true)->with('client')->firstOrFail();
 
         $request->validate([
-            'files.*' => 'required|file|mimes:pdf,doc,docx,zip|max:102400',
-            'files'   => 'required|array|min:1|max:20',
+            'files.*'               => 'required|file|mimes:pdf,doc,docx,zip|max:102400',
+            'files'                 => 'required|array|min:1|max:20',
+            'cf-turnstile-response' => ['required', 'string', new ValidTurnstile],
         ]);
 
         try {

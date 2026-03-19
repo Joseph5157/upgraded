@@ -7,6 +7,8 @@
     <title>User Portal - {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Cloudflare Turnstile -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
@@ -144,6 +146,15 @@
                                         Non-Repository</span>
                                 </div>
                             </label>
+
+                            <!-- Cloudflare Turnstile -->
+                            <div class="mt-4">
+                                <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}"></div>
+                                @error('cf-turnstile-response')
+                                    <p class="text-xs text-red-400 mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
                             <div id="file-info" class="hidden mt-4 items-center justify-between gap-3">
                                 <span id="file-count-text" class="text-[11px] text-slate-400 font-semibold"></span>
                                 <button type="submit"

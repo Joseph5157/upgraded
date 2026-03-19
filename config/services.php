@@ -46,4 +46,9 @@ return [
         'vendor_chat_id' => env('TELEGRAM_VENDOR_CHAT_ID'),
     ],
 
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret'   => env('TURNSTILE_SECRET_KEY'),
+    ],
+
 ];
