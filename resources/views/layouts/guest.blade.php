@@ -74,61 +74,60 @@
                 <div class="absolute top-0 right-0 w-[34rem] h-[34rem] rounded-full" style="background: radial-gradient(circle, rgba(129,140,248,0.24) 0%, transparent 70%);"></div>
                 <div class="absolute bottom-[-6rem] left-[-4rem] w-[28rem] h-[28rem] rounded-full" style="background: radial-gradient(circle, rgba(99,102,241,0.16) 0%, transparent 72%);"></div>
 
-                <div class="relative z-10 flex min-h-screen w-full px-14 py-12 xl:px-16 xl:py-14">
-                    <div class="hero-copy flex min-h-full flex-col justify-center">
+                <div class="relative z-10 flex flex-col min-h-screen w-full px-14 py-14 xl:px-16 xl:py-16">
 
-                        <!-- Logo -->
-                        <div class="mb-12 xl:mb-14">
-                            <a href="/" class="inline-flex items-center">
-                                <x-application-logo class="h-16 w-auto rounded-sm bg-white px-2 py-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]" />
-                            </a>
+                    <!-- TOP: Logo -->
+                    <div>
+                        <a href="/" class="inline-flex items-center">
+                            <x-application-logo class="h-16 w-auto rounded-sm bg-white px-2 py-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]" />
+                        </a>
+                    </div>
+
+                    <!-- MIDDLE: Hero copy — vertically centred in the remaining space -->
+                    <div class="flex-1 flex flex-col justify-center py-10 hero-copy">
+                        <div class="inline-flex items-center gap-3 rounded-full px-5 py-2.5 mb-10 w-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);">
+                            <span class="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_0_5px_rgba(52,211,153,0.12)]" style="background:#48c7a8;"></span>
+                            <span class="text-[0.8rem] font-semibold tracking-[0.18em] uppercase" style="color:#f8fafc;">Secure Client Portal</span>
                         </div>
+                        <h1 class="text-[4rem] leading-[1.02] font-extrabold mb-7 panel-text-shadow tracking-[-0.045em]" style="color:#f8fafc;">
+                            <span style="color:#f8fafc;">Plagiarism &amp; AI Reports,</span><br>
+                            <span style="color:#b8b7ff;">all in one place.</span>
+                        </h1>
+                        <p class="text-[1.08rem] leading-[1.85] max-w-[38rem] font-medium" style="color:#d4d0e7;">
+                            Upload, track, and receive your plagiarism and AI reports through a secure, fully API automated system — designed for speed, accuracy, and zero manual delays.
+                        </p>
+                    </div>
 
-                        <!-- Center copy -->
-                        <div class="flex flex-col justify-center py-4 xl:py-6">
-                            <div class="inline-flex items-center gap-3 rounded-full px-5 py-2.5 mb-10 w-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);">
-                                <span class="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_0_5px_rgba(52,211,153,0.12)]" style="background:#48c7a8;"></span>
-                                <span class="text-[0.8rem] font-semibold tracking-[0.18em] uppercase" style="color:#f8fafc;">Secure Client Portal</span>
+                    <!-- BOTTOM: Feature highlights -->
+                    <div class="border-t pt-8 pb-2" style="border-color:rgba(255,255,255,0.10);">
+                        <div class="grid grid-cols-3 gap-5 items-center">
+                            <div class="flex items-center gap-4 pr-4">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
+                                    <svg class="w-4 h-4" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                                <p class="text-[0.95rem] font-semibold leading-tight" style="color:#ffffff;">100% Confidential</p>
                             </div>
-                            <h1 class="text-[4rem] leading-[1.02] font-extrabold mb-7 panel-text-shadow tracking-[-0.045em]" style="color:#f8fafc;">
-                                <span style="color:#f8fafc;">Plagiarism &amp; AI Reports,</span><br>
-                                <span style="color:#b8b7ff;">all in one place.</span>
-                            </h1>
-                            <p class="text-[1.08rem] leading-[1.95] max-w-[38rem] font-medium" style="color:#d4d0e7;">
-                                Upload, track, and receive your plagiarism and AI reports through a secure, fully API automated system — designed for speed, accuracy, and zero manual delays.
-                            </p>
-                        </div>
-
-                        <!-- Bottom highlights -->
-                        <div class="mt-10 border-y px-0 py-6" style="border-color:rgba(255,255,255,0.10);">
-                            <div class="grid grid-cols-3 gap-5 items-center">
-                                <div class="flex items-center gap-4 pr-4">
-                                    <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
-                                        <svg class="w-4.5 h-4.5" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                    </div>
-                                    <p class="text-[0.95rem] font-semibold leading-tight" style="color:#ffffff;">100% Confidential</p>
+                            <div class="flex items-center gap-4 px-4 border-x" style="border-color:rgba(255,255,255,0.10);">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
+                                    <svg class="w-4 h-4" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
                                 </div>
-                                <div class="flex items-center gap-4 px-4 border-x" style="border-color:rgba(255,255,255,0.10);">
-                                    <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
-                                        <svg class="w-4.5 h-4.5" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                    </div>
-                                    <p class="text-[0.95rem] font-semibold leading-tight" style="color:#ffffff;">Zero Repository Storage</p>
+                                <p class="text-[0.95rem] font-semibold leading-tight" style="color:#ffffff;">Zero Repository Storage</p>
+                            </div>
+                            <div class="flex items-center gap-4 pl-4">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
+                                    <svg class="w-4 h-4" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
                                 </div>
-                                <div class="flex items-center gap-4 pl-4">
-                                    <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]" style="background:#4ca89c;">
-                                        <svg class="w-4.5 h-4.5" style="color:#ffffff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                    </div>
-                                    <p class="text-[0.95rem] font-semibold leading-tight" style="color:#ffffff;">API-Integrated System</p>
-                                </div>
+                                <p class="text-[0.95rem] font-semibold leading-tight" style="color:#ffffff;">API-Integrated System</p>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
