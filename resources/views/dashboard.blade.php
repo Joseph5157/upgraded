@@ -503,6 +503,32 @@
     <script>
         const MAX_REPORT_SIZE = 100 * 1024 * 1024;
 
+        function refreshAvailableQueue() {
+            if (document.hidden) return;
+
+            fetch(window.location.pathname + '?queue_refresh=' + Date.now(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const incomingQueue = doc.getElementById('files');
+                    const currentQueue = document.getElementById('files');
+
+                    if (!incomingQueue || !currentQueue) return;
+                    currentQueue.outerHTML = incomingQueue.outerHTML;
+                    if (window.lucide && lucide.createIcons) lucide.createIcons();
+                })
+                .catch(() => {
+                    // Ignore transient fetch errors; next polling tick will retry.
+                });
+        }
+
+        setInterval(refreshAvailableQueue, 30000);
+
         function setUploadError(orderId, message) {
             const errStrip = document.getElementById('error-strip-' + orderId);
             const errMsg   = document.getElementById('error-msg-' + orderId);
