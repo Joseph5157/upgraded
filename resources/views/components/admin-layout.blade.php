@@ -9,26 +9,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin &mdash; {{ config('app.name') }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary:   '#4F6EF7',
-                        surface:   '#F0F2F5',
-                        base:      '#FAFBFC',
-                        ink:       '#1A1D23',
-                        muted:     '#9CA3AF',
-                        border:    '#E2E6EA',
-                        subtle:    '#ECEEF2',
-                    }
-                }
-            }
+    <title>Admin &mdash; PlagExpert</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        /* Admin custom colour tokens */
+        :root {
+            --color-primary: #4F6EF7;
+            --color-surface: #F0F2F5;
+            --color-base:    #FAFBFC;
+            --color-ink:     #1A1D23;
+            --color-muted:   #9CA3AF;
+            --color-border:  #E2E6EA;
+            --color-subtle:  #ECEEF2;
         }
-    </script>
+    </style>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap"
         rel="stylesheet">
