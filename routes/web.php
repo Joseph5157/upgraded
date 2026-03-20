@@ -32,6 +32,12 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Public CSRF token refresh — used by the client upload page to prevent 419 errors
+// Throttled tightly so it can't be abused; returns a fresh CSRF token for the session.
+Route::get('/csrf-token-public', function () {
+    return response()->json(['token' => csrf_token()]);
+})->middleware('throttle:20,1')->name('csrf.token.public');
+
 // Client Public Routes — throttled to prevent abuse
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/u/{token}', [OrderController::class, 'showUpload'])->name('client.upload');

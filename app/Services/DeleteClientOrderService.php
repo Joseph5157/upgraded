@@ -61,13 +61,29 @@ class DeleteClientOrderService
 
             // Restore slot credit if the service was never rendered
             if (!$wasDelivered) {
-                $client->decrement('slots_consumed');
-                if ($client->status === 'suspended' && $client->fresh()->slots_consumed < $client->slots) {
+                $creditsToRestore = max(0, (int) $order->files_count);
+                $newConsumed = max(0, $client->slots_consumed - $creditsToRestore);
+
+                $client->update(['slots_consumed' => $newConsumed]);
+
+                if ($client->status === 'suspended' && $newConsumed < $client->slots) {
                     $client->update(['status' => 'active']);
                 }
             }
         });
 
-        return !$wasDelivered;
+        if ($client->slots_consumed < $order->files_count) {
+            $remainingCredits = $client->slots - $client->slots_consumed;
+            throw new \Exception(
+                "Insufficient credits. You selected {$order->files_count} file(s), but only {$remainingCredits} credit(s) are available. Please contact Admin for a refill."
+            );
+        }
+
+        $slotRestored = !$wasDelivered;
+        $message = $slotRestored
+            ? "Order deleted. {$order->files_count} credit(s) have been restored."
+            : 'Order and all files permanently deleted.';
+
+        return $slotRestored;
     }
 }
