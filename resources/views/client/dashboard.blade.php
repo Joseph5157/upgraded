@@ -184,18 +184,19 @@
         </div>
 
         {{--  ANNOUNCEMENTS BANNER  --}}
-        <x-announcements-banner />
+        <x-announcements-banner class="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 px-6 rounded-lg shadow-lg" />
 
         {{-- Notification Banner --}}
-        <div class="bg-red-500 text-white text-center py-2 rounded-lg mb-4">
-            <p class="text-sm font-bold">Important: All files will be deleted from the server every night. Please download your files before the end of the day.</p>
+        <div class="bg-gradient-to-r from-red-500 to-orange-500 text-white text-center py-4 px-6 rounded-lg mb-4 shadow-lg flex items-center justify-center gap-3">
+            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            <p class="text-lg font-semibold tracking-wide leading-relaxed">Important: All files will be deleted from the server every night. Please download your files before the end of the day.</p>
         </div>
 
         <div class="px-6 py-5 max-w-[1380px] mx-auto space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
 
             {{-- Flash --}}
             @if(session('success'))
-                <div class="flex items-center gap-3 px-5 py-3.5 bg-emerald-500/[0.08] border border-emerald-500/20 rounded-2xl text-emerald-400 text-[13px] font-semibold">
+                <div class="flex items-center gap-3 px-5 py-3.5 bg-green-100 border border-green-300 rounded-2xl text-green-700 text-[13px] font-semibold shadow-sm">
                     <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
                     {{ session('success') }}
                 </div>
@@ -205,11 +206,11 @@
             @php $remaining = max(0, $client->slots - $client->fresh()->slots_consumed); @endphp
 
             @if($remaining > 10)
-                <div class="flex items-center gap-4 px-5 py-3 rounded-2xl border border-emerald-500/[0.15] bg-gradient-to-r from-emerald-500/[0.06] to-transparent">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" style="box-shadow:0 0 10px rgba(52,211,153,0.5)"></span>
+                <div class="flex items-center gap-4 px-5 py-3 rounded-2xl border border-green-300 bg-gradient-to-r from-green-100 to-transparent shadow-md">
+                    <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" style="box-shadow:0 0 10px rgba(52,211,153,0.5)"></span>
                     <div>
-                        <p class="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-400">Credit Status</p>
-                        <p class="text-[13px] font-bold text-emerald-400 mt-0.5">Credits Available: <span class="font-mono">{{ $remaining }}</span></p>
+                        <p class="text-[9px] font-black uppercase tracking-[0.25em] text-green-400">Credit Status</p>
+                        <p class="text-[13px] font-bold text-green-400 mt-0.5">Credits Available: <span class="font-mono">{{ $remaining }}</span></p>
                     </div>
                 </div>
             @elseif($remaining > 0)

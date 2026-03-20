@@ -94,3 +94,47 @@
 .focus-effect {
   @apply focus:outline-none focus:shadow-focus;
 }
+
+.vendor-dashboard {
+  @apply bg-background-light text-primary-900;
+}
+
+.vendor-card {
+  @apply bg-primary-100 text-primary-900 shadow-md rounded-lg;
+}
+
+.vendor-card:hover {
+  @apply bg-primary-200 shadow-lg;
+}
+
+.vendor-header {
+  @apply text-primary-700 font-bold;
+}
+
+.vendor-button {
+  @apply bg-primary-500 text-white rounded-lg shadow-md transition-all duration-300;
+}
+
+.vendor-button:hover {
+  @apply bg-primary-600 shadow-lg;
+}
+
+/* Typography improvements */
+.h1 {
+  @apply text-h1 font-bold;
+}
+.h2 {
+  @apply text-h2 font-semibold;
+}
+.h3 {
+  @apply text-h3 font-medium;
+}
+.stat {
+  @apply text-stat font-extrabold;
+}
+.label {
+  @apply text-label uppercase tracking-wide;
+}
+.secondary-text {
+  @apply text-secondary text-secondaryText;
+}
