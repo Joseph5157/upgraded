@@ -186,6 +186,11 @@
         {{--  ANNOUNCEMENTS BANNER  --}}
         <x-announcements-banner />
 
+        {{-- Notification Banner --}}
+        <div class="bg-red-500 text-white text-center py-2 rounded-lg mb-4">
+            <p class="text-sm font-bold">Important: All files will be deleted from the server every night. Please download your files before the end of the day.</p>
+        </div>
+
         <div class="px-6 py-5 max-w-[1380px] mx-auto space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
 
             {{-- Flash --}}
