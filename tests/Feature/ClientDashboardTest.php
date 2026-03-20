@@ -49,8 +49,9 @@ class ClientDashboardTest extends TestCase
             'created_by_user_id' => $user->id
         ]);
         OrderReport::create([
-            'order_id' => $deliveredOrder->id,
-            'report_path' => 'reports/r1.pdf'
+            'order_id'         => $deliveredOrder->id,
+            'ai_report_path'   => 'reports/r1_ai.pdf',
+            'plag_report_path' => 'reports/r1_plag.pdf',
         ]);
 
         $response = $this->actingAs($user)->get(route('client.dashboard'));

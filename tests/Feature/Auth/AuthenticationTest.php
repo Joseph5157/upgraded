@@ -22,8 +22,9 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->post('/login', [
-            'email' => $user->email,
-            'password' => 'password',
+            'email'                 => $user->email,
+            'password'              => 'password',
+            'cf-turnstile-response' => 'test',
         ]);
 
         $this->assertAuthenticated();

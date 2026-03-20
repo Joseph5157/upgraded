@@ -17,14 +17,16 @@ class OrderSourceTest extends TestCase
 
     public function test_order_created_via_link_has_correct_metadata()
     {
-        Storage::fake('local');
+        Storage::fake('r2');
         $client = Client::create(['name' => 'Test Client', 'slots' => 10]);
         $link = ClientLink::create(['client_id' => $client->id, 'token' => 'test-token', 'is_active' => true]);
 
         $response = $this->post(route('client.store', 'test-token'), [
-            'files' => [UploadedFile::fake()->create('document.pdf', 100)],
+            'files'                 => [UploadedFile::fake()->create('document.pdf', 100)],
+            'cf-turnstile-response' => 'test',
         ]);
 
+        $response->assertSessionHasNoErrors();
         $response->assertRedirect();
 
         $order = Order::first();
@@ -35,7 +37,7 @@ class OrderSourceTest extends TestCase
 
     public function test_order_created_via_dashboard_has_correct_metadata()
     {
-        Storage::fake('local');
+        Storage::fake('r2');
         $client = Client::create(['name' => 'Test Client', 'slots' => 10]);
         $user = User::factory()->create(['role' => 'client', 'client_id' => $client->id]);
 

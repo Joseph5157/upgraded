@@ -86,7 +86,6 @@ class DashboardImprovmentTest extends TestCase
         $response->assertViewHas('myWorkspace');
         $response->assertViewHas('availableFiles');
         $response->assertViewHas('recentHistory');
-        $response->assertViewHas('topAgents');
 
         $stats = $response->viewData('stats');
         $this->assertEquals(2, $stats['available_pool']); // pool-1 and overdue-1 are both pending/unclaimed
