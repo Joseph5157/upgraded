@@ -120,10 +120,13 @@ class DashboardController extends Controller
         $this->authorize('uploadReport', $order);
 
         $request->validate([
-            'ai_report'   => 'required|file|mimes:pdf|max:102400',
-            'plag_report' => 'required|file|mimes:pdf|max:102400',
+            'ai_skipped'     => 'sometimes|boolean',
+            'ai_skip_reason' => 'required_if:ai_skipped,1|string|max:255',
+            'ai_report'      => 'required_unless:ai_skipped,1|file|mimes:pdf|max:102400',
+            'plag_report'    => 'required|file|mimes:pdf|max:102400',
         ], [
-            'ai_report.required'   => 'Please select the AI detection report PDF.',
+            'ai_report.required_unless' => 'Please select the AI detection report PDF or provide a reason for skipping it.',
+            'ai_skip_reason.required_if' => 'Please explain why the AI report was unable to be generated.',
             'ai_report.file'       => 'AI report must be a valid file.',
             'ai_report.uploaded'   => 'AI report failed to upload. Keep each report under 100MB and try again.',
             'ai_report.mimes'      => 'AI report must be a PDF file.',
@@ -141,6 +144,7 @@ class DashboardController extends Controller
                 auth()->user(),
                 $request->file('ai_report'),
                 $request->file('plag_report'),
+                $request->input('ai_skipped') ? $request->input('ai_skip_reason') : null,
             );
         } catch (\Throwable $e) {
             $message = $e->getMessage();

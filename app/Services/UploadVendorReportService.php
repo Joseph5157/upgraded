@@ -25,7 +25,7 @@ class UploadVendorReportService
      *
      * @throws \Throwable  On storage failure or workflow rule violation
      */
-    public function execute(Order $order, User $user, UploadedFile $aiReport, UploadedFile $plagReport): void
+    public function execute(Order $order, User $user, ?UploadedFile $aiReport, UploadedFile $plagReport, ?string $aiSkipReason = null): void
     {
         $disk            = $this->storageDisk;
         $aiPath          = null;
@@ -33,7 +33,9 @@ class UploadVendorReportService
         $reportPersisted = false;
 
         try {
-            $aiPath = $aiReport->store('reports/' . $order->id . '/ai', $disk);
+            if ($aiReport) {
+                $aiPath = $aiReport->store('reports/' . $order->id . '/ai', $disk);
+            }
 
             try {
                 $plagPath = $plagReport->store('reports/' . $order->id . '/plag', $disk);
@@ -44,13 +46,17 @@ class UploadVendorReportService
                 throw $e;
             }
 
-            if (!$aiPath || !$plagPath) {
-                throw new \Exception('Failed to save the report files to storage. Please try again or contact support.');
+            if (empty($aiPath) && empty($aiSkipReason)) {
+                throw new \Exception('Failed to process AI report file. Please try again or contact support.');
+            }
+            if (!$plagPath) {
+                throw new \Exception('Failed to save the Plagiarism report file to storage. Please try again or contact support.');
             }
 
             $this->workflowService->uploadReport($order, $user, [
                 'ai_report_path'   => $aiPath,
                 'ai_report_disk'   => $disk,
+                'ai_skip_reason'   => $aiSkipReason,
                 'plag_report_path' => $plagPath,
                 'plag_report_disk' => $disk,
             ]);

@@ -76,8 +76,8 @@ class OrderWorkflowService
             throw new Exception("Cannot upload a report for an order that has already been delivered.");
         }
 
-        if (empty($data['ai_report_path'])) {
-            throw new Exception("The AI report PDF file is required.");
+        if (empty($data['ai_report_path']) && empty($data['ai_skip_reason'])) {
+            throw new Exception("The AI report PDF file is required, unless a valid reason for skipping is provided.");
         }
 
         if (empty($data['plag_report_path'])) {
@@ -88,14 +88,15 @@ class OrderWorkflowService
             OrderReport::updateOrCreate(
                 ['order_id' => $order->id],
                 [
-                    'ai_report_path'   => $data['ai_report_path'],
+                    'ai_report_path'   => $data['ai_report_path'] ?? null,
                     'ai_report_disk'   => $data['ai_report_disk'] ?? 'r2',
+                    'ai_skip_reason'   => $data['ai_skip_reason'] ?? null,
                     'plag_report_path' => $data['plag_report_path'],
                     'plag_report_disk' => $data['plag_report_disk'] ?? 'r2',
                 ]
             );
 
-            $this->logActivity($order, $user, 'upload_report', 'AI and Plagiarism report PDFs uploaded');
+            $this->logActivity($order, $user, 'upload_report', 'Report PDFs (and/or skip info) uploaded');
         });
     }
 
@@ -118,8 +119,8 @@ class OrderWorkflowService
             }
 
             $report = $lockedOrder->report()->first();
-            if (!$report || !$report->ai_report_path || !$report->plag_report_path) {
-                throw new Exception("Both the AI report and Plagiarism report PDFs must be uploaded before delivery.");
+            if (!$report || (empty($report->ai_report_path) && empty($report->ai_skip_reason)) || empty($report->plag_report_path)) {
+                throw new Exception("Both the AI report and Plagiarism report PDFs must be uploaded before delivery (or an AI skip reason provided).");
             }
 
             $oldStatus = $lockedOrder->status->value;

@@ -75,9 +75,15 @@ class TopupRequestController extends Controller
         DB::transaction(function () use ($topupRequest) {
             $client = $topupRequest->client;
 
+            $newSlots = $client->slots + $topupRequest->amount_requested;
+
             $client->update([
-                'slots'  => $client->slots + $topupRequest->amount_requested,
-                'status' => 'active',
+                'slots'  => $newSlots,
+                // Reactivate only if they're not user-frozen AND the new slot count
+                // gives them actual remaining capacity
+                'status' => ($client->status === 'suspended' && $client->slots_consumed < $newSlots)
+                    ? 'active'
+                    : $client->status,
             ]);
 
             $topupRequest->update([

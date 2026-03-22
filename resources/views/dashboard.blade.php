@@ -54,29 +54,18 @@
             <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Delivered Today</p>
         </div>
 
-        {{-- Overdue + Total Delivered --}}
-        <div
-            class="group bg-[#FAFBFC] border @if($stats['overdue_count'] > 0) border-red-500/20 @else border-[#E2E6EA] @endif rounded-2xl p-3 sm:p-5 hover:border-red-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
+        {{-- Total Delivered --}}
+        <div class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-3 sm:p-5 hover:border-purple-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
             <div class="flex items-start justify-between mb-3 sm:mb-4">
-                <div
-                    class="w-8 h-8 sm:w-9 sm:h-9 @if($stats['overdue_count'] > 0) bg-red-500/10 @else bg-gray-100 dark:bg-white/[0.05] @endif rounded-xl flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 @if($stats['overdue_count'] > 0) text-red-400 @else text-gray-400 dark:text-slate-500 @endif"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
                 </div>
-                @if($stats['overdue_count'] > 0)
-                    <span class="text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-lg animate-pulse uppercase tracking-wider">Late</span>
-                @endif
+                <span class="text-[9px] font-bold text-purple-400 bg-purple-400/5 border border-purple-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">All Time</span>
             </div>
-            <p class="text-2xl sm:text-3xl font-bold @if($stats['overdue_count'] > 0) text-red-400 @else text-[#1A1D23] dark:text-white @endif tabular-nums">
-                {{ $stats['overdue_count'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Overdue Tasks</p>
-            <div class="mt-2 pt-2 border-t border-white/[0.05] hidden sm:block">
-                <p class="text-[9px] text-slate-500 uppercase tracking-widest font-semibold">Total Delivered</p>
-                <p class="text-sm font-bold text-slate-300 tabular-nums mt-0.5">{{ $stats['total_delivered'] }}</p>
-            </div>
+            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['total_delivered'] }}</p>
+            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Total Delivered</p>
         </div>
     </div>
 
@@ -414,11 +403,22 @@
                         </p>
                     </div>
 
+                    {{-- AI Bypass Checkbox --}}
+                    <div class="flex flex-col gap-2">
+                        <label class="flex items-center gap-2 text-[11px] font-semibold text-slate-300 cursor-pointer w-fit">
+                            <input type="checkbox" id="ai-skipped-{{ $order->id }}" name="ai_skipped" value="1" class="rounded bg-white/[0.04] border-white/[0.1] text-indigo-500 focus:ring-indigo-500/30" onchange="toggleAiBypass({{ $order->id }}, this.checked)">
+                            AI Report could not be generated
+                        </label>
+                        <div id="ai-skip-reason-container-{{ $order->id }}" class="hidden">
+                            <input type="text" name="ai_skip_reason" id="ai-skip-reason-input-{{ $order->id }}" placeholder="Brief reason (e.g. Not enough words)" class="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-3.5 py-2 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50" oninput="checkUploadReady({{ $order->id }})">
+                        </div>
+                    </div>
+
                     {{-- TWO UPLOAD ZONES --}}
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
                         {{-- AI Report --}}
-                        <div class="space-y-2">
+                        <div id="ai-upload-container-{{ $order->id }}" class="space-y-2">
                             <label class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500 uppercase tracking-widest">
                                 <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
                                 AI Detection Report
@@ -622,15 +622,67 @@
             label.classList.remove('border-dashed', 'border-white/[0.08]', 'bg-white/[0.03]');
             label.classList.add(c.labelBorder, c.labelBg);
 
-            // Show the green "ready to submit" strip and enable Submit when BOTH files are chosen
-            const aiInput   = document.querySelector('#ai-label-'   + orderId + ' input[type="file"]');
-            const plagInput = document.querySelector('#plag-label-' + orderId + ' input[type="file"]');
-            const bar       = document.getElementById('progress-' + orderId);
-            const btn       = document.getElementById('submit-btn-' + orderId);
-            if (aiInput && plagInput && aiInput.files.length && plagInput.files.length) {
-                bar.classList.remove('hidden');
-                bar.classList.add('flex');
+            checkUploadReady(orderId);
+        }
+
+        function toggleAiBypass(orderId, isSkipped) {
+            const uploadContainer = document.getElementById('ai-upload-container-' + orderId);
+            const reasonContainer = document.getElementById('ai-skip-reason-container-' + orderId);
+            const aiInput = document.querySelector('#ai-label-' + orderId + ' input[type="file"]');
+            
+            if (isSkipped) {
+                uploadContainer.classList.add('hidden');
+                reasonContainer.classList.remove('hidden');
+                if (aiInput) aiInput.value = '';
+                
+                const preview = document.getElementById('ai-preview-' + orderId);
+                const label = document.getElementById('ai-label-' + orderId);
+                if (preview) {
+                    preview.innerHTML = `
+                        <div class="w-9 h-9 bg-red-500/[0.08] rounded-xl flex items-center justify-center border border-red-500/[0.15] group-hover:scale-105 transition-all">
+                            <i data-lucide="file-scan" class="w-4 h-4 text-red-400/70"></i>
+                        </div>
+                        <span class="text-[9px] font-bold text-slate-600 uppercase tracking-wider leading-tight">AI Report<br>PDF</span>
+                    `;
+                }
+                if (label) {
+                    label.classList.add('border-dashed', 'border-white/[0.08]', 'bg-white/[0.03]');
+                    label.classList.remove('border-red-500/30', 'bg-red-500/[0.05]');
+                }
+                if (window.lucide && lucide.createIcons) lucide.createIcons();
+            } else {
+                uploadContainer.classList.remove('hidden');
+                reasonContainer.classList.add('hidden');
+                document.getElementById('ai-skip-reason-input-' + orderId).value = '';
+            }
+            checkUploadReady(orderId);
+        }
+
+        function checkUploadReady(orderId) {
+            const aiInput      = document.querySelector('#ai-label-' + orderId + ' input[type="file"]');
+            const plagInput    = document.querySelector('#plag-label-' + orderId + ' input[type="file"]');
+            const skipCheckbox = document.getElementById('ai-skipped-' + orderId);
+            const reasonInput  = document.getElementById('ai-skip-reason-input-' + orderId);
+            const bar          = document.getElementById('progress-' + orderId);
+            const btn          = document.getElementById('submit-btn-' + orderId);
+            
+            let aiReady   = false;
+            let plagReady = false;
+
+            if (skipCheckbox && skipCheckbox.checked) {
+                if (reasonInput && reasonInput.value.trim().length > 0) aiReady = true;
+            } else {
+                if (aiInput && aiInput.files && aiInput.files.length > 0) aiReady = true;
+            }
+
+            if (plagInput && plagInput.files && plagInput.files.length > 0) plagReady = true;
+
+            if (aiReady && plagReady) {
+                if (bar) { bar.classList.remove('hidden'); bar.classList.add('flex'); }
                 if (btn) btn.disabled = false;
+            } else {
+                if (bar) { bar.classList.add('hidden'); bar.classList.remove('flex'); }
+                if (btn) btn.disabled = true;
             }
         }
 
