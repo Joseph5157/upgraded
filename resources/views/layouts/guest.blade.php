@@ -65,7 +65,7 @@
         <div class="min-h-screen flex">
 
             <!-- Left Panel — Branding -->
-            <div class="hero-shell hidden lg:flex lg:w-[58%] relative overflow-hidden" >
+            <div class="hero-shell hidden lg:flex lg:w-1/2 relative overflow-hidden" >
 
                 <!-- Grid overlay -->
                 <div class="absolute inset-0 opacity-18" style="background-image: linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px); background-size: 40px 40px;"></div>
@@ -132,7 +132,7 @@
             </div>
 
             <!-- Right Panel — Form -->
-            <div class="w-full lg:w-[42%] flex flex-col justify-center items-center px-6 py-12 sm:px-10 xl:px-12" style="background:#f8fafc;">
+            <div class="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 py-12 sm:px-10 xl:px-12" style="background:#f8fafc;">
 
                 <!-- Mobile logo -->
                 <div class="lg:hidden mb-8 flex items-center justify-center">
@@ -141,7 +141,7 @@
                     </a>
                 </div>
 
-                <div class="w-full max-w-[30rem]">
+                <div class="w-full max-w-[32rem]">
                     <!-- Card -->
                     <div class="rounded-[1.75rem] p-7 sm:p-9 shadow-[0_24px_60px_rgba(15,23,42,0.10)]" style="background:#ffffff; border:1px solid #e2e8f0;">
                         {{ $slot }}
