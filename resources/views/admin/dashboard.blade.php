@@ -194,8 +194,78 @@
         </div>
     </div>
 
+    {{-- Active Vendor Operations (Stuck Detection) --}}
+    <div class="bg-[#0a0a0c] border border-white/5 rounded-2xl p-7 mt-6">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-amber-500/15 rounded-xl flex items-center justify-center text-amber-500">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-white">Active Workforce Operations</h2>
+                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Currently clamped files</p>
+                </div>
+            </div>
+            <span class="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-amber-500/20">{{ $activeOrders->count() }} Active</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="text-[10px] text-slate-600 font-bold uppercase tracking-widest border-b border-white/[0.04] bg-white/[0.02]">
+                        <th class="pb-3 px-3">File / Client</th>
+                        <th class="pb-3 text-left">Assigned Vendor</th>
+                        <th class="pb-3 text-left">Time Elapsed</th>
+                        <th class="pb-3 text-right pr-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/[0.04]">
+                    @forelse($activeOrders as $order)
+                        <tr class="group hover:bg-white/[0.03] transition-all">
+                            <td class="py-4 px-3">
+                                <p class="text-[11px] font-bold text-slate-300">
+                                    {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document #' . $order->id }}
+                                </p>
+                                <p class="text-[9px] text-slate-500 font-mono mt-0.5">{{ $order->client?->name ?? 'Unknown Client' }}</p>
+                            </td>
+                            <td class="py-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-400">
+                                        <i data-lucide="user" class="w-3 h-3"></i>
+                                    </div>
+                                    <span class="text-[11px] font-semibold text-indigo-300">{{ $order->vendor?->name ?? 'Unknown Vendor' }}</span>
+                                </div>
+                            </td>
+                            <td class="py-4">
+                                @php
+                                    $minutes = $order->claimed_at ? $order->claimed_at->diffInMinutes(now()) : 0;
+                                    $isStalled = $minutes > 60;
+                                @endphp
+                                <span class="text-[11px] font-mono {{ $isStalled ? 'text-red-400 font-bold' : 'text-slate-400' }}">
+                                    {{ $minutes }} mins
+                                </span>
+                            </td>
+                            <td class="py-4 text-right pr-3">
+                                <form action="{{ route('orders.unclaim', $order) }}" method="POST" onsubmit="return confirm('Are you sure you want to rip this file away from the vendor and return it to the pending pool?');" class="inline">
+                                    @csrf
+                                    <button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 hover:text-white bg-red-500/10 hover:bg-red-500 rounded-lg transition-all border border-red-500/20 shadow-sm">
+                                        <i data-lucide="unlock" class="w-3 h-3"></i> Force Release
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-xs text-slate-500 font-mono">No active clamped files detected.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     {{-- Quick Actions --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
         <button onclick="document.getElementById('create-account-modal').classList.remove('hidden')"
             class="bg-white/[0.02] border border-white/5 p-6 rounded-2xl space-y-3 hover:border-red-500/20 transition-all cursor-pointer group text-left w-full">
             <div

@@ -24,7 +24,10 @@ class OrderPolicy
      */
     public function unclaim(User $user, Order $order): bool
     {
-        return (int) $user->id === (int) $order->claimed_by
+        $isOwner = (int) $user->id === (int) $order->claimed_by;
+        $isAdmin = $user->role === 'admin';
+
+        return ($isOwner || $isAdmin)
             && in_array($order->status, [OrderStatus::Pending, OrderStatus::Processing]);
     }
 

@@ -38,6 +38,12 @@ class AdminDashboardController extends Controller
             ->take(10)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'vendorPerformance', 'recentOrders'));
+        $activeOrders = Order::with(['client', 'vendor', 'files'])
+            ->where('status', OrderStatus::Processing)
+            ->whereNotNull('claimed_by')
+            ->orderBy('claimed_at', 'asc') // Oldest claimed first
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'vendorPerformance', 'recentOrders', 'activeOrders'));
     }
 }
