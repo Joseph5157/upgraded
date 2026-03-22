@@ -83,9 +83,6 @@
   @apply transition-all duration-300 ease-in-out;
 }
 
-.shadow-hover {
-  @apply shadow-hover;
-}
 
 .rounded-lg {
   @apply rounded-lg;
