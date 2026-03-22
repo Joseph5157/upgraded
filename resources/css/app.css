@@ -83,11 +83,6 @@
   @apply transition-all duration-300 ease-in-out;
 }
 
-
-.rounded-lg {
-  @apply rounded-lg;
-}
-
 .focus-effect {
   @apply focus:outline-none focus:shadow-focus;
 }
