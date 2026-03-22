@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PurgeOrderFilesCommand extends Command
 {
-    protected $signature   = 'app:purge-order-files {--days=7 : Only purge files from orders delivered more than this many days ago}';
+    protected $signature   = 'app:purge-order-files {--days=1 : Only purge files from orders delivered more than this many days ago}';
     protected $description = 'Delete stored files from disk for delivered orders older than the specified age';
 
     public function handle(): int
