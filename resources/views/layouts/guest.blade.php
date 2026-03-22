@@ -85,15 +85,15 @@
 
                     <!-- MIDDLE: Hero copy — vertically centred in the remaining space -->
                     <div class="flex-1 flex flex-col justify-center py-10 hero-copy">
-                        <div class="inline-flex items-center gap-3 rounded-full px-5 py-2.5 mb-10 w-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.10)]" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);">
+                        <div class="inline-flex items-center gap-3 rounded-full px-5 py-2.5 mb-10 w-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] mx-auto" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);">
                             <span class="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_0_5px_rgba(52,211,153,0.12)]" style="background:#48c7a8;"></span>
                             <span class="text-[0.8rem] font-semibold tracking-[0.18em] uppercase" style="color:#f8fafc;">Secure Client Portal</span>
                         </div>
-                        <h1 class="text-[4rem] leading-[1.02] font-extrabold mb-7 panel-text-shadow tracking-[-0.045em]" style="color:#f8fafc;">
+                        <h1 class="text-[4rem] leading-[1.02] font-extrabold mb-7 panel-text-shadow tracking-[-0.045em] text-center" style="color:#f8fafc;">
                             <span style="color:#f8fafc;">Plagiarism &amp; AI Reports,</span><br>
                             <span style="color:#b8b7ff;">all in one place.</span>
                         </h1>
-                        <p class="text-[1.08rem] leading-[1.85] max-w-[38rem] font-medium" style="color:#d4d0e7;">
+                        <p class="text-[1.08rem] leading-[1.85] max-w-[38rem] font-medium text-center mx-auto" style="color:#d4d0e7;">
                             Upload, track, and receive your plagiarism and AI reports through a secure, fully API automated system — designed for speed, accuracy, and zero manual delays.
                         </p>
                     </div>
