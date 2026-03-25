@@ -55,8 +55,25 @@
     </nav>
 
     <main class="max-w-6xl mx-auto py-10 px-6 space-y-8">
+        @php
+            $remainingCredits = max(0, $client->slots - $client->slots_consumed);
+        @endphp
 
-        @if(($client->slots - $client->orders()->count()) <= 0)
+        @if(session('error'))
+            <div class="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
+                <h3 class="text-red-400 text-sm font-bold uppercase tracking-wider">Upload Failed</h3>
+                <p class="text-red-300/80 text-xs mt-1">{{ session('error') }}</p>
+            </div>
+        @endif
+
+        @if($errors->any() && ! $errors->has('cf-turnstile-response'))
+            <div class="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl">
+                <h3 class="text-amber-300 text-sm font-bold uppercase tracking-wider">Please Check Your Submission</h3>
+                <p class="text-amber-200/80 text-xs mt-1">{{ $errors->first() }}</p>
+            </div>
+        @endif
+
+        @if($remainingCredits <= 0)
             <!-- Limit Reached Banner -->
             <div class="bg-[#2a1b00] border border-[#ffd700]/10 p-4 rounded-xl flex items-center gap-4">
                 <div class="w-10 h-10 bg-[#ffd700]/10 rounded-full flex items-center justify-center text-[#ffd700]">
@@ -90,11 +107,11 @@
 
                     <div class="space-y-1">
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Credits Used:
-                            {{ $client->orders()->count() }}
+                            {{ $client->slots_consumed }}
                         </p>
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Remaining Slots</p>
                         <h2 class="text-7xl font-bold text-white tracking-tighter">
-                            {{ max(0, $client->slots - $client->orders()->count()) }}
+                            {{ $remainingCredits }}
                         </h2>
                     </div>
 
@@ -179,7 +196,7 @@
                     </div>
 
                     <button disabled
-                        class="w-full mt-8 py-4 bg-red-600/10 text-red-600 rounded-2xl text-xs font-bold uppercase tracking-widest border border-red-600/20 {{ ($client->slots - $client->orders()->count()) > 0 ? 'hidden' : '' }}">
+                        class="w-full mt-8 py-4 bg-red-600/10 text-red-600 rounded-2xl text-xs font-bold uppercase tracking-widest border border-red-600/20 {{ $remainingCredits > 0 ? 'hidden' : '' }}">
                         Slot Limit Reached
                     </button>
                 </div>

@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,5 +25,33 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if (! $request->expectsJson()) {
+                return null;
+            }
+
+            $status = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
+
+            $messages = [
+                401 => 'Authentication is required to continue.',
+                403 => 'You do not have permission to do that.',
+                404 => 'We could not find what you were looking for.',
+                419 => 'Your session has expired. Please refresh and try again.',
+                422 => 'Some submitted data is invalid.',
+                429 => 'Too many requests. Please wait and try again.',
+                500 => 'Something went wrong on our side. Please try again.',
+                503 => 'Service is temporarily unavailable. Please try again soon.',
+            ];
+
+            $payload = [
+                'message' => $messages[$status] ?? 'An unexpected error occurred.',
+            ];
+
+            if (config('app.debug')) {
+                $payload['exception'] = class_basename($e);
+                $payload['detail'] = $e->getMessage();
+            }
+
+            return response()->json($payload, $status);
+        });
     })->create();
