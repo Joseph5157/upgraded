@@ -197,18 +197,20 @@
                             </div>
                         @endif
                     @empty
-                        <div class="px-6 py-14 text-center border-t border-gray-100 dark:border-white/[0.04]">
-                            <div class="flex flex-col items-center gap-3">
-                                <div
-                                    class="w-12 h-12 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] rounded-2xl flex items-center justify-center text-gray-400 dark:text-slate-500">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-500 dark:text-slate-400">No active jobs</p>
-                                    <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">Claim an order from the queue below</p>
+                        <div class="px-4 pt-4 pb-3 border-t border-gray-100 dark:border-white/[0.04]">
+                            <div class="rounded-2xl border border-dashed border-white/[0.08] bg-black/10 dark:bg-white/[0.02] px-4 py-5">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] rounded-2xl flex items-center justify-center text-gray-400 dark:text-slate-500 flex-shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                        </svg>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-semibold text-gray-500 dark:text-slate-300">No active jobs</p>
+                                        <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">Claim an order from the queue below</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

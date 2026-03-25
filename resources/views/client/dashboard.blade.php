@@ -133,33 +133,33 @@
     <main class="flex-1 overflow-y-auto bg-[#070709] scrollbar-thin">
 
         {{-- TOP HEADER --}}
-        <header class="h-14 border-b border-white/[0.05] flex items-center justify-between px-4 sm:px-8 bg-[#070709]/80 backdrop-blur-xl sticky top-0 z-20">
+        <header class="min-h-[56px] border-b border-white/[0.05] flex items-center justify-between px-3 sm:px-8 py-2 sm:py-0 bg-[#070709]/80 backdrop-blur-xl sticky top-0 z-20">
             {{-- Mobile Menu Button --}}
-            <button class="md:hidden w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white mr-3" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+            <button class="md:hidden w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white mr-2" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </button>
-            <div class="flex items-center gap-2">
-                <h1 class="text-[15px] font-semibold text-white/90">
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                <h1 class="text-[12px] sm:text-[15px] font-semibold text-white/90 truncate">
                     Good Morning, {{ auth()->user()->name }}
                 </h1>
-                <span class="text-base">👋</span>
+                <span class="text-sm sm:text-base flex-shrink-0">👋</span>
             </div>
-            <div class="flex items-center gap-5">
-                <div class="flex items-center gap-3 pr-5 border-r border-white/[0.05]">
-                    <div class="text-right">
+            <div class="flex items-center gap-2 sm:gap-5 ml-2">
+                <div class="flex items-center gap-2 sm:gap-3 pr-2 sm:pr-5 border-r border-white/[0.05]">
+                    <div class="text-right hidden sm:block">
                         <p class="text-[9px] text-slate-600 font-bold uppercase tracking-[0.2em]">Client ID</p>
                         <p class="text-[11px] font-mono font-bold text-indigo-400 bg-indigo-500/[0.08] px-2 py-0.5 rounded-md mt-0.5">
                             ID-{{ str_pad($client->id, 4, '0', STR_PAD_LEFT) }}
                         </p>
                     </div>
-                    <div class="w-9 h-9 bg-indigo-500/[0.1] rounded-xl flex items-center justify-center text-indigo-400 ring-1 ring-indigo-500/20">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-500/[0.1] rounded-xl flex items-center justify-center text-indigo-400 ring-1 ring-indigo-500/20">
                         <i data-lucide="user" class="w-4 h-4"></i>
                     </div>
                 </div>
                 <div class="relative cursor-pointer">
-                    <i data-lucide="bell" class="w-[18px] h-[18px] text-slate-500 hover:text-slate-300 transition-colors"></i>
+                    <i data-lucide="bell" class="w-4 h-4 sm:w-[18px] sm:h-[18px] text-slate-500 hover:text-slate-300 transition-colors"></i>
                     <span class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-indigo-500 rounded-full ring-2 ring-[#070709]"></span>
                 </div>
             </div>
@@ -187,12 +187,12 @@
         <x-announcements-banner class="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 px-6 rounded-lg shadow-lg" />
 
         {{-- Notification Banner --}}
-        <div class="bg-gradient-to-r from-red-500 to-orange-500 text-white text-center py-4 px-6 rounded-lg mb-4 shadow-lg flex items-center justify-center gap-3">
-            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-            <p class="text-lg font-semibold tracking-wide leading-relaxed">Important: All files will be deleted from the server every night. Please download your files before the end of the day.</p>
+        <div class="mx-3 sm:mx-0 bg-gradient-to-r from-red-500 to-orange-500 text-white py-3 px-4 sm:py-4 sm:px-6 rounded-2xl mb-4 shadow-lg flex items-start sm:items-center gap-3">
+            <i data-lucide="alert-triangle" class="w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0 mt-0.5 sm:mt-0"></i>
+            <p class="text-[13px] sm:text-lg font-semibold tracking-tight sm:tracking-wide leading-6 sm:leading-relaxed">Important: All files will be deleted from the server every night. Please download your files before the end of the day.</p>
         </div>
 
-        <div class="px-6 py-5 max-w-[1380px] mx-auto space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
+        <div class="px-3 py-4 max-w-[1380px] mx-auto space-y-4 sm:px-6 sm:py-5 sm:space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
 
             {{-- Flash --}}
             @if(session('success'))
@@ -234,10 +234,10 @@
             @endif
 
             {{--  STAT CARDS  --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
 
                 {{-- Credits Card --}}
-                <div class="card card-glow p-5 rounded-2xl relative overflow-hidden">
+                <div class="card card-glow p-4 sm:p-5 rounded-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-28 h-28 bg-indigo-500/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
                     <div class="flex justify-between items-start mb-4">
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">
@@ -247,7 +247,7 @@
                             <i data-lucide="coins" class="w-4 h-4"></i>
                         </div>
                     </div>
-                    <h3 class="text-[2.35rem] font-extrabold text-white leading-none font-mono tracking-tight">
+                    <h3 class="text-[2rem] sm:text-[2.35rem] font-extrabold text-white leading-none font-mono tracking-tight">
                         {{ max(0, $client->slots - $client->slots_consumed) }}
                     </h3>
                     <p class="text-[11px] text-slate-400 mt-1.5 font-medium">Remaining Credits</p>
@@ -260,7 +260,7 @@
                 </div>
 
                 {{-- Active Orders Card --}}
-                <div class="card card-glow p-5 rounded-2xl relative overflow-hidden">
+                <div class="card card-glow p-4 sm:p-5 rounded-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-28 h-28 bg-blue-500/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
                     <div class="flex justify-between items-start mb-4">
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Active Orders</p>
@@ -268,14 +268,14 @@
                             <i data-lucide="activity" class="w-4 h-4"></i>
                         </div>
                     </div>
-                    <h3 class="text-[2.35rem] font-extrabold text-white leading-none font-mono tracking-tight">
+                    <h3 class="text-[2rem] sm:text-[2.35rem] font-extrabold text-white leading-none font-mono tracking-tight">
                         {{ $orders->where('status', '!=', 'delivered')->count() }}
                     </h3>
                     <p class="text-[11px] text-slate-400 mt-1.5 font-medium">In Processing Flow</p>
                 </div>
 
                 {{-- Plan Status Card --}}
-                <div class="card card-glow p-5 rounded-2xl relative overflow-hidden">
+                <div class="card card-glow p-4 sm:p-5 rounded-2xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-28 h-28 bg-emerald-500/[0.04] rounded-full -translate-y-1/2 translate-x-1/2 blur-xl pointer-events-none"></div>
                     <div class="flex justify-between items-start mb-4">
                         <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Plan Status</p>
@@ -283,7 +283,7 @@
                             <i data-lucide="shield-check" class="w-4 h-4"></i>
                         </div>
                     </div>
-                    <h3 class="text-[1.65rem] font-extrabold text-white leading-none tracking-tight">
+                    <h3 class="text-[1.35rem] sm:text-[1.65rem] font-extrabold text-white leading-none tracking-tight">
                         @if($client->plan_expiry && $client->plan_expiry->isPast()) Expired @else Professional @endif
                     </h3>
                     <p class="text-[11px] text-slate-400 mt-1.5 font-medium">
@@ -293,18 +293,18 @@
             </div>
 
             {{--  MAIN GRID: UPLOAD + ACTIVITY  --}}
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
 
                 {{-- UPLOAD SECTION --}}
                 <div class="lg:col-span-7">
-                    <div class="card rounded-3xl p-5 xl:p-6">
-                        <div class="flex justify-between items-start mb-5">
+                    <div class="card rounded-3xl p-4 sm:p-5 xl:p-6">
+                        <div class="flex justify-between items-start gap-3 mb-4 sm:mb-5">
                             <div>
-                                <h2 class="text-[17px] font-bold text-white tracking-tight">Secure Upload</h2>
+                                <h2 class="text-[15px] sm:text-[17px] font-bold text-white tracking-tight">Secure Upload</h2>
                                 <p class="text-[11px] text-slate-400 mt-1">Submit your document for non-repository scanning</p>
                             </div>
-                            <div class="w-11 h-11 bg-white/[0.04] rounded-2xl flex items-center justify-center border border-white/[0.06]">
-                                <i data-lucide="shield" class="w-5 h-5 text-indigo-400"></i>
+                            <div class="w-10 h-10 sm:w-11 sm:h-11 bg-white/[0.04] rounded-2xl flex items-center justify-center border border-white/[0.06] flex-shrink-0">
+                                <i data-lucide="shield" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400"></i>
                             </div>
                         </div>
 
@@ -312,13 +312,13 @@
                             @csrf
 
                             {{-- STEP 1: Drop zone --}}
-                            <label for="files" id="drop-zone" class="upload-zone group block rounded-[1.5rem] px-8 py-7 text-center cursor-pointer transition-all">
+                            <label for="files" id="drop-zone" class="upload-zone group block rounded-[1.25rem] sm:rounded-[1.5rem] px-4 sm:px-8 py-6 sm:py-7 text-center cursor-pointer transition-all">
                                 <input type="file" name="files[]" id="files" multiple required class="hidden" onchange="handleFileSelect(this)">
-                                <div id="drop-icon" class="w-14 h-14 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
-                                    <i data-lucide="file-plus" class="w-8 h-8 text-indigo-400"></i>
+                                <div id="drop-icon" class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
+                                    <i data-lucide="file-plus" class="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400"></i>
                                 </div>
-                                <h3 class="text-[15px] font-bold text-white/90 mb-1.5">Drop files here or click</h3>
-                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">PDF, DOCX up to 50MB</p>
+                                <h3 class="text-[13px] sm:text-[15px] font-bold text-white/90 mb-1.5">Drop files here or click</h3>
+                                <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em] sm:tracking-widest">PDF, DOCX up to 50MB</p>
                             </label>
 
                             {{-- STEP 2: File preview + notes + submit (hidden until files selected) --}}
@@ -356,18 +356,18 @@
                             </div>
                         </form>
 
-                        <div class="mt-4 grid grid-cols-2 gap-3">
-                            <div class="p-3.5 bg-emerald-500/[0.05] rounded-xl border border-emerald-500/[0.1] flex items-center gap-3">
+                        <div class="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+                            <div class="p-3 sm:p-3.5 bg-emerald-500/[0.05] rounded-xl border border-emerald-500/[0.1] flex items-center gap-2 sm:gap-3">
                                 <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
                                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-tight">AI Detection<br>Enabled</span>
+                                <span class="text-[9px] sm:text-[10px] font-bold text-slate-300 uppercase tracking-[0.14em] sm:tracking-widest leading-tight">AI Detection<br>Enabled</span>
                             </div>
-                            <div class="p-3.5 bg-emerald-500/[0.05] rounded-xl border border-emerald-500/[0.1] flex items-center gap-3">
+                            <div class="p-3 sm:p-3.5 bg-emerald-500/[0.05] rounded-xl border border-emerald-500/[0.1] flex items-center gap-2 sm:gap-3">
                                 <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
                                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                 </div>
-                                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest leading-tight">No Repo<br>Mode</span>
+                                <span class="text-[9px] sm:text-[10px] font-bold text-slate-300 uppercase tracking-[0.14em] sm:tracking-widest leading-tight">No Repo<br>Mode</span>
                             </div>
                         </div>
                     </div>
@@ -375,23 +375,23 @@
 
                 {{-- RECENT ACTIVITY --}}
                 <div class="lg:col-span-5 flex flex-col gap-4">
-                    <div class="flex items-center justify-between px-1">
-                        <h2 class="text-[11px] font-black text-white uppercase tracking-[0.2em]">Recent Activity</h2>
+                    <div class="flex items-center justify-between gap-3 px-1">
+                        <h2 class="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-[0.18em] sm:tracking-[0.2em]">Recent Activity</h2>
                         <span class="text-[7px] font-black uppercase tracking-widest text-indigo-400/40 bg-indigo-500/[0.05] border border-indigo-500/[0.08] px-2 py-0.5 rounded cursor-not-allowed">Coming Soon</span>
                     </div>
 
                     <div class="space-y-3 overflow-y-auto scrollbar-thin max-h-[500px] pr-0.5">
                         @forelse($orders as $order)
-                            <div class="card card-glow p-4 rounded-2xl group">
+                            <div class="card card-glow p-3 sm:p-4 rounded-2xl group">
 
                                 {{-- File row --}}
                                 <div class="flex items-start justify-between gap-3">
-                                    <div class="flex items-center gap-3 min-w-0">
-                                        <div class="w-10 h-10 bg-white/[0.04] rounded-xl flex items-center justify-center text-slate-500 group-hover:bg-indigo-500/[0.12] group-hover:text-indigo-400 transition-all border border-white/[0.05] flex-shrink-0">
+                                    <div class="flex items-center gap-3 min-w-0 flex-1">
+                                        <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/[0.04] rounded-xl flex items-center justify-center text-slate-500 group-hover:bg-indigo-500/[0.12] group-hover:text-indigo-400 transition-all border border-white/[0.05] flex-shrink-0">
                                             <i data-lucide="file-text" class="w-5 h-5"></i>
                                         </div>
                                         <div class="min-w-0">
-                                            <h4 class="text-[13px] font-bold text-white truncate leading-snug">
+                                            <h4 class="text-[12px] sm:text-[13px] font-bold text-white truncate leading-snug max-w-[170px] sm:max-w-none">
                                                 {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
                                             </h4>
                                             <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
@@ -429,9 +429,9 @@
 
                                     {{-- DELIVERED STATE --}}
                                     @if($order->status->value === 'delivered')
-                                        <div class="flex items-center justify-between gap-2">
+                                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                             {{-- Download buttons --}}
-                                            <div class="flex items-center gap-2">
+                                            <div class="flex flex-wrap items-center gap-2">
                                                 @if($order->report?->ai_report_path)
                                                     <a href="{{ route('client.download', $order->token_view) }}?type=ai"
                                                         class="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-500/[0.08] hover:bg-red-500/[0.15] text-red-400 text-[9px] font-bold rounded-lg border border-red-500/[0.15] transition-all active:scale-95">

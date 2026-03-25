@@ -59,6 +59,13 @@
             ::-webkit-scrollbar { width: 4px; }
             ::-webkit-scrollbar-track { background: transparent; }
             ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 99px; }
+
+            @media (max-width: 640px) {
+                .mobile-turnstile {
+                    transform: scale(0.94);
+                    transform-origin: center top;
+                }
+            }
         </style>
     </head>
     <body class="font-sans antialiased" style="background:#f8fafc;">
@@ -132,23 +139,23 @@
             </div>
 
             <!-- Right Panel — Form -->
-            <div class="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 py-12 sm:px-10 xl:px-12" style="background:#f8fafc;">
+            <div class="w-full lg:w-1/2 flex flex-col justify-center items-center px-4 py-8 sm:px-10 sm:py-12 xl:px-12" style="background:#f8fafc;">
 
                 <!-- Mobile logo -->
-                <div class="lg:hidden mb-8 flex items-center justify-center">
+                <div class="lg:hidden mb-5 flex items-center justify-center">
                     <a href="/" class="inline-flex items-center">
-                        <x-application-logo class="h-14 w-auto rounded-sm bg-white px-2 py-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]" />
+                        <x-application-logo class="h-12 sm:h-14 w-auto rounded-sm bg-white px-2 py-1 shadow-[0_12px_30px_rgba(0,0,0,0.22)]" />
                     </a>
                 </div>
 
                 <div class="w-full max-w-[32rem]">
                     <!-- Card -->
-                    <div class="rounded-[1.75rem] p-7 sm:p-9 shadow-[0_24px_60px_rgba(15,23,42,0.10)]" style="background:#ffffff; border:1px solid #e2e8f0;">
+                    <div class="rounded-[1.75rem] p-5 sm:p-9 shadow-[0_24px_60px_rgba(15,23,42,0.10)]" style="background:#ffffff; border:1px solid #e2e8f0;">
                         {{ $slot }}
                     </div>
                 </div>
 
-                <p class="mt-8 text-center text-xs" style="color:#64748b;">
+                <p class="mt-5 sm:mt-8 text-center text-xs" style="color:#64748b;">
                     &copy; {{ date('Y') }} PlagExpert. All rights reserved.
                 </p>
             </div>

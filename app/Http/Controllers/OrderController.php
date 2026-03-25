@@ -31,7 +31,11 @@ class OrderController extends Controller
             if (is_resource($stream)) {
                 fclose($stream);
             }
-        }, $downloadName);
+        }, $downloadName, [
+            'Content-Type'              => 'application/pdf',
+            'Content-Disposition'       => 'attachment; filename="' . $downloadName . '"',
+            'X-Content-Type-Options'    => 'nosniff',
+        ]);
     }
     public function showUpload($token)
     {

@@ -11,8 +11,8 @@
         @endphp
 
         <!-- Header -->
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold" style="color:#0f172a;">Welcome back</h2>
+        <div class="mb-6">
+            <h2 class="text-[2rem] sm:text-2xl font-bold leading-tight" style="color:#0f172a;">Welcome back</h2>
             <p class="text-sm mt-1" style="color:#64748b;">Sign in to your account to continue</p>
         </div>
 
@@ -39,7 +39,7 @@
         @endif
 
         <!-- Email -->
-        <div class="mb-5">
+        <div class="mb-4 sm:mb-5">
             <label for="email" class="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style="color:#64748b;">Email address</label>
             <div class="relative">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -56,7 +56,7 @@
                     autofocus
                     autocomplete="username"
                     placeholder="you@example.com"
-                    class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl text-sm {{ $errors->has('email') && !$isFrozenError ? 'border-red-400' : '' }}"
+                    class="input-field w-full pl-10 pr-4 py-2.5 sm:py-3 rounded-xl text-sm {{ $errors->has('email') && !$isFrozenError ? 'border-red-400' : '' }}"
                 />
             </div>
             @if(!$isFrozenError)
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Password -->
-        <div class="mb-5">
+        <div class="mb-4 sm:mb-5">
             <div class="flex items-center justify-between mb-1.5">
                 <label for="password" class="block text-xs font-semibold uppercase tracking-wider" style="color:#64748b;">Password</label>
                 @if (Route::has('password.request'))
@@ -87,7 +87,7 @@
                     required
                     autocomplete="current-password"
                     placeholder="••••••••"
-                    class="input-field w-full pl-10 pr-10 py-2.5 rounded-xl text-sm {{ $errors->has('password') ? 'border-red-400' : '' }}"
+                    class="input-field w-full pl-10 pr-10 py-2.5 sm:py-3 rounded-xl text-sm {{ $errors->has('password') ? 'border-red-400' : '' }}"
                 />
                 <!-- Toggle password visibility -->
                 <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center transition-colors" style="color:#94a3b8;">
@@ -101,7 +101,7 @@
         </div>
 
         <!-- Remember Me -->
-        <div class="mb-5">
+        <div class="mb-4 sm:mb-5">
             <label for="remember_me" class="inline-flex items-center gap-2.5 cursor-pointer select-none">
                 <input id="remember_me" type="checkbox" name="remember"
                     class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition" style="background:#ffffff;">
@@ -110,8 +110,10 @@
         </div>
 
         <!-- Cloudflare Turnstile -->
-        <div class="mb-6">
-            <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}"></div>
+        <div class="mb-5 sm:mb-6 overflow-hidden">
+            <div class="mobile-turnstile flex justify-center">
+                <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}"></div>
+            </div>
             <x-input-error :messages="$errors->get('cf-turnstile-response')" class="mt-1.5" />
         </div>
 
