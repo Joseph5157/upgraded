@@ -1,5 +1,7 @@
 # Railway Deployment Guide
 
+This project is configured to deploy on Railway with the included `Dockerfile`, so Laravel is served by Apache + PHP 8.2 with `public/` as the document root.
+
 ## Default Login Credentials
 
 After deployment, use these credentials to log in:
@@ -46,12 +48,13 @@ LOG_LEVEL=error
 
 1. Push your code to GitHub
 2. Connect Railway to your repository
-3. Railway will automatically:
+3. Make sure the Railway service root points to this Laravel project folder
+4. Railway will automatically:
+   - Build the Docker image
    - Install PHP dependencies with Composer
-   - Install Node.js dependencies
    - Build frontend assets with Vite
-   - Run database migrations with `--force --seed`
-   - Start the PHP development server
+   - Start Apache/PHP with `public/` as the web root
+   - Run database migrations with `--force`
 
 ## Post-Deployment Checklist
 
