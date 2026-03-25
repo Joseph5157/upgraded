@@ -188,7 +188,11 @@
 
         <div class="px-3 py-4 max-w-[1380px] mx-auto space-y-4 sm:px-6 sm:py-5 sm:space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
 
-            @php $remaining = max(0, $client->slots - $client->fresh()->slots_consumed); @endphp
+            @php
+                $totalSlots = (int) $client->total_slots;
+                $consumed = (int) $client->fresh()->slots_consumed;
+                $remaining = max(0, $totalSlots - $consumed);
+            @endphp
             @php
                 $activeOrders = $orders->where('status', '!=', 'delivered')->count();
                 $planLabel = $client->plan_expiry && $client->plan_expiry->isPast() ? 'Expired' : 'Professional';
@@ -266,7 +270,7 @@
                     <div class="flex items-end justify-between mt-3 gap-3">
                         <div>
                             <h3 class="text-[2rem] font-extrabold text-white leading-none font-mono">{{ $remaining }}</h3>
-                            <p class="text-[11px] text-slate-400 mt-2">Used: {{ $client->slots_consumed }}</p>
+                            <p class="text-[11px] text-slate-400 mt-2">Used: {{ $consumed }}</p>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-indigo-500/[0.08] border border-indigo-500/[0.12] flex items-center justify-center text-indigo-400 flex-shrink-0">
                             <i data-lucide="coins" class="w-4 h-4"></i>

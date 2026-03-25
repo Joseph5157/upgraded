@@ -56,7 +56,9 @@
 
     <main class="max-w-6xl mx-auto py-10 px-6 space-y-8">
         @php
-            $remainingCredits = max(0, $client->slots - $client->slots_consumed);
+            $totalSlots = (int) $client->total_slots;
+            $consumed = (int) $client->slots_consumed;
+            $remainingCredits = max(0, $totalSlots - $consumed);
         @endphp
 
         @if(session('error'))
@@ -107,7 +109,7 @@
 
                     <div class="space-y-1">
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Credits Used:
-                            {{ $client->slots_consumed }}
+                            {{ $consumed }}
                         </p>
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Remaining Slots</p>
                         <h2 class="text-7xl font-bold text-white tracking-tighter">

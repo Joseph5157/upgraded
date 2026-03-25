@@ -36,4 +36,9 @@ class Client extends Model
     {
         return $this->hasMany(RefundRequest::class);
     }
+
+    public function getTotalSlotsAttribute(): int
+    {
+        return (int) $this->slots;
+    }
 }
