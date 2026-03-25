@@ -203,7 +203,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Client Overview</p>
-                        <h2 class="text-[1.45rem] sm:text-[1.75rem] font-bold text-white mt-2 tracking-tight">Upload, track, and download with less clutter.</h2>
+                        <h2 class="text-[1.2rem] sm:text-[1.5rem] font-semibold text-white mt-2 tracking-tight leading-tight">Upload. Track. Download.</h2>
                     </div>
                     <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border @if($client->plan_expiry && $client->plan_expiry->isPast()) border-red-500/[0.18] bg-red-500/[0.06] text-red-300 @else border-emerald-500/[0.18] bg-emerald-500/[0.06] text-emerald-300 @endif">
                         <span class="w-1.5 h-1.5 rounded-full @if($client->plan_expiry && $client->plan_expiry->isPast()) bg-red-400 @else bg-emerald-400 @endif"></span>
