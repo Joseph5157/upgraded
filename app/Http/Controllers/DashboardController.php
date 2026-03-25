@@ -121,7 +121,7 @@ class DashboardController extends Controller
 
         $request->validate([
             'ai_skipped'     => 'sometimes|boolean',
-            'ai_skip_reason' => 'required_if:ai_skipped,1|string|max:255',
+            'ai_skip_reason' => 'nullable|required_if:ai_skipped,1|string|max:255',
             'ai_report'      => 'required_unless:ai_skipped,1|file|mimes:pdf|max:102400',
             'plag_report'    => 'required|file|mimes:pdf|max:102400',
         ], [
