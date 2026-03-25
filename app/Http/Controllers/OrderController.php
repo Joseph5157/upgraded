@@ -94,6 +94,11 @@ class OrderController extends Controller
 
         $type = $request->query('type', 'ai');
 
+        // Mark as downloaded on the first successful download of either report type.
+        if (!$order->is_downloaded) {
+            $order->update(['is_downloaded' => true]);
+        }
+
         if ($type === 'plag') {
             if (!$order->report->plag_report_path) abort(404);
             $disk = $order->report->plag_report_disk ?: $this->storageDisk;
@@ -104,7 +109,6 @@ class OrderController extends Controller
         if (!$order->report->ai_report_path) abort(404);
         $disk = $order->report->ai_report_disk ?: $this->storageDisk;
         if (!Storage::disk($disk)->exists($order->report->ai_report_path)) abort(404);
-        $order->update(['is_downloaded' => true]);
         return $this->downloadFromDisk($order->report->ai_report_path, 'ai-report-' . $order->id . '.pdf', $disk);
     }
 }
