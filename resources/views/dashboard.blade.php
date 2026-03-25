@@ -89,8 +89,134 @@
                     </div>
                 </div>
 
-                {{-- Table --}}
-                <div class="overflow-x-auto">
+                {{-- Mobile cards --}}
+                <div class="sm:hidden">
+                    @forelse($myWorkspace as $order)
+                        @php $isOverdue = $order->is_overdue; @endphp
+                        @if ($loop->first)
+                            <div class="px-4 pt-4 pb-2 border-t border-gray-100 dark:border-white/[0.04]">
+                                <div class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        @endif
+                        <div class="min-w-[240px] max-w-[240px] snap-start rounded-2xl border border-white/[0.06] bg-black/10 dark:bg-white/[0.02] p-3">
+                            <div class="flex items-start justify-between gap-2">
+                                <div
+                                    class="w-9 h-9 bg-indigo-600/10 rounded-xl flex items-center justify-center text-indigo-400 flex-shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                @if($isOverdue)
+                                    <span class="inline-flex items-center gap-1 text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-full flex-shrink-0">
+                                        <span class="w-1 h-1 bg-red-400 rounded-full"></span> Overdue
+                                    </span>
+                                @elseif($order->status->value === 'processing')
+                                    <span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full flex-shrink-0">
+                                        <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> Processing
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 text-[9px] font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] px-2 py-1 rounded-full flex-shrink-0">
+                                        <span class="w-1 h-1 bg-slate-500 rounded-full"></span> Pending
+                                    </span>
+                                @endif
+                            </div>
+
+                            <div class="mt-3 min-w-0">
+                                <p class="text-xs font-semibold text-slate-200 truncate dark:text-slate-200">
+                                    {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
+                                </p>
+                                <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                    @if($order->client)
+                                        <span class="text-[9px] text-gray-500 dark:text-slate-500 truncate">{{ $order->client->name }}</span>
+                                    @endif
+                                    <span class="text-[8px] font-bold px-1 py-0.5 rounded @if($order->source === 'account') bg-blue-500/10 text-blue-400 @else bg-purple-500/10 text-purple-400 @endif">{{ strtoupper($order->source) }}</span>
+                                </div>
+                                @if($order->notes)
+                                    <p class="text-[9px] text-amber-400/80 mt-1.5 leading-relaxed line-clamp-2 min-h-[2rem]">
+                                        <i data-lucide="message-square" class="w-2.5 h-2.5 inline-block mr-0.5 -mt-0.5"></i>{{ $order->notes }}
+                                    </p>
+                                @else
+                                    <div class="min-h-[2rem]"></div>
+                                @endif
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 mt-3">
+                                @if($order->files->first())
+                                    <a href="{{ route('orders.files.download', [$order, $order->files->first()]) }}"
+                                        class="inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-semibold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:bg-white/[0.05] dark:border-white/[0.08] dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/[0.08] rounded-lg transition-all">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                        </svg>
+                                        Download
+                                    </a>
+                                @else
+                                    <div></div>
+                                @endif
+                                <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button
+                                        class="w-full inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                        </svg>
+                                        Release
+                                    </button>
+                                </form>
+                                @if($order->status->value == 'pending')
+                                    <form action="{{ route('orders.status', $order) }}" method="POST" class="inline col-span-2">
+                                        @csrf
+                                        <input type="hidden" name="status" value="processing">
+                                        <button
+                                            class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-all shadow-lg shadow-emerald-600/10">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Start
+                                        </button>
+                                    </form>
+                                @else
+                                    <button
+                                        onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
+                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                        </svg>
+                                        Upload Reports
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                        @if ($loop->last)
+                                </div>
+                            </div>
+                        @endif
+                    @empty
+                        <div class="px-6 py-14 text-center border-t border-gray-100 dark:border-white/[0.04]">
+                            <div class="flex flex-col items-center gap-3">
+                                <div
+                                    class="w-12 h-12 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] rounded-2xl flex items-center justify-center text-gray-400 dark:text-slate-500">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-500 dark:text-slate-400">No active jobs</p>
+                                    <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">Claim an order from the queue below</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endforelse
+                </div>
+
+                {{-- Desktop table --}}
+                <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full min-w-0">
                     <thead>
                         <tr
