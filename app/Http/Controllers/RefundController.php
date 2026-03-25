@@ -64,6 +64,8 @@ class RefundController extends Controller
     // Admin index — list all refund requests
     public function index()
     {
+        $this->authorize('viewAny', RefundRequest::class);
+
         $refunds = RefundRequest::with(['order', 'client', 'user'])
             ->latest()
             ->get();
