@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'           => \App\Http\Middleware\RoleMiddleware::class,
             'account.status' => \App\Http\Middleware\CheckAccountStatus::class,
+            'nocache'        => \App\Http\Middleware\NoCacheHeaders::class,
         ]);
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckAccountStatus::class,

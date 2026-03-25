@@ -199,6 +199,12 @@
                 .catch(function() {});
         }
         setInterval(refreshCsrfToken, 30 * 60 * 1000);
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
     </script>
 </body>
 

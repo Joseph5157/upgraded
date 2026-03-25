@@ -345,5 +345,12 @@
             document.getElementById('price-display').textContent = '₹' + (n * pricePerSlot).toLocaleString('en-IN');
         }
     </script>
+    <script>
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+    </script>
 </body>
 </html>
