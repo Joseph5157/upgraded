@@ -34,6 +34,7 @@ RUN apt-get update \
         libfreetype6-dev \
         libicu-dev \
         libonig-dev \
+        libxml2-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         bcmath \
