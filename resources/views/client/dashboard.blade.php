@@ -140,9 +140,13 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </button>
+            @php
+                $hour = now()->hour;
+                $greeting = $hour < 12 ? 'Good Morning' : ($hour < 17 ? 'Good Afternoon' : 'Good Evening');
+            @endphp
             <div class="flex items-center gap-1.5 min-w-0 flex-1">
                 <h1 class="text-[12px] sm:text-[15px] font-semibold text-white/90 truncate">
-                    Good Morning, {{ auth()->user()->name }}
+                    {{ $greeting }}, {{ auth()->user()->name }}
                 </h1>
                 <span class="text-sm sm:text-base flex-shrink-0">👋</span>
             </div>
@@ -702,6 +706,80 @@
             document.getElementById('price-display').textContent = '₹' + (n * pricePerSlot).toLocaleString('en-IN');
         }
 
+    </script>
+    <script>
+        (function () {
+            const pulseUrl = @json(route('client.dashboard.pulse'));
+            let currentSignature = @json($dashboardSignature ?? '');
+            let pollTimer = null;
+            let inFlight = false;
+
+            async function checkForDashboardUpdates() {
+                if (inFlight || document.hidden) {
+                    return;
+                }
+
+                inFlight = true;
+
+                try {
+                    const response = await fetch(pulseUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        credentials: 'same-origin',
+                        cache: 'no-store',
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    const payload = await response.json();
+
+                    if (payload.signature && currentSignature && payload.signature !== currentSignature) {
+                        window.location.reload();
+                        return;
+                    }
+
+                    if (payload.signature) {
+                        currentSignature = payload.signature;
+                    }
+                } catch (error) {
+                    // Ignore transient network/session hiccups; next poll will retry.
+                } finally {
+                    inFlight = false;
+                }
+            }
+
+            function startDashboardPolling() {
+                if (pollTimer !== null) {
+                    return;
+                }
+
+                pollTimer = window.setInterval(checkForDashboardUpdates, 15000);
+            }
+
+            function stopDashboardPolling() {
+                if (pollTimer !== null) {
+                    window.clearInterval(pollTimer);
+                    pollTimer = null;
+                }
+            }
+
+            document.addEventListener('visibilitychange', function () {
+                if (document.hidden) {
+                    stopDashboardPolling();
+                    return;
+                }
+
+                checkForDashboardUpdates();
+                startDashboardPolling();
+            });
+
+            startDashboardPolling();
+        })();
     </script>
     <script>
         window.addEventListener('pageshow', function(event) {

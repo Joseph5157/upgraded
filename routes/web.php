@@ -67,6 +67,7 @@ Route::middleware(['auth', 'nocache', 'verified'])->group(function () {
     // Client Dashboard Routes
     Route::middleware(['role:client', 'account.status'])->prefix('client')->name('client.')->group(function () {
         Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/pulse', [ClientDashboardController::class, 'pulse'])->name('dashboard.pulse');
         Route::post('/dashboard/upload', [ClientDashboardController::class, 'store'])->name('dashboard.upload');
         Route::delete('/orders/{order}/delete', [ClientDashboardController::class, 'destroy'])->name('orders.delete');
         Route::delete('/orders/{order}/files/{file}', [ClientDashboardController::class, 'destroyFile'])->name('orders.files.delete');

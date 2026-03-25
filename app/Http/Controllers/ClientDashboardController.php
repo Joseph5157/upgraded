@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Order;
 use App\Models\OrderFile;
+use App\Models\OrderReport;
 use App\Enums\OrderStatus;
 use App\Services\CreateClientOrderService;
 use App\Services\DeleteClientOrderService;
@@ -55,7 +56,24 @@ class ClientDashboardController extends Controller
             ->latest()
             ->get();
 
-        return view('client.dashboard', compact('client', 'orders'));
+        $dashboardSignature = $this->buildDashboardSignature($user, $client);
+
+        return view('client.dashboard', compact('client', 'orders', 'dashboardSignature'));
+    }
+
+    public function pulse()
+    {
+        $user = Auth::user();
+        $client = $user->client;
+
+        if (!$client) {
+            abort(403, 'No client account is linked to your profile. Please contact the administrator.');
+        }
+
+        return response()->json([
+            'signature' => $this->buildDashboardSignature($user, $client),
+            'checked_at' => now()->toIso8601String(),
+        ]);
     }
 
     public function store(Request $request)
@@ -129,5 +147,36 @@ class ClientDashboardController extends Controller
             : 'Order and all files permanently deleted.';
 
         return back()->with('success', $message);
+    }
+
+    protected function buildDashboardSignature($user, Client $client): string
+    {
+        $ordersQuery = Order::query()
+            ->where('client_id', $client->id)
+            ->where('source', 'account');
+
+        if ($user->role === 'client') {
+            $ordersQuery->where('created_by_user_id', $user->id);
+        }
+
+        $maxOrderUpdatedAt = (clone $ordersQuery)->max('updated_at');
+        $deliveredCount = (clone $ordersQuery)->where('status', OrderStatus::Delivered->value)->count();
+        $cancelledCount = (clone $ordersQuery)->where('status', OrderStatus::Cancelled->value)->count();
+
+        $maxReportUpdatedAt = OrderReport::query()
+            ->whereHas('order', function ($query) use ($client, $user) {
+                $query->where('client_id', $client->id)
+                    ->where('source', 'account');
+
+                if ($user->role === 'client') {
+                    $query->where('created_by_user_id', $user->id);
+                }
+            })
+            ->max('updated_at');
+
+        $orderTs = $maxOrderUpdatedAt ? strtotime((string) $maxOrderUpdatedAt) : 0;
+        $reportTs = $maxReportUpdatedAt ? strtotime((string) $maxReportUpdatedAt) : 0;
+
+        return sha1($orderTs . '|' . $reportTs . '|' . $deliveredCount . '|' . $cancelledCount);
     }
 }
