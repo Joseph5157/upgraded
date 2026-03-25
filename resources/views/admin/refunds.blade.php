@@ -30,8 +30,8 @@
                 @forelse($refunds as $refund)
                     <tr class="hover:bg-white/[0.02] transition-all">
                         <td class="px-6 py-4">
-                            <p class="text-xs font-bold text-slate-300">{{ $refund->client->name }}</p>
-                            <p class="text-[9px] text-slate-500 font-mono">{{ $refund->user->email }}</p>
+                            <p class="text-xs font-bold text-slate-300">{{ $refund->client?->name ?? 'Deleted client' }}</p>
+                            <p class="text-[9px] text-slate-500 font-mono">{{ $refund->user?->email ?? 'Deleted user' }}</p>
                         </td>
                         <td class="px-4 py-4">
                             <span class="text-[10px] font-mono text-slate-400">#{{ $refund->order_id }}</span>
