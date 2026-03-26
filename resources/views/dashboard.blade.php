@@ -164,32 +164,15 @@
                                         Release
                                     </button>
                                 </form>
-                                @if($order->status->value == 'pending')
-                                    <form action="{{ route('orders.status', $order) }}" method="POST" class="inline col-span-2">
-                                        @csrf
-                                        <input type="hidden" name="status" value="processing">
-                                        <button
-                                            class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-all shadow-lg shadow-emerald-600/10">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            Start
-                                        </button>
-                                    </form>
-                                @else
-                                    <button
-                                        onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
-                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                        </svg>
-                                        Upload Reports
-                                    </button>
-                                @endif
+                                <button
+                                    onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
+                                    class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                    Upload Reports
+                                </button>
                             </div>
                         </div>
                         @if ($loop->last)
@@ -291,54 +274,26 @@
                                                 Download
                                             </a>
                                         @endif
-                                        @if($order->status->value == 'pending')
-                                            <form action="{{ route('orders.status', $order) }}" method="POST" class="inline">
-                                                @csrf
-                                                <input type="hidden" name="status" value="processing">
-                                                <button
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-all shadow-lg shadow-emerald-600/10">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    Start
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                                    </svg>
-                                                    Release
-                                                </button>
-                                            </form>
-                                        @else
+                                        <button
+                                            onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                            </svg>
+                                            Upload
+                                        </button>
+                                        <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
+                                            @csrf
                                             <button
-                                                onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                                                 </svg>
-                                                Upload
+                                                Release
                                             </button>
-                                            <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                                    </svg>
-                                                    Release
-                                                </button>
-                                            </form>
-                                        @endif
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -523,22 +478,37 @@
                     @csrf
 
                     {{-- Info strip --}}
-                    <div class="flex items-center gap-2.5 px-3.5 py-2.5 bg-indigo-500/[0.06] border border-indigo-500/[0.1] rounded-xl">
-                        <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400/70 flex-shrink-0"></i>
-                        <p class="text-[10px] text-indigo-400/70 leading-relaxed">
-                            Upload both the <span class="font-bold text-indigo-400">AI Detection</span> and
-                            <span class="font-bold text-indigo-400">Plagiarism</span> report PDFs to complete this order.
-                        </p>
+                    <div class="flex items-start gap-3 px-4 py-3 bg-indigo-500/[0.08] border border-indigo-500/[0.14] rounded-2xl">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-500/[0.12] border border-indigo-500/[0.2] flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="info" class="w-4 h-4 text-indigo-300"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-[11px] text-indigo-100 font-semibold leading-relaxed">
+                                Upload the required result PDFs to complete this order.
+                            </p>
+                            <p class="text-[10px] text-indigo-200/70 leading-relaxed">
+                                AI report plus plagiarism report are expected. If the AI report cannot be generated, use the fallback option below and add a short reason.
+                            </p>
+                        </div>
                     </div>
 
                     {{-- AI Bypass Checkbox --}}
-                    <div class="flex flex-col gap-2">
-                        <label class="flex items-center gap-2 text-[11px] font-semibold text-slate-300 cursor-pointer w-fit">
+                    <div class="flex flex-col gap-3 rounded-2xl border border-amber-500/[0.16] bg-amber-500/[0.06] px-4 py-3">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-amber-500/[0.12] border border-amber-500/[0.18] flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="triangle-alert" class="w-4 h-4 text-amber-300"></i>
+                            </div>
+                            <div class="space-y-1 min-w-0">
+                                <p class="text-[11px] font-semibold text-amber-100">Alternative if AI report is unavailable</p>
+                                <p class="text-[10px] text-amber-200/70 leading-relaxed">Use this only when the AI tool cannot generate a valid PDF. Add a short reason so the team can track the exception.</p>
+                            </div>
+                        </div>
+                        <label class="flex items-center gap-2 text-[11px] font-semibold text-slate-200 cursor-pointer w-fit">
                             <input type="checkbox" id="ai-skipped-{{ $order->id }}" name="ai_skipped" value="1" class="rounded bg-white/[0.04] border-white/[0.1] text-indigo-500 focus:ring-indigo-500/30" onchange="toggleAiBypass({{ $order->id }}, this.checked)">
-                            AI Report could not be generated
+                            AI report could not be generated
                         </label>
                         <div id="ai-skip-reason-container-{{ $order->id }}" class="hidden">
-                            <input type="text" name="ai_skip_reason" id="ai-skip-reason-input-{{ $order->id }}" placeholder="Brief reason (e.g. Not enough words)" class="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-3.5 py-2 text-[11px] text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50" oninput="checkUploadReady({{ $order->id }})">
+                            <input type="text" name="ai_skip_reason" id="ai-skip-reason-input-{{ $order->id }}" placeholder="Brief reason, for example: file too short for AI check" class="w-full bg-black/20 border border-amber-500/[0.18] rounded-xl px-3.5 py-2.5 text-[11px] text-white placeholder-amber-100/30 focus:outline-none focus:border-amber-400/50" oninput="checkUploadReady({{ $order->id }})">
                         </div>
                     </div>
 
@@ -547,47 +517,59 @@
 
                         {{-- AI Report --}}
                         <div id="ai-upload-container-{{ $order->id }}" class="space-y-2">
-                            <label class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                                AI Detection Report
+                            <label class="flex items-center justify-between gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                                    AI Detection Report
+                                </span>
+                                <span class="text-[8px] text-red-300/70">Required</span>
                             </label>
                             <label id="ai-label-{{ $order->id }}"
-                                class="group flex flex-col items-center justify-center gap-2 w-full bg-white/[0.03] hover:bg-red-500/[0.05] border-2 border-dashed border-white/[0.08] hover:border-red-500/30 rounded-2xl py-6 px-3 text-center cursor-pointer transition-all">
+                                class="group flex min-h-[168px] flex-col items-center justify-center gap-2.5 w-full bg-white/[0.04] hover:bg-red-500/[0.06] border-2 border-dashed border-white/[0.12] hover:border-red-400/40 rounded-2xl py-6 px-4 text-center cursor-pointer transition-all">
                                 <input type="file" name="ai_report" accept=".pdf" required class="hidden"
                                     onchange="previewFile(this, 'ai-preview-{{ $order->id }}', 'ai-label-{{ $order->id }}', 'red', {{ $order->id }})">
                                 <div id="ai-preview-{{ $order->id }}" class="flex flex-col items-center gap-1.5">
-                                    <div class="w-9 h-9 bg-red-500/[0.08] rounded-xl flex items-center justify-center border border-red-500/[0.15] group-hover:scale-105 transition-all">
-                                        <i data-lucide="file-scan" class="w-4 h-4 text-red-400/70"></i>
+                                    <div class="w-12 h-12 bg-red-500/[0.08] rounded-2xl flex items-center justify-center border border-red-500/[0.15] group-hover:scale-105 transition-all">
+                                        <i data-lucide="file-scan" class="w-5 h-5 text-red-300"></i>
                                     </div>
-                                    <span class="text-[9px] font-bold text-slate-600 uppercase tracking-wider leading-tight">AI Report<br>PDF</span>
+                                    <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">AI Report PDF</span>
+                                    <span class="text-[10px] text-slate-500 leading-relaxed">Click to upload PDF</span>
                                 </div>
                             </label>
                         </div>
 
                         {{-- Plagiarism Report --}}
                         <div class="space-y-2">
-                            <label class="flex items-center gap-1.5 text-[9px] font-bold text-slate-500 uppercase tracking-widest">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                                Plagiarism Report
+                            <label class="flex items-center justify-between gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                    Plagiarism Report
+                                </span>
+                                <span class="text-[8px] text-amber-300/70">Required</span>
                             </label>
                             <label id="plag-label-{{ $order->id }}"
-                                class="group flex flex-col items-center justify-center gap-2 w-full bg-white/[0.03] hover:bg-amber-500/[0.05] border-2 border-dashed border-white/[0.08] hover:border-amber-500/30 rounded-2xl py-6 px-3 text-center cursor-pointer transition-all">
+                                class="group flex min-h-[168px] flex-col items-center justify-center gap-2.5 w-full bg-white/[0.04] hover:bg-amber-500/[0.06] border-2 border-dashed border-white/[0.12] hover:border-amber-400/40 rounded-2xl py-6 px-4 text-center cursor-pointer transition-all">
                                 <input type="file" name="plag_report" accept=".pdf" required class="hidden"
                                     onchange="previewFile(this, 'plag-preview-{{ $order->id }}', 'plag-label-{{ $order->id }}', 'amber', {{ $order->id }})">
                                 <div id="plag-preview-{{ $order->id }}" class="flex flex-col items-center gap-1.5">
-                                    <div class="w-9 h-9 bg-amber-500/[0.08] rounded-xl flex items-center justify-center border border-amber-500/[0.15] group-hover:scale-105 transition-all">
-                                        <i data-lucide="file-search" class="w-4 h-4 text-amber-400/70"></i>
+                                    <div class="w-12 h-12 bg-amber-500/[0.08] rounded-2xl flex items-center justify-center border border-amber-500/[0.15] group-hover:scale-105 transition-all">
+                                        <i data-lucide="file-search" class="w-5 h-5 text-amber-300"></i>
                                     </div>
-                                    <span class="text-[9px] font-bold text-slate-600 uppercase tracking-wider leading-tight">Plag Report<br>PDF</span>
+                                    <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">Plagiarism Report PDF</span>
+                                    <span class="text-[10px] text-slate-500 leading-relaxed">Click to upload PDF</span>
                                 </div>
                             </label>
                         </div>
                     </div>
 
-                    {{-- Ready strip (hidden until both files selected) --}}
+                    <div class="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.03]">
+                        <p class="text-[10px] text-slate-400">PDF only. Maximum 100 MB per file.</p>
+                        <p class="text-[10px] text-slate-500">Two uploads required unless AI is skipped.</p>
+                    </div>
+
                     <div id="progress-{{ $order->id }}" class="hidden items-center gap-2.5 px-3.5 py-2.5 bg-emerald-500/[0.06] border border-emerald-500/[0.12] rounded-xl">
                         <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400 flex-shrink-0"></i>
-                        <p class="text-[10px] text-emerald-400 font-semibold">Both reports selected — ready to submit.</p>
+                        <p class="text-[10px] text-emerald-400 font-semibold">Files look good. Ready to submit.</p>
                     </div>
 
                     {{-- Upload progress bar (shown during XHR upload) --}}
@@ -619,7 +601,7 @@
                             disabled
                             class="flex-1 py-2.5 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
                             <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                            Submit Both Reports
+                            Select Required Files
                         </button>
                     </div>
                 </form>
@@ -681,7 +663,7 @@
 
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Both Reports';
+                submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Reports';
             }
             if (cancelBtn) cancelBtn.disabled = false;
             if (progressBar) {
@@ -743,7 +725,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                     </svg>
                 </div>
-                <span class="text-[9px] font-bold ${c.text} tracking-wide text-center leading-tight max-w-full px-1 break-all">${name}</span>
+                <span class="text-[10px] font-bold ${c.text} tracking-wide text-center leading-tight max-w-full px-1 break-all">${name}</span>
+                <span class="text-[10px] text-slate-400">Ready to submit</span>
             `;
 
             // Swap zone to "selected" state — solid border + tinted bg
@@ -767,10 +750,11 @@
                 const label = document.getElementById('ai-label-' + orderId);
                 if (preview) {
                     preview.innerHTML = `
-                        <div class="w-9 h-9 bg-red-500/[0.08] rounded-xl flex items-center justify-center border border-red-500/[0.15] group-hover:scale-105 transition-all">
-                            <i data-lucide="file-scan" class="w-4 h-4 text-red-400/70"></i>
+                        <div class="w-12 h-12 bg-red-500/[0.08] rounded-2xl flex items-center justify-center border border-red-500/[0.15] group-hover:scale-105 transition-all">
+                            <i data-lucide="file-scan" class="w-5 h-5 text-red-300"></i>
                         </div>
-                        <span class="text-[9px] font-bold text-slate-600 uppercase tracking-wider leading-tight">AI Report<br>PDF</span>
+                        <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">AI Report PDF</span>
+                        <span class="text-[10px] text-slate-500 leading-relaxed">Click to upload PDF</span>
                     `;
                 }
                 if (label) {
@@ -807,11 +791,18 @@
 
             if (aiReady && plagReady) {
                 if (bar) { bar.classList.remove('hidden'); bar.classList.add('flex'); }
-                if (btn) btn.disabled = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Reports';
+                }
             } else {
                 if (bar) { bar.classList.add('hidden'); bar.classList.remove('flex'); }
-                if (btn) btn.disabled = true;
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Select Required Files';
+                }
             }
+            if (window.lucide && lucide.createIcons) lucide.createIcons();
         }
 
         function submitUploadForm(orderId) {

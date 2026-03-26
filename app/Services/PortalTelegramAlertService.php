@@ -75,15 +75,26 @@ class PortalTelegramAlertService
             return;
         }
 
-        $downloadUrl = route('client.download', $order->token_view);
         $message = implode("\n", [
-            'Your report is ready to download.',
-            "Order ID: #{$order->id}",
-            "Tracking ID: {$order->token_view}",
-            "Download: {$downloadUrl}",
+            '✅ *Your report is ready to download*',
+            '',
+            '*Order ID:* `#' . $order->id . '`',
+            '*Tracking ID:* `' . $this->escapeMarkdown($order->token_view) . '`',
+            '',
+            '_Open your portal dashboard to download the files._',
         ]);
 
-        $this->telegramService->sendMessage((string) $clientUser->telegram_chat_id, $message);
+        $this->telegramService->sendMessage(
+            (string) $clientUser->telegram_chat_id,
+            $message,
+            null,
+            ['parse_mode' => 'Markdown']
+        );
+    }
+
+    protected function escapeMarkdown(string $text): string
+    {
+        return str_replace(['_', '*', '[', '`'], ['\_', '\*', '\[', '\`'], $text);
     }
 
     protected function resolveClientRecipient(Order $order): ?User

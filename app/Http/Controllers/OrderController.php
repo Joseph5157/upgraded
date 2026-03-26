@@ -9,7 +9,9 @@ use App\Rules\ValidTurnstile;
 use App\Services\CreateClientOrderService;
 use App\Services\DeleteClientOrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class OrderController extends Controller
 {
@@ -36,6 +38,52 @@ class OrderController extends Controller
             'Content-Disposition'       => 'attachment; filename="' . $downloadName . '"',
             'X-Content-Type-Options'    => 'nosniff',
         ]);
+    }
+
+    protected function bundleReports(Order $order)
+    {
+        $zipPath = storage_path('app/tmp/order-' . $order->id . '-reports-' . now()->timestamp . '.zip');
+        File::ensureDirectoryExists(dirname($zipPath));
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            abort(500, 'Unable to prepare report bundle.');
+        }
+
+        $report = $order->report;
+
+        if ($report->ai_report_path) {
+            $aiDisk = $report->ai_report_disk ?: $this->storageDisk;
+            if (Storage::disk($aiDisk)->exists($report->ai_report_path)) {
+                $zip->addFromString(
+                    'ai-report-' . $order->id . '.pdf',
+                    Storage::disk($aiDisk)->get($report->ai_report_path)
+                );
+            }
+        } elseif ($report->ai_skip_reason) {
+            $zip->addFromString(
+                'ai-report-note.txt',
+                "AI report was not generated for order #{$order->id}.\nReason: {$report->ai_skip_reason}\n"
+            );
+        }
+
+        if ($report->plag_report_path) {
+            $plagDisk = $report->plag_report_disk ?: $this->storageDisk;
+            if (Storage::disk($plagDisk)->exists($report->plag_report_path)) {
+                $zip->addFromString(
+                    'plagiarism-report-' . $order->id . '.pdf',
+                    Storage::disk($plagDisk)->get($report->plag_report_path)
+                );
+            }
+        }
+
+        $zip->close();
+
+        return response()->download(
+            $zipPath,
+            'order-' . $order->id . '-reports.zip',
+            ['Content-Type' => 'application/zip']
+        )->deleteFileAfterSend(true);
     }
     public function showUpload($token)
     {
@@ -96,11 +144,15 @@ class OrderController extends Controller
             abort(404);
         }
 
-        $type = $request->query('type', 'ai');
+        $type = $request->query('type');
 
         // Mark as downloaded on the first successful download of either report type.
         if (!$order->is_downloaded) {
             $order->update(['is_downloaded' => true]);
+        }
+
+        if ($type === null) {
+            return $this->bundleReports($order);
         }
 
         if ($type === 'plag') {

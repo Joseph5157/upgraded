@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 
 class TelegramService
 {
-    public function sendMessage(string $chatId, string $text, ?array $replyMarkup = null): bool
+    public function sendMessage(string $chatId, string $text, ?array $replyMarkup = null, array $options = []): bool
     {
         $botToken = config('services.telegram.bot_token');
         $chatId = trim($chatId);
@@ -26,6 +26,10 @@ class TelegramService
 
             if ($replyMarkup !== null) {
                 $payload['reply_markup'] = $replyMarkup;
+            }
+
+            if ($options !== []) {
+                $payload = array_merge($payload, $options);
             }
 
             $response = Http::timeout(12)->post(

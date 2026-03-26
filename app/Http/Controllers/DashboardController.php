@@ -65,8 +65,7 @@ class DashboardController extends Controller
 
         try {
             $this->workflowService->claim($order, auth()->user());
-            $order->update(['claimed_at' => now()]);
-            return back()->with('success', 'Order claimed successfully.');
+            return back()->with('success', 'Order claimed and moved to your active workspace.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

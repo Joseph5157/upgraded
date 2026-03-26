@@ -50,14 +50,14 @@
 
         @if($order->status == 'delivered')
             <div class="glass p-8 rounded-3xl border-2 border-green-500/30 text-center space-y-4">
-                <h2 class="text-xl font-bold text-green-400">Your report is ready!</h2>
-                <p class="text-slate-400">You can download your PDF report below. Please note that downloads are restricted
+                <h2 class="text-xl font-bold text-green-400">Your results are ready!</h2>
+                <p class="text-slate-400">You can download your report bundle below. Please note that downloads are restricted
                     to one-time only.</p>
 
                 @if(!$order->is_downloaded)
                     <a href="{{ route('client.download', $order->token_view) }}"
                         class="inline-block py-4 px-12 bg-green-600 hover:bg-green-500 text-white font-bold rounded-2xl shadow-lg shadow-green-500/25 transition-all transform hover:scale-[1.05]">
-                        Download Report (PDF)
+                        Download Results Bundle
                     </a>
                 @else
                     <button disabled

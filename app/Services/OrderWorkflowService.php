@@ -30,8 +30,22 @@ class OrderWorkflowService
         }
 
         DB::transaction(function () use ($order, $user) {
-            $order->update(['claimed_by' => $user->id]);
-            $this->logActivity($order, $user, 'claim', 'Order claimed by agent');
+            $oldStatus = $order->status->value;
+
+            $order->update([
+                'claimed_by' => $user->id,
+                'claimed_at' => now(),
+                'status' => OrderStatus::Processing,
+            ]);
+
+            $this->logActivity(
+                $order,
+                $user,
+                'claim',
+                'Order claimed and moved to processing',
+                $oldStatus,
+                OrderStatus::Processing->value
+            );
         });
     }
 
