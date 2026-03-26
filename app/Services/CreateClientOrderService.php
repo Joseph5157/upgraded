@@ -16,8 +16,8 @@ class CreateClientOrderService
     protected string $storageDisk;
 
     public function __construct(
-        string $storageDisk = '',
         protected PortalTelegramAlertService $telegramAlerts,
+        string $storageDisk = '',
     ) {
         $this->storageDisk = $storageDisk ?: config('filesystems.default', 'r2');
     }
