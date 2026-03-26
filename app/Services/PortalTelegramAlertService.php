@@ -26,7 +26,11 @@ class PortalTelegramAlertService
                 "Files: {$order->files_count}",
                 "Tracking: {$order->token_view}",
             ]);
-            $sentToVendorGroup = $this->telegramService->sendMessage($vendorGroupChatId, $vendorMessage);
+            $sentToVendorGroup = $this->telegramService->sendMessage(
+                $vendorGroupChatId,
+                $vendorMessage,
+                ['remove_keyboard' => true]
+            );
             if (! $sentToVendorGroup) {
                 Log::warning("Vendor Telegram alert failed for order #{$order->id}.", [
                     'vendor_chat_id' => $vendorGroupChatId,
