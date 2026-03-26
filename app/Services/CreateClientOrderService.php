@@ -17,7 +17,7 @@ class CreateClientOrderService
 
     public function __construct(
         string $storageDisk = '',
-        protected ?PortalTelegramAlertService $telegramAlerts = null,
+        protected PortalTelegramAlertService $telegramAlerts,
     ) {
         $this->storageDisk = $storageDisk ?: config('filesystems.default', 'r2');
     }
@@ -118,7 +118,7 @@ class CreateClientOrderService
 
         $order = Order::findOrFail($orderId);
 
-        $this->telegramAlerts?->notifyOrderAccepted($order, $remainingCreditsAfterUpload);
+        $this->telegramAlerts->notifyOrderAccepted($order, $remainingCreditsAfterUpload);
 
         return $order;
     }

@@ -12,6 +12,7 @@ use App\Services\DeleteClientOrderService;
 use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -58,12 +59,12 @@ class ClientDashboardController extends Controller
             ->latest()
             ->get();
 
-        if (! $user->telegram_chat_id && ! $user->telegram_link_token) {
+        if ($this->telegramColumnsReady() && ! $user->telegram_chat_id && ! $user->telegram_link_token) {
             $user->forceFill(['telegram_link_token' => Str::random(48)])->save();
         }
 
         $telegramBotUsername = config('services.telegram.bot_username');
-        $telegramConnectUrl = ($telegramBotUsername && $user->telegram_link_token)
+        $telegramConnectUrl = ($this->telegramColumnsReady() && $telegramBotUsername && $user->telegram_link_token)
             ? 'https://t.me/' . ltrim($telegramBotUsername, '@') . '?start=' . $user->telegram_link_token
             : null;
 
@@ -163,6 +164,9 @@ class ClientDashboardController extends Controller
     public function regenerateTelegramLink()
     {
         $user = Auth::user();
+        if (! $this->telegramColumnsReady()) {
+            return back()->with('error', 'Telegram connection is not ready yet. Please ask admin to run migrations.');
+        }
 
         $user->update([
             'telegram_link_token' => Str::random(48),
@@ -176,6 +180,9 @@ class ClientDashboardController extends Controller
     public function sendTelegramTest(TelegramService $telegramService)
     {
         $user = Auth::user();
+        if (! $this->telegramColumnsReady()) {
+            return back()->with('error', 'Telegram connection is not ready yet. Please ask admin to run migrations.');
+        }
 
         if (! $user->telegram_chat_id) {
             return back()->with('error', 'Telegram is not connected yet.');
@@ -222,5 +229,19 @@ class ClientDashboardController extends Controller
         $reportTs = $maxReportUpdatedAt ? strtotime((string) $maxReportUpdatedAt) : 0;
 
         return sha1($orderTs . '|' . $reportTs . '|' . $deliveredCount . '|' . $cancelledCount);
+    }
+
+    protected function telegramColumnsReady(): bool
+    {
+        static $ready = null;
+        if ($ready !== null) {
+            return $ready;
+        }
+
+        $ready = Schema::hasColumn('users', 'telegram_chat_id')
+            && Schema::hasColumn('users', 'telegram_link_token')
+            && Schema::hasColumn('users', 'telegram_connected_at');
+
+        return $ready;
     }
 }
