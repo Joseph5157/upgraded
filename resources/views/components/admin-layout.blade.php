@@ -105,6 +105,17 @@
             color: #818cf8;
             border-color: transparent;
         }
+
+        .logout-cta {
+            background: #dc2626;
+            color: #fff;
+            border: 1px solid rgba(248, 113, 113, 0.4);
+            box-shadow: 0 6px 20px rgba(127, 29, 29, 0.25);
+        }
+        .logout-cta:hover {
+            background: #ef4444;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -227,7 +238,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                        class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-gray-500 hover:text-red-500 hover:bg-red-500/5 transition-all dark:text-slate-500 dark:hover:text-red-400 dark:hover:bg-red-500/10">
+                        class="logout-cta w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all">
                         <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
                     </button>
                 </form>
@@ -244,6 +255,12 @@
                     <span class="text-sm font-bold text-gray-900 dark:text-white">Admin</span>
                 </div>
                 <div class="flex items-center gap-2">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="logout-cta px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5">
+                            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
+                        </button>
+                    </form>
                     <div class="relative group">
                         <button class="w-8 h-8 rounded-lg bg-red-600/20 text-red-500 dark:bg-red-500/20 dark:text-red-400 flex items-center justify-center text-xs font-bold">
                             {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
