@@ -10,7 +10,10 @@ class TelegramService
     public function sendMessage(string $chatId, string $text): bool
     {
         $botToken = config('services.telegram.bot_token');
-        if (! $botToken || ! $chatId) {
+        $chatId = trim($chatId);
+
+        if (! $botToken || $chatId === '') {
+            Log::warning('Telegram send skipped: missing bot token or chat id.');
             return false;
         }
 
@@ -25,13 +28,20 @@ class TelegramService
             );
 
             if ($response->successful()) {
+                Log::info('Telegram send succeeded.', ['chat_id' => $chatId]);
                 return true;
             }
 
-            Log::warning('Telegram send failed: ' . $response->body());
+            Log::warning('Telegram send failed.', [
+                'chat_id' => $chatId,
+                'body' => $response->body(),
+            ]);
             return false;
         } catch (\Throwable $e) {
-            Log::error('Telegram send exception: ' . $e->getMessage());
+            Log::error('Telegram send exception.', [
+                'chat_id' => $chatId,
+                'message' => $e->getMessage(),
+            ]);
             return false;
         }
     }

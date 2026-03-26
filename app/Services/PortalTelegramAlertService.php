@@ -17,7 +17,7 @@ class PortalTelegramAlertService
         $order->loadMissing(['client', 'creator', 'client.user']);
 
         // Vendor group broadcast
-        $vendorGroupChatId = (string) config('services.telegram.vendor_chat_id');
+        $vendorGroupChatId = trim((string) config('services.telegram.vendor_chat_id'));
         if ($vendorGroupChatId !== '') {
             $vendorMessage = implode("\n", [
                 'New file submission received.',
@@ -26,7 +26,14 @@ class PortalTelegramAlertService
                 "Files: {$order->files_count}",
                 "Tracking: {$order->token_view}",
             ]);
-            $this->telegramService->sendMessage($vendorGroupChatId, $vendorMessage);
+            $sentToVendorGroup = $this->telegramService->sendMessage($vendorGroupChatId, $vendorMessage);
+            if (! $sentToVendorGroup) {
+                Log::warning("Vendor Telegram alert failed for order #{$order->id}.", [
+                    'vendor_chat_id' => $vendorGroupChatId,
+                ]);
+            }
+        } else {
+            Log::warning("Vendor Telegram alert skipped for order #{$order->id}: TELEGRAM_VENDOR_CHAT_ID not configured.");
         }
 
         // Client direct notification (if connected)
