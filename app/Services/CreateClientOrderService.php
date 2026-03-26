@@ -3,11 +3,9 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
-use App\Jobs\SendTelegramNotification;
 use App\Models\Client;
 use App\Models\Order;
 use App\Models\OrderFile;
-use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -17,8 +15,10 @@ class CreateClientOrderService
 {
     protected string $storageDisk;
 
-    public function __construct(string $storageDisk = '')
-    {
+    public function __construct(
+        string $storageDisk = '',
+        protected ?PortalTelegramAlertService $telegramAlerts = null,
+    ) {
         $this->storageDisk = $storageDisk ?: config('filesystems.default', 'r2');
     }
 
@@ -37,8 +37,9 @@ class CreateClientOrderService
     {
         $fileCount = count($files);
         $orderId = null;
+        $remainingCreditsAfterUpload = 0;
 
-        DB::transaction(function () use ($client, $files, $source, $meta, $fileCount, &$orderId) {
+        DB::transaction(function () use ($client, $files, $source, $meta, $fileCount, &$orderId, &$remainingCreditsAfterUpload) {
             $client = Client::where('id', $client->id)->lockForUpdate()->first();
 
             if ($client->plan_expiry && $client->plan_expiry->isPast()) {
@@ -105,16 +106,19 @@ class CreateClientOrderService
 
             $client->increment('slots_consumed', $fileCount);
 
-            if ($client->fresh()->slots_consumed >= $totalSlots) {
+            $freshClient = $client->fresh();
+            $remainingCreditsAfterUpload = max(0, (int) $freshClient->total_slots - (int) $freshClient->slots_consumed);
+
+            if ($freshClient->slots_consumed >= $totalSlots) {
                 $client->update(['status' => 'suspended']);
             }
 
             $orderId = $order->id;
         });
 
-        $order = Order::find($orderId);
+        $order = Order::findOrFail($orderId);
 
-        SendTelegramNotification::dispatch($order);
+        $this->telegramAlerts?->notifyOrderAccepted($order, $remainingCreditsAfterUpload);
 
         return $order;
     }

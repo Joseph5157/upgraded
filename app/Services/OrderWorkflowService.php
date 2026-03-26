@@ -135,6 +135,14 @@ class OrderWorkflowService
 
             $this->logActivity($lockedOrder, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
         });
+
+        try {
+            /** @var \App\Services\PortalTelegramAlertService $telegramAlerts */
+            $telegramAlerts = app(\App\Services\PortalTelegramAlertService::class);
+            $telegramAlerts->notifyOrderCompleted(Order::findOrFail($order->id));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     // ─── Private Helpers ────────────────────────────────────────────────────────
