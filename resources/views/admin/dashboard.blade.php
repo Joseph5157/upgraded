@@ -394,10 +394,10 @@
             <form action="{{ route('admin.accounts.store') }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Account
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Account
                         Type</label>
                     <select name="role" id="modal-role" onchange="toggleRoleFields()" required
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50 appearance-none">
+                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 appearance-none">
                         @can('create-admin')
                         <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }} class="bg-[#0d0d0f]">System Admin</option>
                         @endcan
@@ -406,78 +406,150 @@
                         <option value="client" {{ old('role') === 'client' ? 'selected' : '' }} class="bg-[#0d0d0f]">
                             Client Organization</option>
                     </select>
+                    <div class="mt-3 flex items-center gap-2">
+                        <span id="chip-admin" class="px-2 py-1 rounded-md border text-[9px] font-bold uppercase tracking-wider border-red-500/30 text-red-300 bg-red-500/10">Admin</span>
+                        <span id="chip-vendor" class="px-2 py-1 rounded-md border text-[9px] font-bold uppercase tracking-wider border-indigo-500/30 text-indigo-300 bg-indigo-500/10">Vendor</span>
+                        <span id="chip-client" class="px-2 py-1 rounded-md border text-[9px] font-bold uppercase tracking-wider border-amber-500/30 text-amber-300 bg-amber-500/10">Client</span>
+                    </div>
+                    <p id="role-helper-text" class="text-[10px] text-slate-400 mt-2 leading-relaxed"></p>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Full Name /
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Full Name /
                         Org Name</label>
                     <input type="text" name="name" value="{{ old('name') }}" required
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50 transition-colors placeholder-slate-700">
+                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Email
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Email
                         Address</label>
                     <input type="email" name="email" value="{{ old('email') }}" required
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50 transition-colors placeholder-slate-700">
+                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Temporary
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Mobile Number</label>
+                    <input type="tel" name="phone" value="{{ old('phone') }}"
+                        placeholder="+91 98765 43210"
+                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
+                    <p class="text-[9px] text-slate-500 mt-2">Optional for now. Supports country code and digits.</p>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Temporary
                         Password</label>
                     <input type="password" name="password" required
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50 transition-colors placeholder-slate-700">
+                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Confirm Password</label>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Confirm Password</label>
                     <input type="password" name="password_confirmation" required
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50 transition-colors placeholder-slate-700">
+                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
                 </div>
-                <div id="super-password-section" class="hidden">
-                    <div class="p-4 bg-red-500/5 border border-red-500/20 rounded-xl space-y-3">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-red-400"></i>
-                            <label class="text-[10px] font-bold text-red-400 uppercase tracking-widest">SYSTEM_ROOT Authorization Required</label>
+                <div class="min-h-[162px]">
+                    <div id="super-password-section" class="hidden">
+                        <div class="p-4 bg-red-500/5 border border-red-500/20 rounded-xl space-y-3">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-red-400"></i>
+                                <label class="text-[10px] font-bold text-red-400 uppercase tracking-widest">SYSTEM_ROOT Authorization Required</label>
+                            </div>
+                            <input type="password" name="super_password" id="super_password"
+                                class="w-full bg-[#121218] border border-red-500/25 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all font-mono shadow-inner shadow-black/30 placeholder-slate-600"
+                                placeholder="Enter your SYSTEM_ROOT password">
+                            @error('super_password')
+                                <p class="text-[10px] text-red-400">{{ $message }}</p>
+                            @enderror
+                            <ul class="text-[9px] text-slate-500 space-y-1 list-disc list-inside">
+                                <li>Admin accounts have full portal access. This action is logged.</li>
+                                <li>Maximum 5 admin accounts are allowed system-wide.</li>
+                                <li>Enter your own password to authorize this creation.</li>
+                            </ul>
                         </div>
-                        <input type="password" name="super_password" id="super_password"
-                            class="w-full bg-white/5 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/50 transition-colors font-mono placeholder-slate-700"
-                            placeholder="Enter your SYSTEM_ROOT password">
-                        @error('super_password')
-                            <p class="text-[10px] text-red-400">{{ $message }}</p>
-                        @enderror
-                        <ul class="text-[9px] text-slate-500 space-y-1 list-disc list-inside">
-                            <li>Admin accounts have full portal access. This action is logged.</li>
-                            <li>Maximum 5 admin accounts are allowed system-wide.</li>
-                            <li>Enter your own password to authorize this creation.</li>
-                        </ul>
                     </div>
-                </div>
-                <div id="slots-field" class="{{ old('role', 'vendor') === 'client' ? '' : 'hidden' }}">
-                    <div class="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-3">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="files" class="w-3.5 h-3.5 text-amber-400"></i>
-                            <label class="text-[10px] font-bold text-amber-400 uppercase tracking-widest">File Credit Limit</label>
+
+                    <div id="slots-field" class="{{ old('role', 'vendor') === 'client' ? '' : 'hidden' }}">
+                        <div class="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-3">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="files" class="w-3.5 h-3.5 text-amber-400"></i>
+                                <label class="text-[10px] font-bold text-amber-400 uppercase tracking-widest">File Credit Limit</label>
+                            </div>
+                            <input type="number" name="slots" id="slots_input" value="{{ old('slots', 50) }}" min="1" max="10000"
+                                class="w-full bg-[#121218] border border-amber-500/25 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/15 transition-all font-mono shadow-inner shadow-black/30 placeholder-slate-600"
+                                placeholder="e.g. 50">
+                            <p class="text-[9px] text-slate-500">Number of files this client is allowed to submit. Can be refilled later from the Client Matrix.</p>
                         </div>
-                        <input type="number" name="slots" value="{{ old('slots', 50) }}" min="1" max="10000"
-                            class="w-full bg-white/5 border border-amber-500/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500/50 transition-colors font-mono placeholder-slate-700"
-                            placeholder="e.g. 50">
-                        <p class="text-[9px] text-slate-500">Number of files this client is allowed to submit. Can be refilled later from the Client Matrix.</p>
+                    </div>
+
+                    <div id="vendor-role-note" class="{{ old('role', 'vendor') === 'vendor' ? '' : 'hidden' }}">
+                        <div class="p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-xl space-y-2">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="briefcase" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Vendor Access Scope</label>
+                            </div>
+                            <p class="text-[10px] text-slate-400 leading-relaxed">
+                                Processing vendors can claim and deliver jobs. No credit-limit setup is required during provisioning.
+                            </p>
+                        </div>
                     </div>
                 </div>
                 <div class="pt-4 border-t border-white/[0.05]">
-                    <button type="submit"
-                        class="w-full py-3.5 bg-red-600/10 hover:bg-red-600/20 text-red-500 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-red-600/20 transition-all flex justify-center items-center gap-2">
-                        <i data-lucide="zap" class="w-4 h-4"></i> Execute Provisioning
+                    <button type="submit" id="provision-submit-btn"
+                        class="w-full py-3.5 bg-red-600/10 hover:bg-red-600/25 active:scale-[0.99] text-red-400 hover:text-red-300 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-red-600/30 shadow-[0_0_0_0_rgba(239,68,68,0.35)] hover:shadow-[0_0_24px_0_rgba(239,68,68,0.22)] transition-all duration-200 flex justify-center items-center gap-2">
+                        <i data-lucide="zap" class="w-4 h-4" id="provision-submit-icon"></i>
+                        <i data-lucide="loader-2" class="w-4 h-4 hidden animate-spin" id="provision-submit-spinner"></i>
+                        <span id="provision-submit-label">Execute Provisioning</span>
                     </button>
                 </div>
                 <script>
                     function toggleRoleFields() {
                         const role = document.getElementById('modal-role').value;
-                        document.getElementById('slots-field').classList.toggle('hidden', role !== 'client');
                         const superSection = document.getElementById('super-password-section');
+                        const slotsSection = document.getElementById('slots-field');
+                        const vendorRoleNote = document.getElementById('vendor-role-note');
+                        const superPasswordInput = document.getElementById('super_password');
+                        const slotsInput = document.getElementById('slots_input');
+                        const helperText = document.getElementById('role-helper-text');
+                        const adminChip = document.getElementById('chip-admin');
+                        const vendorChip = document.getElementById('chip-vendor');
+                        const clientChip = document.getElementById('chip-client');
+
+                        slotsSection.classList.toggle('hidden', role !== 'client');
                         superSection.classList.toggle('hidden', role !== 'admin');
+                        vendorRoleNote.classList.toggle('hidden', role !== 'vendor');
+
+                        superPasswordInput.required = role === 'admin';
+                        superPasswordInput.disabled = role !== 'admin';
+                        slotsInput.disabled = role !== 'client';
+
                         if (role !== 'admin') {
-                            document.getElementById('super_password').value = '';
+                            superPasswordInput.value = '';
                         }
+
+                        helperText.textContent = role === 'admin'
+                            ? 'Highest-level access. Authorization from SYSTEM_ROOT is required below.'
+                            : role === 'client'
+                                ? 'Create a client workspace and set the initial file-credit limit.'
+                                : 'Create a processing-only vendor account with standard operational access.';
+
+                        adminChip.classList.toggle('ring-1', role === 'admin');
+                        adminChip.classList.toggle('ring-red-400/60', role === 'admin');
+                        vendorChip.classList.toggle('ring-1', role === 'vendor');
+                        vendorChip.classList.toggle('ring-indigo-400/60', role === 'vendor');
+                        clientChip.classList.toggle('ring-1', role === 'client');
+                        clientChip.classList.toggle('ring-amber-400/60', role === 'client');
                     }
                     toggleRoleFields();
+
+                    const provisionForm = document.querySelector('#create-account-modal form');
+                    const submitButton = document.getElementById('provision-submit-btn');
+                    const submitLabel = document.getElementById('provision-submit-label');
+                    const submitIcon = document.getElementById('provision-submit-icon');
+                    const submitSpinner = document.getElementById('provision-submit-spinner');
+
+                    provisionForm.addEventListener('submit', function () {
+                        submitButton.disabled = true;
+                        submitButton.classList.add('opacity-80', 'cursor-wait');
+                        submitIcon.classList.add('hidden');
+                        submitSpinner.classList.remove('hidden');
+                        submitLabel.textContent = 'Provisioning...';
+                    });
                 </script>
             </form>
         </div>

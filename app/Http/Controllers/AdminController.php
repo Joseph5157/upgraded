@@ -41,6 +41,7 @@ class AdminController extends Controller
         $request->validate([
             'name'     => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone'    => ['nullable', 'string', 'regex:/^\+?[0-9\s\-\(\)]{7,20}$/'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role'     => ['required', 'in:vendor,client,admin'],
             'slots'    => ['required_if:role,client', 'nullable', 'integer', 'min:1', 'max:10000'],
@@ -49,6 +50,7 @@ class AdminController extends Controller
         $userData = [
             'name'     => $request->name,
             'email'    => $request->email,
+            'phone'    => $this->normalizePhone($request->phone),
             'password' => Hash::make($request->password),
             'role'     => $request->role,
         ];
@@ -83,6 +85,27 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', ucfirst($request->role) . ' account created successfully!');
+    }
+
+    protected function normalizePhone(?string $phone): ?string
+    {
+        if (! $phone) {
+            return null;
+        }
+
+        $phone = trim($phone);
+        if ($phone === '') {
+            return null;
+        }
+
+        $hasLeadingPlus = str_starts_with($phone, '+');
+        $digitsOnly = preg_replace('/\D+/', '', $phone);
+
+        if (! $digitsOnly) {
+            return null;
+        }
+
+        return $hasLeadingPlus ? '+' . $digitsOnly : $digitsOnly;
     }
 
     public function promoteSuperAdmin(Request $request, User $user)
