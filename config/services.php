@@ -43,7 +43,9 @@ return [
 
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'bot_username' => env('TELEGRAM_BOT_USERNAME'),
         'vendor_chat_id' => env('TELEGRAM_VENDOR_CHAT_ID'),
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET', env('TELEGRAM_BOT_SECRET')),
     ],
 
     'turnstile' => [

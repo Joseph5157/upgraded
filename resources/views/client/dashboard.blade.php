@@ -296,6 +296,58 @@
                 </div>
             </div>
 
+            @php
+                $telegramUser = auth()->user();
+                $telegramConnected = filled($telegramUser->telegram_chat_id);
+            @endphp
+            <div class="card rounded-2xl p-4 sm:p-5 border {{ $telegramConnected ? 'border-emerald-500/[0.16] bg-emerald-500/[0.04]' : 'border-indigo-500/[0.16] bg-indigo-500/[0.04]' }}">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Telegram Alerts</p>
+                        <h3 class="text-[15px] font-bold text-white mt-1 tracking-tight">Direct Notification Channel</h3>
+                        <p class="text-[11px] text-slate-400 mt-1">
+                            {{ $telegramConnected ? 'Connected. You will receive order alerts here.' : 'Connect once to receive instant order alerts on Telegram.' }}
+                        </p>
+                    </div>
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border {{ $telegramConnected ? 'border-emerald-500/[0.22] bg-emerald-500/[0.1] text-emerald-300' : 'border-amber-500/[0.22] bg-amber-500/[0.1] text-amber-300' }}">
+                        <span class="w-1.5 h-1.5 rounded-full {{ $telegramConnected ? 'bg-emerald-400' : 'bg-amber-400' }}"></span>
+                        {{ $telegramConnected ? 'Connected' : 'Not Connected' }}
+                    </span>
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-center gap-2.5">
+                    @if($telegramConnected)
+                        <form method="POST" action="{{ route('client.dashboard.telegram.test') }}">
+                            @csrf
+                            <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-500/[0.12] hover:bg-emerald-500/[0.2] text-emerald-300 text-[11px] font-bold uppercase tracking-[0.14em] border border-emerald-500/[0.22] transition-all">
+                                Send Test Message
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('client.dashboard.telegram.regenerate') }}">
+                            @csrf
+                            <button type="submit" class="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-[11px] font-bold uppercase tracking-[0.14em] border border-white/[0.08] transition-all">
+                                Reconnect Telegram
+                            </button>
+                        </form>
+                    @else
+                        @if($telegramConnectUrl)
+                            <a href="{{ $telegramConnectUrl }}" target="_blank" rel="noopener noreferrer"
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold uppercase tracking-[0.14em] border border-indigo-400/20 transition-all">
+                                <i data-lucide="send" class="w-3.5 h-3.5"></i> Connect Telegram
+                            </a>
+                            <form method="POST" action="{{ route('client.dashboard.telegram.regenerate') }}">
+                                @csrf
+                                <button type="submit" class="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-[11px] font-bold uppercase tracking-[0.14em] border border-white/[0.08] transition-all">
+                                    Refresh Link
+                                </button>
+                            </form>
+                        @else
+                            <p class="text-[11px] text-amber-300">Telegram bot username is not configured by admin yet.</p>
+                        @endif
+                    @endif
+                </div>
+            </div>
+
             {{--  MAIN GRID: UPLOAD + ACTIVITY  --}}
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
 

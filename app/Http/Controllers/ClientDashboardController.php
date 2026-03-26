@@ -9,9 +9,11 @@ use App\Models\OrderReport;
 use App\Enums\OrderStatus;
 use App\Services\CreateClientOrderService;
 use App\Services\DeleteClientOrderService;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ClientDashboardController extends Controller
 {
@@ -56,9 +58,18 @@ class ClientDashboardController extends Controller
             ->latest()
             ->get();
 
+        if (! $user->telegram_chat_id && ! $user->telegram_link_token) {
+            $user->forceFill(['telegram_link_token' => Str::random(48)])->save();
+        }
+
+        $telegramBotUsername = config('services.telegram.bot_username');
+        $telegramConnectUrl = ($telegramBotUsername && $user->telegram_link_token)
+            ? 'https://t.me/' . ltrim($telegramBotUsername, '@') . '?start=' . $user->telegram_link_token
+            : null;
+
         $dashboardSignature = $this->buildDashboardSignature($user, $client);
 
-        return view('client.dashboard', compact('client', 'orders', 'dashboardSignature'));
+        return view('client.dashboard', compact('client', 'orders', 'dashboardSignature', 'telegramConnectUrl'));
     }
 
     public function pulse()
@@ -147,6 +158,39 @@ class ClientDashboardController extends Controller
             : 'Order and all files permanently deleted.';
 
         return back()->with('success', $message);
+    }
+
+    public function regenerateTelegramLink()
+    {
+        $user = Auth::user();
+
+        $user->update([
+            'telegram_link_token' => Str::random(48),
+            'telegram_chat_id' => null,
+            'telegram_connected_at' => null,
+        ]);
+
+        return back()->with('success', 'Telegram connection link refreshed. Please connect again from the card.');
+    }
+
+    public function sendTelegramTest(TelegramService $telegramService)
+    {
+        $user = Auth::user();
+
+        if (! $user->telegram_chat_id) {
+            return back()->with('error', 'Telegram is not connected yet.');
+        }
+
+        $ok = $telegramService->sendMessage(
+            (string) $user->telegram_chat_id,
+            'Test message: your Telegram connection with the portal is active.'
+        );
+
+        if (! $ok) {
+            return back()->with('error', 'Unable to send test message. Please reconnect Telegram and try again.');
+        }
+
+        return back()->with('success', 'Telegram test message sent successfully.');
     }
 
     protected function buildDashboardSignature($user, Client $client): string

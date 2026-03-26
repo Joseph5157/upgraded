@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckAccountStatus::class,
         ]);
+        $middleware->validateCsrfTokens(except: [
+            'telegram/webhook/*',
+        ]);
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {

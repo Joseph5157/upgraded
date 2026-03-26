@@ -22,6 +22,9 @@ class User extends Authenticatable
         'name',
         'email',
         'phone',
+        'telegram_chat_id',
+        'telegram_link_token',
+        'telegram_connected_at',
         'password',
         'email_verified_at',
         'role',
@@ -63,6 +66,7 @@ class User extends Authenticatable
             'is_super_admin'         => 'boolean',
             'admin_token_expires_at' => 'datetime',
             'last_login_at'          => 'datetime',
+            'telegram_connected_at'  => 'datetime',
         ];
     }
 

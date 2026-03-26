@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\BotController;
 use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\ClientMatrixController;
 use App\Http\Controllers\DashboardController;
@@ -37,6 +38,10 @@ Route::get('/', function () {
 Route::get('/csrf-token-public', function () {
     return response()->json(['token' => csrf_token()]);
 })->middleware('throttle:20,1')->name('csrf.token.public');
+
+Route::post('/telegram/webhook/{secret}', [BotController::class, 'webhook'])
+    ->middleware('throttle:60,1')
+    ->name('telegram.webhook');
 
 // Client Public Routes — throttled to prevent abuse
 Route::middleware('throttle:30,1')->group(function () {
@@ -69,6 +74,8 @@ Route::middleware(['auth', 'nocache', 'verified'])->group(function () {
         Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/pulse', [ClientDashboardController::class, 'pulse'])->name('dashboard.pulse');
         Route::post('/dashboard/upload', [ClientDashboardController::class, 'store'])->name('dashboard.upload');
+        Route::post('/dashboard/telegram/regenerate-link', [ClientDashboardController::class, 'regenerateTelegramLink'])->name('dashboard.telegram.regenerate');
+        Route::post('/dashboard/telegram/test', [ClientDashboardController::class, 'sendTelegramTest'])->name('dashboard.telegram.test');
         Route::delete('/orders/{order}/delete', [ClientDashboardController::class, 'destroy'])->name('orders.delete');
         Route::delete('/orders/{order}/files/{file}', [ClientDashboardController::class, 'destroyFile'])->name('orders.files.delete');
         Route::post('/topup', [TopupRequestController::class, 'store'])->name('topup.store');
