@@ -16,6 +16,8 @@
 /public/build
 /public/hot
 /public/storage
+/storage/tmp_views/*
+/storage/tmp_views/.gitignore
 /storage/*.key
 /storage/pail
 /vendor
