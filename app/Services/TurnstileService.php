@@ -16,11 +16,20 @@ class TurnstileService
             return true;
         }
 
-        $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-            'secret'   => $secret,
-            'response' => $token,
-            'remoteip' => $ip,
-        ]);
+        try {
+            $response = Http::asForm()
+                ->timeout(5)
+                ->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                    'secret'   => $secret,
+                    'response' => $token,
+                    'remoteip' => $ip,
+                ]);
+        } catch (\Throwable $e) {
+            Log::warning('Turnstile: failed to reach Cloudflare siteverify.', [
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
 
         if ($response->failed()) {
             Log::warning('Turnstile: HTTP request to Cloudflare siteverify failed.', [

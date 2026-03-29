@@ -14,6 +14,7 @@ class SendTelegramNotification implements ShouldQueue
 {
     use Queueable, InteractsWithQueue, SerializesModels;
 
+    public bool $deleteWhenMissingModels = true;
     public int $tries = 3;
     public int $timeout = 30;
     public array $backoff = [10, 30, 60];
