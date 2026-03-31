@@ -3,13 +3,18 @@
 namespace Tests\Feature;
 
 use App\Models\Client;
+use App\Models\Order;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ClientOrderServiceTest extends TestCase
 {
-    /** @test */
+    use RefreshDatabase;
+
+    #[Test]
     public function test_uploading_three_files_consumes_three_credits(): void
     {
         Storage::fake('r2');
@@ -35,7 +40,7 @@ class ClientOrderServiceTest extends TestCase
         $this->assertEquals(3, $client->slots_consumed);
     }
 
-    /** @test */
+    #[Test]
     public function test_upload_fails_when_selected_files_exceed_remaining_credits(): void
     {
         Storage::fake('r2');
@@ -57,9 +62,11 @@ class ClientOrderServiceTest extends TestCase
         ], 'account');
     }
 
-    /** @test */
+    #[Test]
     public function test_deleting_undelivered_order_restores_file_credits(): void
     {
+        Storage::fake('r2');
+
         $client = Client::create([
             'name' => 'Test Client',
             'slots' => 10,
@@ -72,6 +79,7 @@ class ClientOrderServiceTest extends TestCase
             'token_view' => 'abc123',
             'files_count' => 3,
             'status' => \App\Enums\OrderStatus::Pending,
+            'due_at' => now(),
             'source' => 'account',
         ]);
 
@@ -83,9 +91,11 @@ class ClientOrderServiceTest extends TestCase
         $this->assertEquals(3, $client->slots_consumed);
     }
 
-    /** @test */
+    #[Test]
     public function test_deleting_delivered_order_does_not_restore_credits(): void
     {
+        Storage::fake('r2');
+
         $client = Client::create([
             'name' => 'Test Client',
             'slots' => 10,
@@ -98,6 +108,7 @@ class ClientOrderServiceTest extends TestCase
             'token_view' => 'abc123',
             'files_count' => 3,
             'status' => \App\Enums\OrderStatus::Delivered,
+            'due_at' => now(),
             'source' => 'account',
         ]);
 

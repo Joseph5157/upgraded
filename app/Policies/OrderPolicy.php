@@ -28,7 +28,7 @@ class OrderPolicy
         $isAdmin = $user->role === 'admin';
 
         return ($isOwner || $isAdmin)
-            && in_array($order->status, [OrderStatus::Pending, OrderStatus::Processing]);
+            && $order->status === OrderStatus::Pending;
     }
 
     /**
@@ -77,6 +77,13 @@ class OrderPolicy
     {
         return $user->role === 'client'
             && (int) $user->client_id === (int) $order->client_id;
+    }
+
+    public function cancel(User $user, Order $order): bool
+    {
+        return $user->role === 'client'
+            && (int) $user->client_id === (int) $order->client_id
+            && $order->status === OrderStatus::Pending;
     }
 
     /**
