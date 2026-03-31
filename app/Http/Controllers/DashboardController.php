@@ -187,13 +187,10 @@ class DashboardController extends Controller
             return back()->with('error', 'File not found on storage. It may have been uploaded before the storage volume was attached. Please ask the client to re-upload.');
         }
 
-        $stream = Storage::disk($disk)->readStream($file->file_path);
+        // ✅ FIXED: This single line solves the mobile garbage text issue
+        // Laravel automatically sets correct MIME type, filename, and download headers
+        $downloadName = $file->original_name ?? basename($file->file_path);
 
-        return response()->streamDownload(function () use ($stream) {
-            fpassthru($stream);
-            if (is_resource($stream)) {
-                fclose($stream);
-            }
-        }, basename($file->file_path));
+        return Storage::disk($disk)->download($file->file_path, $downloadName);
     }
 }
