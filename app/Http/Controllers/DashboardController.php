@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Services\OrderWorkflowService;
 use App\Services\UploadVendorReportService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
@@ -24,23 +25,42 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Auto-Release is now handled by the orders:auto-release scheduled command.
-        $stats = [
-            'available_pool'      => Order::where('status', OrderStatus::Pending)->whereNull('claimed_by')->count(),
-            'active_jobs'         => Order::where('status', OrderStatus::Processing)->where('claimed_by', $user->id)->count(),
-            'total_checked_today' => Order::where('status', OrderStatus::Delivered)
-                ->where('claimed_by', $user->id)
-                ->whereDate('delivered_at', today())
-                ->count(),
-            'overdue_count'       => Order::whereNotIn('status', [OrderStatus::Delivered, OrderStatus::Cancelled])
-                ->where('due_at', '<', now())
-                ->count(),
-            'total_delivered'     => $user->delivered_orders_count,
-        ];
+        // Cache stats for 60 seconds per user to reduce query load
+        $stats = Cache::remember(
+            'vendor_stats_' . $user->id,
+            60,
+            function () use ($user) {
+                return [
+                    'available_pool'      => Order::where('status', OrderStatus::Pending)
+                        ->whereNull('claimed_by')
+                        ->count(),
 
+                    'active_jobs'         => Order::where('status', OrderStatus::Processing)
+                        ->where('claimed_by', $user->id)
+                        ->count(),
+
+                    'total_checked_today' => Order::where('status', OrderStatus::Delivered)
+                        ->where('claimed_by', $user->id)
+                        ->whereDate('delivered_at', today())
+                        ->count(),
+
+                    'overdue_count'       => Order::whereNotIn('status', [
+                            OrderStatus::Delivered,
+                            OrderStatus::Cancelled
+                        ])
+                        ->where('due_at', '<', now())
+                        ->count(),
+
+                    'total_delivered'     => $user->delivered_orders_count ?? 0,
+                ];
+            }
+        );
+
+        // Eager load relationships to avoid N+1 queries
         $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
             ->where('claimed_by', $user->id)
             ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
+            ->latest()
             ->get();
 
         $availableFiles = Order::with(['client', 'files', 'vendor'])
