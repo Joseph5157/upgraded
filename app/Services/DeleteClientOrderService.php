@@ -28,6 +28,10 @@ class DeleteClientOrderService
         $wasDelivered = $order->status === \App\Enums\OrderStatus::Delivered;
 
         DB::transaction(function () use ($order, $client, $wasDelivered) {
+            // Re-read the client row with a row-level lock to prevent concurrent
+            // delete/credit-restore races (e.g. two simultaneous delete requests).
+            $client = Client::where('id', $client->id)->lockForUpdate()->first();
+
             // Delete uploaded source files from R2
             foreach ($order->files as $file) {
                 Storage::disk($file->disk ?: $this->storageDisk)->delete($file->file_path);
@@ -71,13 +75,6 @@ class DeleteClientOrderService
                 }
             }
         });
-
-        if ($client->slots_consumed < $order->files_count) {
-            $remainingCredits = $client->slots - $client->slots_consumed;
-            throw new \Exception(
-                "Insufficient credits. You selected {$order->files_count} file(s), but only {$remainingCredits} credit(s) are available. Please contact Admin for a refill."
-            );
-        }
 
         $slotRestored = !$wasDelivered;
         $message = $slotRestored

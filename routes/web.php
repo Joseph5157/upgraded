@@ -11,8 +11,6 @@ use App\Http\Controllers\BotController;
 use App\Http\Controllers\ClientDashboardController;
 use App\Http\Controllers\ClientMatrixController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\LedgerController;
-use App\Http\Controllers\MatrixController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\RefundController;
 use App\Http\Controllers\TopupRequestController;
@@ -101,10 +99,6 @@ Route::middleware(['auth', 'nocache', 'verified', 'role:admin', 'account.status'
         Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
         Route::get('/billing/{ledger}', [BillingController::class, 'show'])->name('billing.show');
         Route::prefix('finance')->name('finance.')->group(function () {
-            Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix');
-            Route::put('/matrix/{client}', [MatrixController::class, 'update'])->name('matrix.update');
-            Route::post('/matrix/{client}/refill', [MatrixController::class, 'refill'])->name('matrix.refill');
-            Route::get('/ledger', [LedgerController::class, 'index'])->name('ledger');
             Route::get('/payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
             Route::post('/payouts', [VendorPayoutController::class, 'store'])->name('payouts.store');
         });

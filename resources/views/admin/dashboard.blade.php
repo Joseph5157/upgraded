@@ -79,7 +79,7 @@
             </p>
         </a>
 
-        <a href="{{ route('admin.finance.matrix') }}"
+        <a href="{{ route('admin.matrix.index') }}"
             class="bg-[#0a0a0c] border border-white/5 p-6 rounded-2xl group hover:border-purple-500/20 transition-all block">
             <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-3">Growth &bull; New Clients</p>
             <div class="flex items-end justify-between">
@@ -329,7 +329,7 @@
             </div>
         </button>
 
-        <a href="{{ route('admin.finance.matrix') }}"
+        <a href="{{ route('admin.matrix.index') }}"
             class="bg-white/[0.02] border border-white/5 p-6 rounded-2xl space-y-3 hover:border-red-500/20 transition-all group block">
             <div
                 class="w-10 h-10 bg-white/[0.05] rounded-xl flex items-center justify-center text-slate-400 group-hover:text-red-500 group-hover:bg-red-500/10 transition-colors">
@@ -341,7 +341,7 @@
             </div>
         </a>
 
-        <a href="{{ route('admin.finance.ledger') }}"
+        <a href="{{ route('admin.billing.index') }}"
             class="bg-white/[0.02] border border-white/5 p-6 rounded-2xl space-y-3 hover:border-green-500/20 transition-all group block">
             <div
                 class="w-10 h-10 bg-white/[0.05] rounded-xl flex items-center justify-center text-slate-400 group-hover:text-green-500 group-hover:bg-green-500/10 transition-colors">

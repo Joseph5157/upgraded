@@ -255,6 +255,48 @@ class OrderPolicyTest extends TestCase
         $this->assertFalse($this->policy->delete($vendor, $order));
     }
 
+    // ─── cancel ───────────────────────────────────────────────────────────────
+
+    public function test_client_can_cancel_their_own_pending_order(): void
+    {
+        $client = $this->user(['id' => 7, 'role' => 'client', 'client_id' => 10]);
+        $order  = $this->order(['status' => OrderStatus::Pending, 'client_id' => 10]);
+
+        $this->assertTrue($this->policy->cancel($client, $order));
+    }
+
+    public function test_vendor_cannot_cancel_orders(): void
+    {
+        $vendor = $this->user(['id' => 5, 'role' => 'vendor']);
+        $order  = $this->order(['status' => OrderStatus::Pending, 'client_id' => 10]);
+
+        $this->assertFalse($this->policy->cancel($vendor, $order));
+    }
+
+    public function test_client_cannot_cancel_another_clients_order(): void
+    {
+        $client = $this->user(['id' => 7, 'role' => 'client', 'client_id' => 10]);
+        $order  = $this->order(['status' => OrderStatus::Pending, 'client_id' => 99]);
+
+        $this->assertFalse($this->policy->cancel($client, $order));
+    }
+
+    public function test_client_cannot_cancel_non_pending_order(): void
+    {
+        $client = $this->user(['id' => 7, 'role' => 'client', 'client_id' => 10]);
+        $order  = $this->order(['status' => OrderStatus::Processing, 'client_id' => 10]);
+
+        $this->assertFalse($this->policy->cancel($client, $order));
+    }
+
+    public function test_client_cannot_cancel_delivered_order(): void
+    {
+        $client = $this->user(['id' => 7, 'role' => 'client', 'client_id' => 10]);
+        $order  = $this->order(['status' => OrderStatus::Delivered, 'client_id' => 10]);
+
+        $this->assertFalse($this->policy->cancel($client, $order));
+    }
+
     // ─── forceDelete ──────────────────────────────────────────────────────────
 
     public function test_admin_can_force_delete_order(): void

@@ -161,13 +161,15 @@
                 <div class="space-y-0.5">
                     <p class="nav-group-label">Finance &amp; Matrix</p>
                     @php
-                        $lowCreditCount = \App\Models\Client::withCount('orders')
-                            ->get()
-                            ->filter(fn($c) => ($c->slots - $c->orders_count) <= 0)
-                            ->count();
+                        $lowCreditCount = \Illuminate\Support\Facades\Cache::remember('admin_nav_low_credit_count', 60, function () {
+                            return \App\Models\Client::withCount('orders')
+                                ->get()
+                                ->filter(fn($c) => ($c->slots - $c->orders_count) <= 0)
+                                ->count();
+                        });
                     @endphp
-                    <a href="{{ route('admin.finance.matrix') }}"
-                        class="nav-link {{ request()->routeIs('admin.finance.matrix') ? 'active' : '' }}">
+                    <a href="{{ route('admin.matrix.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.matrix.*') ? 'active' : '' }}">
                         <i data-lucide="credit-card" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Client Matrix</span>
                         @if($lowCreditCount > 0)
@@ -177,8 +179,8 @@
                             </span>
                         @endif
                     </a>
-                    <a href="{{ route('admin.finance.ledger') }}"
-                        class="nav-link {{ request()->routeIs('admin.finance.ledger') ? 'active' : '' }}">
+                    <a href="{{ route('admin.billing.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.billing.*') ? 'active' : '' }}">
                         <i data-lucide="trending-up" class="w-3.5 h-3.5 flex-shrink-0"></i> Ledger History
                     </a>
                     <a href="{{ route('admin.finance.payouts.index') }}"
@@ -189,7 +191,7 @@
                         class="nav-link {{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}">
                         <i data-lucide="refresh-ccw" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Refund Requests</span>
-                        @php $pendingRefunds = \App\Models\RefundRequest::where('status','pending')->count(); @endphp
+                        @php $pendingRefunds = \Illuminate\Support\Facades\Cache::remember('admin_nav_pending_refunds', 60, fn() => \App\Models\RefundRequest::where('status', 'pending')->count()); @endphp
                         @if($pendingRefunds > 0)
                             <span class="text-[8px] font-black bg-amber-500/15 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded-md leading-none">
                                 {{ $pendingRefunds }}
@@ -208,7 +210,7 @@
                         class="nav-link {{ request()->routeIs('admin.accounts.*') ? 'active' : '' }}">
                         <i data-lucide="users" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Account Manager</span>
-                        @php $_frozenCount = \App\Models\User::whereIn('role',['vendor','client'])->where('status','frozen')->count(); @endphp
+                        @php $_frozenCount = \Illuminate\Support\Facades\Cache::remember('admin_nav_frozen_count', 60, fn() => \App\Models\User::whereIn('role', ['vendor', 'client'])->where('status', 'frozen')->count()); @endphp
                         @if($_frozenCount > 0)
                             <span class="text-[8px] font-black bg-red-500/15 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-md leading-none">{{ $_frozenCount }}</span>
                         @endif

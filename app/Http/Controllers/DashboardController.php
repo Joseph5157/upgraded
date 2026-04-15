@@ -56,7 +56,7 @@ class DashboardController extends Controller
             }
         );
 
-        // Eager load relationships to avoid N+1 queries
+        // Eager load relationships + consistent ordering
         $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
             ->where('claimed_by', $user->id)
             ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
@@ -67,7 +67,7 @@ class DashboardController extends Controller
             ->whereNull('claimed_by')
             ->where('status', OrderStatus::Pending)
             ->latest()
-            ->get();
+            ->paginate(15);
 
         $recentHistory = Order::with(['client', 'files', 'report'])
             ->where('claimed_by', $user->id)
@@ -120,13 +120,17 @@ class DashboardController extends Controller
         $request->validate(['status' => 'required|in:processing,delivered']);
 
         try {
-            if ($request->status === OrderStatus::Processing->value) {
+            $newStatus = OrderStatus::from($request->status);
+
+            if ($newStatus === OrderStatus::Processing) {
                 $this->authorize('process', $order);
                 $this->workflowService->startProcessing($order, auth()->user());
-            } elseif ($request->status === OrderStatus::Delivered->value) {
+            } elseif ($newStatus === OrderStatus::Delivered) {
                 $this->authorize('deliver', $order);
                 $this->workflowService->deliver($order, auth()->user());
             }
+
+            Cache::forget('vendor_stats_' . auth()->id());
 
             return back()->with('success', 'Status updated.');
         } catch (\Exception $e) {

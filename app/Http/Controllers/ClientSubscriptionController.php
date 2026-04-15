@@ -18,7 +18,7 @@ class ClientSubscriptionController extends Controller
         }
 
         $slotsUsed = $client->orders()
-            ->whereNotIn('status', [OrderStatus::Cancelled->value])
+            ->whereNotIn('status', [OrderStatus::Cancelled])
             ->count();
 
         $slotsRemaining = max(0, $client->slots - $slotsUsed);

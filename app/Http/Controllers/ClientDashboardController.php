@@ -211,8 +211,8 @@ class ClientDashboardController extends Controller
         }
 
         $maxOrderUpdatedAt = (clone $ordersQuery)->max('updated_at');
-        $deliveredCount = (clone $ordersQuery)->where('status', OrderStatus::Delivered->value)->count();
-        $cancelledCount = (clone $ordersQuery)->where('status', OrderStatus::Cancelled->value)->count();
+        $deliveredCount = (clone $ordersQuery)->where('status', OrderStatus::Delivered)->count();
+        $cancelledCount = (clone $ordersQuery)->where('status', OrderStatus::Cancelled)->count();
 
         $maxReportUpdatedAt = OrderReport::query()
             ->whereHas('order', function ($query) use ($client, $user) {

@@ -96,13 +96,13 @@ class AccountManagerController extends Controller
             $client = $user->client;
 
             $cancelledCount = Order::where('client_id', $client->id)
-                ->whereIn('status', [OrderStatus::Pending->value, OrderStatus::Processing->value])
+                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
                 ->count();
 
             Order::where('client_id', $client->id)
-                ->whereIn('status', [OrderStatus::Pending->value, OrderStatus::Processing->value])
+                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
                 ->update([
-                    'status'     => OrderStatus::Cancelled->value,
+                    'status'     => OrderStatus::Cancelled,
                     'claimed_by' => null,
                     'claimed_at' => null,
                 ]);
@@ -115,11 +115,11 @@ class AccountManagerController extends Controller
 
         if ($user->role === 'vendor') {
             Order::where('claimed_by', $user->id)
-                ->whereIn('status', [OrderStatus::Pending->value, OrderStatus::Processing->value])
+                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
                 ->update([
                     'claimed_by' => null,
                     'claimed_at' => null,
-                    'status'     => OrderStatus::Pending->value,
+                    'status'     => OrderStatus::Pending,
                 ]);
         }
 

@@ -2,10 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use App\Models\User;
-use App\Models\Order;
-use App\Enums\OrderStatus;
 
 return new class extends Migration
 {
@@ -15,12 +13,17 @@ return new class extends Migration
             $table->unsignedInteger('delivered_orders_count')->default(0)->after('role');
         });
 
-        // Backfill existing vendors with their current delivered count
-        User::where('role', 'vendor')->each(function ($vendor) {
-            $count = Order::where('claimed_by', $vendor->id)
-                ->where('status', OrderStatus::Delivered)
+        // Backfill existing vendors with their current delivered count.
+        // Using DB::table() rather than Eloquent models so this migration remains
+        // stable even if the models are renamed, removed, or their casts change.
+        DB::table('users')->where('role', 'vendor')->each(function ($vendor) {
+            $count = DB::table('orders')
+                ->where('claimed_by', $vendor->id)
+                ->where('status', 'delivered')
                 ->count();
-            $vendor->update(['delivered_orders_count' => $count]);
+            DB::table('users')
+                ->where('id', $vendor->id)
+                ->update(['delivered_orders_count' => $count]);
         });
     }
 
