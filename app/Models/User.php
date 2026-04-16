@@ -40,6 +40,7 @@ class User extends Authenticatable
         'admin_token_expires_at',
         'last_login_at',
         'last_login_ip',
+        'session_expires_at',
     ];
 
     /**
@@ -67,6 +68,7 @@ class User extends Authenticatable
             'admin_token_expires_at' => 'datetime',
             'last_login_at'          => 'datetime',
             'telegram_connected_at'  => 'datetime',
+            'session_expires_at'     => 'datetime',
         ];
     }
 
