@@ -2,7 +2,7 @@
 
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-lg font-bold text-white tracking-tight">Refund Requests</h1>
+            <h1 class="text-lg font-bold text-[#1E1B4B] tracking-tight">Refund Requests</h1>
             <p class="text-[10px] text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">CLIENT CREDIT RECOVERIES</p>
         </div>
     </div>
@@ -13,11 +13,11 @@
         </div>
     @endif
 
-    <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl overflow-hidden">
+    <div class="bg-white border border-[#DDD6FE] rounded-xl overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
         <table class="w-full text-left">
             <thead>
-                <tr class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/[0.04]">
+                <tr class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-[#DDD6FE]">
                     <th class="pb-4 px-6 pt-5">Client</th>
                     <th class="pb-4 px-4 pt-5">Order</th>
                     <th class="pb-4 px-4 pt-5">Reason</th>
@@ -30,7 +30,7 @@
                 @forelse($refunds as $refund)
                     <tr class="hover:bg-white/[0.02] transition-all">
                         <td class="px-6 py-4">
-                            <p class="text-xs font-bold text-slate-300">{{ $refund->client?->name ?? 'Deleted client' }}</p>
+                            <p class="text-xs font-bold text-[#1E1B4B]">{{ $refund->client?->name ?? 'Deleted client' }}</p>
                             <p class="text-[9px] text-slate-500 font-mono">{{ $refund->user?->email ?? 'Deleted user' }}</p>
                         </td>
                         <td class="px-4 py-4">

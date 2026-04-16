@@ -11,7 +11,7 @@
     {{-- Page Header --}}
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-xl font-bold text-white tracking-tight">Vendor Payouts</h1>
+            <h1 class="text-xl font-bold text-[#1E1B4B] tracking-tight">Vendor Payouts</h1>
             <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] font-mono mt-0.5">
                 Balance Ledger · Rate: ₹{{ number_format($payoutRate, 0) }}/order
             </p>
@@ -21,13 +21,13 @@
     <div class="space-y-8">
 
         {{-- Vendor Balance Table --}}
-        <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl">
+        <div class="bg-white border border-[#DDD6FE] rounded-xl p-8 shadow-sm">
             <div class="flex items-center gap-4 mb-8">
                 <div class="w-10 h-10 bg-indigo-500/15 rounded-2xl flex items-center justify-center text-indigo-500">
                     <i data-lucide="users" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-white">Vendor Balance Sheet</h2>
+                    <h2 class="text-lg font-bold text-[#1E1B4B]">Vendor Balance Sheet</h2>
                     <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Earnings vs Paid
                         Out</p>
                 </div>
@@ -36,8 +36,8 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
-                        <tr
-                            class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
+                            <tr
+                                class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-[#DDD6FE]">
                             <th class="pb-6 px-4">Vendor</th>
                             <th class="pb-6 text-center">Payout Rate</th>
                             <th class="pb-6 text-center">Delivered</th>
@@ -53,11 +53,11 @@
                                 <td class="py-6 px-4">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="w-9 h-9 bg-white/5 rounded-xl flex items-center justify-center text-xs font-bold text-indigo-400 border border-white/5 flex-shrink-0">
+                                        class="w-9 h-9 bg-[#F8FAFF] rounded-xl flex items-center justify-center text-xs font-bold text-indigo-400 border border-[#DDD6FE] flex-shrink-0">
                                             {{ strtoupper(substr($row['vendor']->name, 0, 2)) }}
                                         </div>
                                         <div>
-                                            <p class="text-sm font-bold text-slate-200">{{ $row['vendor']->name }}</p>
+                                            <p class="text-sm font-bold text-[#1E1B4B]">{{ $row['vendor']->name }}</p>
                                             <p class="text-[9px] text-slate-600 font-mono">{{ $row['vendor']->email }}</p>
                                         </div>
                                     </div>
@@ -71,7 +71,7 @@
                                         {{ $row['delivered'] }}
                                     </span>
                                 </td>
-                                <td class="py-6 text-center text-sm font-bold text-white font-mono">
+                                <td class="py-6 text-center text-sm font-bold text-[#1E1B4B] font-mono">
                                     ₹{{ number_format($row['earned'], 0) }}
                                 </td>
                                 <td class="py-6 text-center text-sm font-mono text-green-500">
@@ -117,13 +117,13 @@
         </div>
 
         {{-- Payout History --}}
-        <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl">
+        <div class="bg-white border border-[#DDD6FE] rounded-xl p-8 shadow-sm">
             <div class="flex items-center gap-4 mb-8">
                 <div class="w-10 h-10 bg-green-500/15 rounded-2xl flex items-center justify-center text-green-500">
                     <i data-lucide="history" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-white">Payout History</h2>
+                    <h2 class="text-lg font-bold text-[#1E1B4B]">Payout History</h2>
                     <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">All recorded
                         payments</p>
                 </div>
@@ -133,8 +133,8 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr
-                                class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
+                    <tr
+                                class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-[#DDD6FE]">
                                 <th class="pb-6 px-4">Vendor</th>
                                 <th class="pb-6 text-center">Amount</th>
                                 <th class="pb-6 text-center">UPI / Reference</th>
@@ -148,11 +148,11 @@
                                     <td class="py-5 px-4">
                                         <div class="flex items-center gap-3">
                                             <div
-                                                class="w-7 h-7 bg-white/5 rounded-lg flex items-center justify-center text-[9px] font-bold text-indigo-400 border border-white/5 flex-shrink-0">
+                                                class="w-7 h-7 bg-[#F8FAFF] rounded-lg flex items-center justify-center text-[9px] font-bold text-indigo-400 border border-[#DDD6FE] flex-shrink-0">
                                                 {{ strtoupper(substr($payout->vendor->name ?? 'V', 0, 2)) }}
                                             </div>
                                             <span
-                                                class="text-sm font-bold text-slate-300">{{ $payout->vendor->name ?? 'Unknown' }}</span>
+                                                class="text-sm font-bold text-[#1E1B4B]">{{ $payout->vendor->name ?? 'Unknown' }}</span>
                                         </div>
                                     </td>
                                     <td class="py-5 text-center">
@@ -184,10 +184,10 @@
             @else
                 <div class="py-16 text-center">
                     <div
-                        class="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/5">
+                        class="w-14 h-14 bg-[#F8FAFF] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#DDD6FE]">
                         <i data-lucide="history" class="w-7 h-7 text-slate-700"></i>
                     </div>
-                    <p class="text-sm font-bold text-slate-400">No payouts recorded yet</p>
+                    <p class="text-sm font-bold text-[#1E1B4B]">No payouts recorded yet</p>
                     <p class="text-[10px] text-slate-600 mt-1 font-bold">Use the "Pay" button above to record your first
                         payout.</p>
                 </div>
@@ -199,7 +199,7 @@
     <div id="pay-modal"
         class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onclick="if(event.target===this)this.classList.add('hidden')">
-        <div class="bg-[#0a0a0c] border border-white/10 rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl"
+        <div class="bg-white border border-[#DDD6FE] rounded-xl w-full max-w-sm p-8 shadow-sm"
             onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-3">
@@ -208,12 +208,12 @@
                         <i data-lucide="send" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-white font-bold" id="pay-modal-title">Pay Vendor</h3>
+                        <h3 class="text-[#1E1B4B] font-bold" id="pay-modal-title">Pay Vendor</h3>
                         <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Record UPI Payment</p>
                     </div>
                 </div>
                 <button onclick="document.getElementById('pay-modal').classList.add('hidden')"
-                    class="text-slate-500 hover:text-white transition-colors">
+                    class="text-slate-500 hover:text-[#1E1B4B] transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -222,7 +222,7 @@
                 @csrf
                 <input type="hidden" name="user_id" id="pay-user-id">
 
-                <div class="p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
+                <div class="p-4 bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl">
                     <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1">Balance Due</p>
                     <p class="text-2xl font-bold text-red-400 font-mono" id="pay-modal-balance">₹0</p>
                 </div>
@@ -231,7 +231,7 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Amount
                         (₹)</label>
                     <input type="number" name="amount" id="pay-amount" required min="0.01" step="0.01"
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-indigo-500/50 transition-colors"
+                        class="w-full bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl px-4 py-3 text-sm text-[#1E1B4B] font-mono focus:outline-none focus:border-indigo-500/50 transition-colors"
                         placeholder="e.g. 1500">
                 </div>
 
@@ -239,7 +239,7 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">UPI
                         Reference / Transaction ID</label>
                     <input type="text" name="reference_id"
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-indigo-500/50 transition-colors"
+                        class="w-full bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl px-4 py-3 text-sm text-[#1E1B4B] font-mono focus:outline-none focus:border-indigo-500/50 transition-colors"
                         placeholder="e.g. UTR123456789">
                 </div>
 
@@ -247,11 +247,11 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Notes
                         (optional)</label>
                     <textarea name="notes" rows="2"
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors resize-none"
+                        class="w-full bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl px-4 py-3 text-sm text-[#1E1B4B] focus:outline-none focus:border-indigo-500/50 transition-colors resize-none"
                         placeholder="e.g. March week 1 settlement"></textarea>
                 </div>
 
-                <div class="pt-4 mt-4 border-t border-white/5">
+                <div class="pt-4 mt-4 border-t border-[#DDD6FE]">
                     <button type="submit"
                         class="w-full py-4 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-indigo-600/20 transition-all flex justify-center items-center gap-2">
                         <i data-lucide="check" class="w-4 h-4"></i> Record Payment
