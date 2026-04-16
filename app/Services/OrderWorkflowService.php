@@ -8,43 +8,95 @@ use App\Models\OrderLog;
 use App\Models\OrderReport;
 use App\Models\User;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class OrderWorkflowService
 {
     /**
      * Claim a pending, unclaimed order.
+     *
+     * All guards run INSIDE the transaction on a locked row so that two
+     * concurrent requests can never both see the same unclaimed order and
+     * both succeed — the second one will block on the row lock and then
+     * discover claimed_by is already set.
      */
     public function claim(Order $order, User $user): void
     {
-        if ($order->status === OrderStatus::Cancelled) {
-            throw new Exception("This order has been cancelled by the client and is no longer available.");
-        }
-
-        if ($order->status !== OrderStatus::Pending) {
-            throw new Exception("Only pending orders can be claimed. This order is '{$order->status->value}'.");
-        }
-
-        if ($order->claimed_by !== null) {
-            throw new Exception("This order has already been claimed and is not available.");
-        }
-
         DB::transaction(function () use ($order, $user) {
-            $oldStatus = $order->status->value;
+            // Lock the row for the duration of this transaction so concurrent
+            // claim attempts are serialised at the database level.
+            $locked = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
 
-            $order->update([
+            if ($locked->status === OrderStatus::Cancelled) {
+                throw new Exception("This order has been cancelled by the client and is no longer available.");
+            }
+
+            if ($locked->status !== OrderStatus::Pending) {
+                throw new Exception("Only pending orders can be claimed. This order is '{$locked->status->value}'.");
+            }
+
+            if ($locked->claimed_by !== null) {
+                throw new Exception("This order has already been claimed and is not available.");
+            }
+
+            // Enforce a per-vendor cap so no single vendor monopolises the queue.
+            $activeJobs = Order::where('claimed_by', $user->id)
+                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
+                ->count();
+
+            if ($activeJobs >= 5) {
+                throw new Exception("You already have {$activeJobs} active job(s). Complete or release one before claiming another.");
+            }
+
+            $oldStatus = $locked->status->value;
+
+            $locked->update([
                 'claimed_by' => $user->id,
                 'claimed_at' => now(),
-                'status' => OrderStatus::Processing,
+                'status'     => OrderStatus::Processing,
             ]);
 
             $this->logActivity(
-                $order,
+                $locked,
                 $user,
                 'claim',
                 'Order claimed and moved to processing',
                 $oldStatus,
                 OrderStatus::Processing->value
+            );
+        });
+
+        // Claiming changes "available orders" and "active vendors" on the admin
+        // dashboard — bust the cached snapshot so the next load is fresh.
+        Cache::forget('admin_dashboard_stats');
+    }
+
+    /**
+     * Return a claimed order to the unclaimed pending pool.
+     *
+     * The order update and audit log are written in a single transaction so
+     * they can never diverge (previously the controller did both steps outside
+     * any transaction and outside this service entirely).
+     */
+    public function unclaim(Order $order, User $user): void
+    {
+        DB::transaction(function () use ($order, $user) {
+            $oldStatus = $order->status->value;
+
+            $order->update([
+                'claimed_by' => null,
+                'claimed_at' => null,
+                'status'     => OrderStatus::Pending,
+            ]);
+
+            $this->logActivity(
+                $order,
+                $user,
+                'unclaim',
+                'Order returned to the pending pool',
+                $oldStatus,
+                OrderStatus::Pending->value
             );
         });
     }
@@ -149,6 +201,11 @@ class OrderWorkflowService
 
             $this->logActivity($lockedOrder, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
         });
+
+        // Delivery changes the admin dashboard's "processed today" and
+        // "active vendors" counts — bust the cached snapshot so the next
+        // page load reflects the new order immediately.
+        Cache::forget('admin_dashboard_stats');
 
         try {
             /** @var \App\Services\PortalTelegramAlertService $telegramAlerts */

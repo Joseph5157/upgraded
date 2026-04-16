@@ -95,24 +95,14 @@ class DashboardController extends Controller
     {
         $this->authorize('unclaim', $order);
 
-        $oldStatus = $order->status->value;
-
-        $order->update([
-            'claimed_by' => null,
-            'claimed_at' => null,
-            'status' => OrderStatus::Pending,
-        ]);
-
-        \App\Models\OrderLog::create([
-            'order_id'   => $order->id,
-            'user_id'    => auth()->id(),
-            'action'     => 'unclaim',
-            'old_status' => $oldStatus,
-            'new_status' => OrderStatus::Pending->value,
-            'notes'      => 'Order returned to the pending pool',
-        ]);
-
-        return back()->with('success', 'Order returned to the available pool.');
+        try {
+            // Delegate to the service so the order update and audit log are
+            // always written atomically inside a single DB transaction.
+            $this->workflowService->unclaim($order, auth()->user());
+            return back()->with('success', 'Order returned to the available pool.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function updateStatus(Request $request, Order $order)

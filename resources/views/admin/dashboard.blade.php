@@ -1,563 +1,479 @@
-<x-admin-layout>
+﻿<x-admin-layout>
 
-    {{-- Flash Banners --}}
-    @if(session('success'))
-        <div
-            class="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/20 rounded-2xl text-green-400 text-sm font-semibold mb-2">
-            <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i> {{ session('success') }}
-        </div>
-    @endif
-    @if($errors->any())
-        <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm font-semibold mb-2">
-            @foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach
-        </div>
-    @endif
-
-    {{-- Page Header --}}
-    <div class="flex items-center justify-between mb-2">
+    {{-- ═══════════════════════════════════════════
+         PAGE HEADER
+    ═══════════════════════════════════════════ --}}
+    <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-2xl font-bold text-white tracking-tight">System Overview</h1>
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">ACTIVE_NODE_01 &bull; {{ now()->format('d M Y, H:i') }}</p>
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
+            <p class="text-[11px] text-slate-400 font-mono uppercase tracking-[0.2em] mt-0.5">
+                {{ now()->format('l, d M Y') }}
+            </p>
         </div>
-        <div class="flex items-center gap-2">
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit"
-                    class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl border border-red-400/30 transition-all shadow-lg shadow-red-900/25">
-                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
-                </button>
-            </form>
-            <button onclick="document.getElementById('create-account-modal').classList.remove('hidden')"
-                class="flex items-center gap-2 px-4 py-2 bg-red-600/10 hover:bg-red-600/20 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-red-600/20 transition-all">
-                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Issue Account
-            </button>
-        </div>
+        <button
+            onclick="document.getElementById('create-account-modal').classList.remove('hidden')"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-colors">
+            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+            Issue Account
+        </button>
     </div>
 
-    {{-- System Pulse Metrics --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="{{ route('admin.billing.index') }}"
-            class="bg-[#0a0a0c] border border-white/5 p-6 rounded-2xl group hover:border-green-500/20 transition-all block">
-            <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-3">Pulse &bull; Files Today</p>
-            <div class="flex items-end justify-between">
-                <h2 class="text-4xl font-extrabold text-white font-mono tracking-tight">
-                    {{ $stats['total_processed_today'] }}</h2>
-                <div class="w-8 h-8 bg-green-500/15 rounded-xl flex items-center justify-center text-green-500">
-                    <i data-lucide="trending-up" class="w-4 h-4"></i>
+    {{-- ═══════════════════════════════════════════
+         ORDER STAT CARDS
+    ═══════════════════════════════════════════ --}}
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+
+        <a href="{{ route('admin.finance.ledger') }}"
+           class="bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl p-5 hover:border-emerald-500/40 transition-colors">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Processed today</span>
+                <div class="w-7 h-7 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
                 </div>
             </div>
-            <p class="text-[11px] mt-3 text-slate-400">
-                {{ $stats['total_processed_today'] === 0 ? 'No deliveries yet today.' : 'Open billing stream for delivered files.' }}
-            </p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white font-mono">{{ $stats['total_processed_today'] }}</p>
+            <p class="text-[11px] text-slate-400 mt-1">files delivered</p>
         </a>
 
         <a href="{{ route('admin.matrix.index') }}"
-            class="bg-[#0a0a0c] border border-white/5 p-6 rounded-2xl group hover:border-amber-500/20 transition-all block">
-            <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-3">Pending &bull; Pool Size</p>
-            <div class="flex items-end justify-between">
-                <h2 class="text-4xl font-extrabold text-white font-mono tracking-tight">{{ $stats['pending_pool'] }}</h2>
-                <div class="w-8 h-8 bg-amber-500/15 rounded-xl flex items-center justify-center text-amber-500">
-                    <i data-lucide="database" class="w-4 h-4"></i>
+           class="bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl p-5 hover:border-amber-500/40 transition-colors">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pending pool</span>
+                <div class="w-7 h-7 bg-amber-500/10 rounded-lg flex items-center justify-center text-amber-500">
+                    <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
                 </div>
             </div>
-            <p class="text-[11px] mt-3 text-slate-400">
-                {{ $stats['pending_pool'] === 0 ? 'Queue is clear right now.' : 'Review assignments in credit manager.' }}
-            </p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white font-mono">{{ $stats['pending_pool'] }}</p>
+            <p class="text-[11px] text-slate-400 mt-1">awaiting claim</p>
         </a>
 
-        <a href="{{ route('admin.accounts.index') }}"
-            class="bg-[#0a0a0c] border border-white/5 p-6 rounded-2xl group hover:border-indigo-500/20 transition-all block">
-            <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-3">Active &bull; Workforce</p>
-            <div class="flex items-end justify-between">
-                <h2 class="text-4xl font-extrabold text-white font-mono tracking-tight">{{ $stats['active_vendors'] }}</h2>
-                <div class="w-8 h-8 bg-indigo-500/15 rounded-xl flex items-center justify-center text-indigo-500">
-                    <i data-lucide="users-2" class="w-4 h-4"></i>
+        <a href="{{ route('admin.accounts.index') }}?tab=vendors"
+           class="bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl p-5 hover:border-indigo-500/40 transition-colors">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active vendors</span>
+                <div class="w-7 h-7 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-500">
+                    <i data-lucide="users" class="w-3.5 h-3.5"></i>
                 </div>
             </div>
-            <p class="text-[11px] mt-3 text-slate-400">
-                {{ $stats['active_vendors'] === 0 ? 'No vendor has delivered yet today.' : 'Manage workforce status and assignments.' }}
-            </p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white font-mono">{{ $stats['active_vendors'] }}</p>
+            <p class="text-[11px] text-slate-400 mt-1">of {{ $stats['total_vendors'] }} vendors</p>
         </a>
 
         <a href="{{ route('admin.matrix.index') }}"
-            class="bg-[#0a0a0c] border border-white/5 p-6 rounded-2xl group hover:border-purple-500/20 transition-all block">
-            <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-3">Growth &bull; New Clients</p>
-            <div class="flex items-end justify-between">
-                <h2 class="text-4xl font-extrabold text-white font-mono tracking-tight">{{ $stats['new_clients_today'] }}
-                </h2>
-                <div class="w-8 h-8 bg-purple-500/15 rounded-xl flex items-center justify-center text-purple-500">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+           class="bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl p-5 hover:border-purple-500/40 transition-colors">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">New clients</span>
+                <div class="w-7 h-7 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-500">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
                 </div>
             </div>
-            <p class="text-[11px] mt-3 text-slate-400">
-                {{ $stats['new_clients_today'] === 0 ? 'No new client onboarding today.' : 'Open client matrix for onboarding review.' }}
-            </p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white font-mono">{{ $stats['new_clients_today'] }}</p>
+            <p class="text-[11px] text-slate-400 mt-1">{{ $stats['total_clients'] }} total</p>
         </a>
+
     </div>
 
-    {{-- Main Grid: Vendor Table + System Pulse --}}
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    {{-- ═══════════════════════════════════════════
+         CLIENT HEALTH ROW
+    ═══════════════════════════════════════════ --}}
+    @php
+        $suspendedClients  = \App\Models\Client::where('status','suspended')->count();
+        $frozenClientUsers = \App\Models\User::where('role','client')->where('status','frozen')->count();
+        $pendingTopupCount = \App\Models\TopupRequest::where('status','pending')->count();
+        $lowCreditCount    = \App\Models\Client::whereRaw('slots_consumed >= slots')->count();
+        $pendingRefundCount = \App\Models\RefundRequest::where('status','pending')->count();
+    @endphp
 
-        {{-- Vendor Performance --}}
-        <div class="lg:col-span-8">
-            <div class="bg-[#0a0a0c] border border-white/5 rounded-2xl p-7">
-                <div class="flex justify-between items-center mb-7">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-red-500/15 rounded-xl flex items-center justify-center text-red-500">
-                            <i data-lucide="zap" class="w-4 h-4"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-base font-bold text-white">Vendor Performance</h2>
-                            <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Top contributors today</p>
-                        </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+
+        {{-- Client health --}}
+        <div class="bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl p-5">
+            <div class="flex items-center gap-2.5 mb-4">
+                <div class="w-6 h-6 bg-purple-500/10 rounded-md flex items-center justify-center text-purple-500">
+                    <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-900 dark:text-white">Client health</span>
+                <a href="{{ route('admin.accounts.index') }}?tab=clients"
+                   class="ml-auto text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest">
+                    Manage →
+                </a>
+            </div>
+            <div class="grid grid-cols-4 gap-3">
+                <a href="{{ route('admin.accounts.index') }}?tab=clients"
+                   class="text-center p-3 bg-slate-50 dark:bg-white/[0.03] rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors">
+                    <p class="text-lg font-bold font-mono text-gray-900 dark:text-white">{{ $stats['total_clients'] }}</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Total</p>
+                </a>
+                <a href="{{ route('admin.accounts.index') }}?tab=clients&filter=frozen"
+                   class="text-center p-3 rounded-xl transition-colors {{ $frozenClientUsers > 0 ? 'bg-red-500/10 hover:bg-red-500/15' : 'bg-slate-50 dark:bg-white/[0.03] hover:bg-slate-100 dark:hover:bg-white/[0.06]' }}">
+                    <p class="text-lg font-bold font-mono {{ $frozenClientUsers > 0 ? 'text-red-400' : 'text-gray-900 dark:text-white' }}">{{ $frozenClientUsers }}</p>
+                    <p class="text-[10px] {{ $frozenClientUsers > 0 ? 'text-red-400/70' : 'text-slate-400' }} mt-0.5">Frozen</p>
+                </a>
+                <a href="{{ route('admin.matrix.index') }}"
+                   class="text-center p-3 rounded-xl transition-colors {{ $suspendedClients > 0 ? 'bg-amber-500/10 hover:bg-amber-500/15' : 'bg-slate-50 dark:bg-white/[0.03] hover:bg-slate-100 dark:hover:bg-white/[0.06]' }}">
+                    <p class="text-lg font-bold font-mono {{ $suspendedClients > 0 ? 'text-amber-400' : 'text-gray-900 dark:text-white' }}">{{ $suspendedClients }}</p>
+                    <p class="text-[10px] {{ $suspendedClients > 0 ? 'text-amber-400/70' : 'text-slate-400' }} mt-0.5">Suspended</p>
+                </a>
+                <a href="{{ route('admin.topup.index') }}"
+                   class="text-center p-3 rounded-xl transition-colors {{ $pendingTopupCount > 0 ? 'bg-emerald-500/10 hover:bg-emerald-500/15' : 'bg-slate-50 dark:bg-white/[0.03] hover:bg-slate-100 dark:hover:bg-white/[0.06]' }}">
+                    <p class="text-lg font-bold font-mono {{ $pendingTopupCount > 0 ? 'text-emerald-400' : 'text-gray-900 dark:text-white' }}">{{ $pendingTopupCount }}</p>
+                    <p class="text-[10px] {{ $pendingTopupCount > 0 ? 'text-emerald-400/70' : 'text-slate-400' }} mt-0.5">Top-ups</p>
+                </a>
+            </div>
+
+            {{-- Low credit alert --}}
+            @if($lowCreditCount > 0 || $pendingRefundCount > 0)
+                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-white/[0.04] flex items-center gap-4">
+                    @if($lowCreditCount > 0)
+                        <a href="{{ route('admin.matrix.index') }}" class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400 hover:text-amber-300">
+                            <i data-lucide="alert-triangle" class="w-3 h-3"></i>
+                            {{ $lowCreditCount }} client{{ $lowCreditCount !== 1 ? 's' : '' }} out of credits
+                        </a>
+                    @endif
+                    @if($pendingRefundCount > 0)
+                        <a href="{{ route('admin.refunds.index') }}" class="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400 hover:text-amber-300">
+                            <i data-lucide="refresh-ccw" class="w-3 h-3"></i>
+                            {{ $pendingRefundCount }} refund{{ $pendingRefundCount !== 1 ? 's' : '' }} pending
+                        </a>
+                    @endif
+                </div>
+            @endif
+        </div>
+
+        {{-- Vendor health --}}
+        @php
+            $frozenVendors  = \App\Models\User::where('role','vendor')->where('status','frozen')->count();
+            $activeVendors  = $stats['active_vendors'];
+            $totalVendors   = $stats['total_vendors'];
+        @endphp
+        <div class="bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl p-5">
+            <div class="flex items-center gap-2.5 mb-4">
+                <div class="w-6 h-6 bg-indigo-500/10 rounded-md flex items-center justify-center text-indigo-500">
+                    <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-900 dark:text-white">Vendor health</span>
+                <a href="{{ route('admin.accounts.index') }}?tab=vendors"
+                   class="ml-auto text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest">
+                    Manage →
+                </a>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+                <a href="{{ route('admin.accounts.index') }}?tab=vendors"
+                   class="text-center p-3 bg-slate-50 dark:bg-white/[0.03] rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-colors">
+                    <p class="text-lg font-bold font-mono text-gray-900 dark:text-white">{{ $totalVendors }}</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Total</p>
+                </a>
+                <div class="text-center p-3 {{ $activeVendors > 0 ? 'bg-emerald-500/10' : 'bg-slate-50 dark:bg-white/[0.03]' }} rounded-xl">
+                    <p class="text-lg font-bold font-mono {{ $activeVendors > 0 ? 'text-emerald-400' : 'text-gray-900 dark:text-white' }}">{{ $activeVendors }}</p>
+                    <p class="text-[10px] {{ $activeVendors > 0 ? 'text-emerald-400/70' : 'text-slate-400' }} mt-0.5">Working now</p>
+                </div>
+                <a href="{{ route('admin.accounts.index') }}?tab=vendors&filter=frozen"
+                   class="text-center p-3 rounded-xl transition-colors {{ $frozenVendors > 0 ? 'bg-red-500/10 hover:bg-red-500/15' : 'bg-slate-50 dark:bg-white/[0.03] hover:bg-slate-100 dark:hover:bg-white/[0.06]' }}">
+                    <p class="text-lg font-bold font-mono {{ $frozenVendors > 0 ? 'text-red-400' : 'text-gray-900 dark:text-white' }}">{{ $frozenVendors }}</p>
+                    <p class="text-[10px] {{ $frozenVendors > 0 ? 'text-red-400/70' : 'text-slate-400' }} mt-0.5">Frozen</p>
+                </a>
+            </div>
+
+            {{-- Vendor performance bar --}}
+            @if($totalVendors > 0)
+                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-white/[0.04]">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-[10px] text-slate-400">Active today</span>
+                        <span class="text-[10px] font-mono text-slate-400">{{ $activeVendors }}/{{ $totalVendors }}</span>
                     </div>
-                    <span class="text-[9px] font-mono text-slate-400 uppercase tracking-widest">PHASE_01</span>
+                    <div class="h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-indigo-500 rounded-full transition-all"
+                             style="width: {{ $totalVendors > 0 ? round(($activeVendors / $totalVendors) * 100) : 0 }}%"></div>
+                    </div>
                 </div>
+            @endif
+        </div>
 
+    </div>
+
+    {{-- ═══════════════════════════════════════════
+         ACTIVE ORDERS + RECENT ACTIVITY
+    ═══════════════════════════════════════════ --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+
+        {{-- Active orders 2/3 --}}
+        <div class="lg:col-span-2 bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.04]">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-6 h-6 bg-amber-500/10 rounded-md flex items-center justify-center text-amber-500">
+                        <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">Active orders</span>
+                </div>
+                @if($activeOrders->count() > 0)
+                    <span class="text-[10px] font-bold px-2 py-1 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                        {{ $activeOrders->count() }} in progress
+                    </span>
+                @endif
+            </div>
+
+            @if($activeOrders->isEmpty())
+                <div class="flex flex-col items-center justify-center py-12 text-center">
+                    <div class="w-9 h-9 bg-slate-100 dark:bg-white/5 rounded-xl flex items-center justify-center mb-2">
+                        <i data-lucide="inbox" class="w-4 h-4 text-slate-400"></i>
+                    </div>
+                    <p class="text-sm font-medium text-slate-400">No active orders</p>
+                </div>
+            @else
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
-                            <tr
-                                class="text-[10px] text-slate-400 font-bold uppercase tracking-widest border-b border-white/[0.04] bg-white/[0.02]">
-                                <th class="pb-4 px-3">Vendor</th>
-                                <th class="pb-4 text-center">Files Today</th>
-                                <th class="pb-4 text-center">Lifetime</th>
-                                <th class="pb-4 text-right">Efficiency</th>
+                            <tr class="text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-slate-50/50 dark:bg-white/[0.02]">
+                                <th class="px-5 py-3">File / Client</th>
+                                <th class="py-3">Vendor</th>
+                                <th class="py-3">Elapsed</th>
+                                <th class="py-3 pr-5 text-right">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-white/[0.04]">
-                            @forelse($vendorPerformance as $vendor)
-                                <tr class="group hover:bg-white/[0.03] transition-all">
-                                    <td class="py-4 px-3">
-                                        <div class="flex items-center gap-3">
-                                            <div
-                                                class="w-8 h-8 bg-white/[0.05] rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-red-500/10 group-hover:text-red-500 transition-all border border-white/[0.05] flex-shrink-0">
-                                                <i data-lucide="user" class="w-4 h-4"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-semibold text-slate-300">{{ $vendor->name }}</p>
-                                                <p class="text-[11px] text-slate-500 font-mono">{{ $vendor->email }}</p>
-                                            </div>
-                                        </div>
+                        <tbody class="divide-y divide-slate-100 dark:divide-white/[0.04]">
+                            @foreach($activeOrders as $order)
+                                @php
+                                    $minutes  = $order->claimed_at ? $order->claimed_at->diffInMinutes(now()) : 0;
+                                    $isStalled = $minutes > 60;
+                                @endphp
+                                <tr class="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                                    <td class="px-5 py-3.5">
+                                        <p class="text-[12px] font-semibold text-gray-800 dark:text-slate-200 truncate max-w-[180px]">
+                                            {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Order #'.$order->id }}
+                                        </p>
+                                        <p class="text-[10px] text-slate-400 font-mono mt-0.5">{{ $order->client?->name ?? 'Unknown' }}</p>
                                     </td>
-                                    <td class="py-4 text-center">
-                                        <span
-                                            class="px-2.5 py-1 bg-green-500/10 text-green-500 rounded-lg text-xs font-bold font-mono border border-green-500/10">{{ $vendor->today_jobs }}</span>
+                                    <td class="py-3.5">
+                                        <span class="text-[12px] font-medium text-slate-600 dark:text-indigo-300">
+                                            {{ $order->vendor?->name ?? '—' }}
+                                        </span>
                                     </td>
-                                    <td class="py-4 text-center text-sm font-bold text-slate-300 font-mono">
-                                        {{ $vendor->total_jobs }}</td>
-                                    <td class="py-4 text-right">
-                                        <div class="flex justify-end items-center gap-2">
-                                            <div class="w-20 h-1 bg-white/[0.06] rounded-full overflow-hidden">
-                                                <div class="bg-[#4F6EF7] h-full rounded-full"
-                                                    style="width: {{ min(100, $vendor->today_jobs * 10) }}%"></div>
-                                            </div>
-                                            <span
-                                                class="text-[9px] font-mono text-slate-500">{{ min(100, $vendor->today_jobs * 10) }}%</span>
-                                        </div>
+                                    <td class="py-3.5">
+                                        <span class="text-[11px] font-mono {{ $isStalled ? 'text-red-400 font-bold' : 'text-slate-400' }}">
+                                            @if($minutes >= 60) {{ floor($minutes/60) }}h {{ $minutes%60 }}m
+                                            @else {{ $minutes }}m @endif
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 pr-5 text-right">
+                                        @if($isStalled)
+                                            <span class="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 uppercase">
+                                                <i data-lucide="alert-triangle" class="w-2.5 h-2.5"></i> Stalled
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 text-[9px] font-bold px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
+                                                <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span> Working
+                                            </span>
+                                        @endif
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="py-12 text-center text-xs text-slate-500">No vendor activity
-                                        today.</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
-            </div>
+            @endif
         </div>
 
-        {{-- System Pulse Feed --}}
-        <div class="lg:col-span-4">
-            <div class="bg-[#0a0a0c] border border-white/5 rounded-2xl p-7 h-full flex flex-col">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xs font-bold text-white uppercase tracking-widest">System Pulse</h2>
-                    <span class="w-2 h-2 bg-[#4F6EF7] rounded-full animate-ping"></span>
-                </div>
-
-                <div class="mb-5 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                    <div class="flex items-center gap-4 text-[10px] uppercase tracking-widest font-bold text-slate-300">
-                        <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500"></span>Delivered</span>
-                        <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Pending</span>
-                        <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span>Processing</span>
-                    </div>
-                </div>
-
-                <div class="space-y-6 flex-1 max-h-[460px] overflow-y-auto pr-1 custom-scrollbar">
-                    @forelse($recentOrders as $order)
-                        <div class="relative pl-7 group">
-                            <div class="absolute left-0 top-1 w-1.5 h-1.5 rounded-full z-10
-                                    @if($order->status->value === 'delivered') bg-green-500
-                                    @elseif($order->status->value === 'pending') bg-amber-500
-                                    @else bg-red-500 @endif">
-                            </div>
-                            <div class="absolute left-[2px] top-4 w-px h-full bg-white/[0.05] group-last:hidden"></div>
-                            <div class="space-y-0.5">
-                                <div class="flex justify-between items-start gap-2">
-                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-tight">
-                                        @if($order->status->value === 'delivered') Result Uploaded @else Processing Stream @endif
-                                    </p>
-                                    <span
-                                        class="text-[10px] text-slate-400 font-mono flex-shrink-0">{{ $order->created_at->diffForHumans() }}</span>
-                                </div>
-                                <p class="text-[10px] text-slate-300 font-mono line-clamp-1">{{ $order->client?->name ?? 'Unknown' }} &bull; {{ $order->files_count }} files</p>
-                                @if($order->vendor)
-                                    <p class="text-[9px] text-red-500/50 font-bold uppercase tracking-widest">&rarr; {{ $order->vendor->name }}</p>
-                                @endif
-                            </div>
+        {{-- Recent activity 1/3 --}}
+        <div class="bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 dark:border-white/[0.04]">
+                <span class="text-sm font-bold text-gray-900 dark:text-white">Recent activity</span>
+            </div>
+            <div class="divide-y divide-slate-100 dark:divide-white/[0.04] max-h-[360px] overflow-y-auto">
+                @forelse($recentOrders as $order)
+                    <div class="px-5 py-3 flex items-start gap-3">
+                        <div class="mt-1 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center
+                            @if($order->status->value==='delivered') bg-emerald-500/15
+                            @elseif($order->status->value==='processing') bg-indigo-500/15
+                            @elseif($order->status->value==='pending') bg-amber-500/15
+                            @else bg-slate-200 dark:bg-white/5 @endif">
+                            <div class="w-1.5 h-1.5 rounded-full
+                                @if($order->status->value==='delivered') bg-emerald-400
+                                @elseif($order->status->value==='processing') bg-indigo-400
+                                @elseif($order->status->value==='pending') bg-amber-400
+                                @else bg-slate-400 @endif"></div>
                         </div>
-                    @empty
-                        <p class="text-xs text-slate-500 text-center py-8">No recent activity.</p>
-                    @endforelse
-                </div>
-
-                <div class="mt-6 pt-6 border-t border-white/[0.05]">
-                    <button
-                        class="w-full py-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-[10px] font-bold text-indigo-400 uppercase tracking-widest rounded-xl border border-indigo-500/20 transition-all">
-                        View Security Logs
-                    </button>
-                </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[12px] font-medium text-gray-800 dark:text-slate-200 truncate">{{ $order->client?->name ?? 'Unknown' }}</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">{{ ucfirst($order->status->value) }} · {{ $order->files_count }} file{{ $order->files_count!==1?'s':'' }}</p>
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-mono flex-shrink-0 mt-0.5">{{ $order->created_at->diffForHumans(null,true,true) }}</span>
+                    </div>
+                @empty
+                    <div class="py-10 text-center">
+                        <p class="text-sm text-slate-400">No orders yet</p>
+                    </div>
+                @endforelse
             </div>
         </div>
+
     </div>
 
-    {{-- Queue Snapshot --}}
-    <div class="bg-[#0a0a0c] border border-white/5 rounded-2xl p-6 mt-6">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-sm font-bold text-white uppercase tracking-widest">Queue Snapshot</h2>
-            <span class="text-[10px] text-slate-400 font-mono">Live capacity view</span>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="p-4 rounded-xl border border-white/[0.05] bg-white/[0.02]">
-                <p class="text-[10px] text-slate-300 uppercase tracking-widest font-bold mb-1">Processed Today</p>
-                <p class="text-lg font-extrabold text-white font-mono">{{ $stats['total_processed_today'] }}</p>
-            </div>
-            <div class="p-4 rounded-xl border border-white/[0.05] bg-white/[0.02]">
-                <p class="text-[10px] text-slate-300 uppercase tracking-widest font-bold mb-1">Pending Pool</p>
-                <p class="text-lg font-extrabold text-white font-mono">{{ $stats['pending_pool'] }}</p>
-            </div>
-            <div class="p-4 rounded-xl border border-white/[0.05] bg-white/[0.02]">
-                <p class="text-[10px] text-slate-300 uppercase tracking-widest font-bold mb-1">Active Vendors</p>
-                <p class="text-lg font-extrabold text-white font-mono">{{ $stats['active_vendors'] }}</p>
-            </div>
-        </div>
-    </div>
-
-    {{-- Active Vendor Operations (Stuck Detection) --}}
-    <div class="bg-[#0a0a0c] border border-white/5 rounded-2xl p-7 mt-6">
-        <div class="flex justify-between items-center mb-6">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-amber-500/15 rounded-xl flex items-center justify-center text-amber-500">
-                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+    {{-- ═══════════════════════════════════════════
+         VENDOR PERFORMANCE
+    ═══════════════════════════════════════════ --}}
+    <div class="bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.04]">
+            <div class="flex items-center gap-2.5">
+                <div class="w-6 h-6 bg-red-500/10 rounded-md flex items-center justify-center text-red-500">
+                    <i data-lucide="zap" class="w-3.5 h-3.5"></i>
                 </div>
                 <div>
-                    <h2 class="text-base font-bold text-white">Active Workforce Operations</h2>
-                    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Currently clamped files</p>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white">Vendor performance</span>
+                    <span class="ml-2 text-[10px] text-slate-400">today</span>
                 </div>
             </div>
-            <span class="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-amber-500/20">{{ $activeOrders->count() }} Active</span>
+            <a href="{{ route('admin.accounts.index') }}?tab=vendors"
+               class="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest">View all →</a>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="text-[10px] text-slate-400 font-bold uppercase tracking-widest border-b border-white/[0.04] bg-white/[0.02]">
-                        <th class="pb-3 px-3">File / Client</th>
-                        <th class="pb-3 text-left">Assigned Vendor</th>
-                        <th class="pb-3 text-left">Time Elapsed</th>
-                        <th class="pb-3 text-right pr-3">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-white/[0.04]">
-                    @forelse($activeOrders as $order)
-                        <tr class="group hover:bg-white/[0.03] transition-all">
-                            <td class="py-4 px-3">
-                                <p class="text-[11px] font-bold text-slate-300">
-                                    {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document #' . $order->id }}
-                                </p>
-                                <p class="text-[9px] text-slate-400 font-mono mt-0.5">{{ $order->client?->name ?? 'Unknown Client' }}</p>
-                            </td>
-                            <td class="py-4">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-6 h-6 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-400">
-                                        <i data-lucide="user" class="w-3 h-3"></i>
+        @if($vendorPerformance->isEmpty())
+            <div class="py-10 text-center">
+                <p class="text-sm text-slate-400">No vendor activity today</p>
+            </div>
+        @else
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-slate-50/50 dark:bg-white/[0.02]">
+                            <th class="px-5 py-3">Vendor</th>
+                            <th class="py-3 text-center">Today</th>
+                            <th class="py-3 text-center">Lifetime</th>
+                            <th class="py-3 pr-5 text-right">Share today</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-white/[0.04]">
+                        @php $totalToday = $vendorPerformance->sum('today_jobs'); @endphp
+                        @foreach($vendorPerformance as $vendor)
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                                <td class="px-5 py-3.5">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-6 h-6 bg-indigo-500/10 rounded-md flex items-center justify-center text-indigo-400 text-[9px] font-bold flex-shrink-0">
+                                            {{ strtoupper(substr($vendor->name,0,1)) }}
+                                        </div>
+                                        <div>
+                                            <p class="text-[12px] font-semibold text-gray-800 dark:text-slate-200">{{ $vendor->name }}</p>
+                                            <p class="text-[10px] text-slate-400 truncate max-w-[160px]">{{ $vendor->email }}</p>
+                                        </div>
                                     </div>
-                                    <span class="text-[11px] font-semibold text-indigo-300">{{ $order->vendor?->name ?? 'Unknown Vendor' }}</span>
-                                </div>
-                            </td>
-                            <td class="py-4">
-                                @php
-                                    $minutes = $order->claimed_at ? $order->claimed_at->diffInMinutes(now()) : 0;
-                                    $isStalled = $minutes > 60;
-                                @endphp
-                                <span class="text-[11px] font-mono {{ $isStalled ? 'text-red-400 font-bold' : 'text-slate-300' }}">
-                                    {{ $minutes }} mins
-                                </span>
-                            </td>
-                            <td class="py-4 text-right pr-3">
-                                <form action="{{ route('orders.unclaim', $order) }}" method="POST" onsubmit="return confirm('Are you sure you want to rip this file away from the vendor and return it to the pending pool?');" class="inline">
-                                    @csrf
-                                    <button class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 hover:text-white bg-red-500/10 hover:bg-red-500 rounded-lg transition-all border border-red-500/20 shadow-sm">
-                                        <i data-lucide="unlock" class="w-3 h-3"></i> Force Release
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="py-8 text-center text-xs text-slate-500 font-mono">No active clamped files detected.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                                </td>
+                                <td class="py-3.5 text-center">
+                                    <span class="text-[13px] font-bold font-mono {{ $vendor->today_jobs > 0 ? 'text-emerald-400' : 'text-slate-500' }}">
+                                        {{ $vendor->today_jobs }}
+                                    </span>
+                                </td>
+                                <td class="py-3.5 text-center">
+                                    <span class="text-[12px] font-mono text-slate-400">{{ number_format($vendor->total_jobs) }}</span>
+                                </td>
+                                <td class="py-3.5 pr-5">
+                                    @php $share = $totalToday > 0 ? round(($vendor->today_jobs/$totalToday)*100) : 0; @endphp
+                                    <div class="flex items-center justify-end gap-2">
+                                        <div class="w-16 h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                                            <div class="h-full bg-indigo-500 rounded-full" style="width:{{ $share }}%"></div>
+                                        </div>
+                                        <span class="text-[10px] font-mono text-slate-400 w-7 text-right">{{ $share }}%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
     </div>
 
-    {{-- Quick Actions --}}
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-        <button onclick="document.getElementById('create-account-modal').classList.remove('hidden')"
-            class="bg-white/[0.02] border border-white/5 p-6 rounded-2xl space-y-3 hover:border-red-500/20 transition-all cursor-pointer group text-left w-full">
-            <div
-                class="w-10 h-10 bg-white/[0.05] rounded-xl flex items-center justify-center text-slate-400 group-hover:text-red-500 group-hover:bg-red-500/10 transition-colors">
-                <i data-lucide="user-plus" class="w-5 h-5"></i>
-            </div>
-            <div>
-                <h3 class="text-sm font-bold text-white">Issue Account</h3>
-                <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">Provision vendor, client, or admin.</p>
-            </div>
-        </button>
-
-        <a href="{{ route('admin.matrix.index') }}"
-            class="bg-white/[0.02] border border-white/5 p-6 rounded-2xl space-y-3 hover:border-red-500/20 transition-all group block">
-            <div
-                class="w-10 h-10 bg-white/[0.05] rounded-xl flex items-center justify-center text-slate-400 group-hover:text-red-500 group-hover:bg-red-500/10 transition-colors">
-                <i data-lucide="building" class="w-5 h-5"></i>
-            </div>
-            <div>
-                <h3 class="text-sm font-bold text-white">Client Matrix</h3>
-                <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">Audit credit usage and limits.</p>
-            </div>
-        </a>
-
-        <a href="{{ route('admin.billing.index') }}"
-            class="bg-white/[0.02] border border-white/5 p-6 rounded-2xl space-y-3 hover:border-green-500/20 transition-all group block">
-            <div
-                class="w-10 h-10 bg-white/[0.05] rounded-xl flex items-center justify-center text-slate-400 group-hover:text-green-500 group-hover:bg-green-500/10 transition-colors">
-                <i data-lucide="trending-up" class="w-5 h-5"></i>
-            </div>
-            <div>
-                <h3 class="text-sm font-bold text-white">Ledger History</h3>
-                <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">Daily P&L snapshots.</p>
-            </div>
-        </a>
-
-        <div
-            class="bg-white/[0.02] border border-white/5 p-6 rounded-2xl space-y-3 opacity-40 cursor-not-allowed group">
-            <div class="w-10 h-10 bg-white/[0.05] rounded-xl flex items-center justify-center text-slate-400">
-                <i data-lucide="settings-2" class="w-5 h-5"></i>
-            </div>
-            <div>
-                <h3 class="text-sm font-bold text-white flex items-center gap-2">System Overlays
-                    <span
-                        class="text-[7px] text-red-500/50 bg-red-500/5 border border-red-500/10 px-1.5 py-0.5 rounded font-black uppercase tracking-widest">Soon</span>
-                </h3>
-                <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed">Config, limits, and API keys.</p>
-            </div>
-        </div>
-    </div>
-
-    {{-- Issue New Account Modal --}}
+    {{-- ═══════════════════════════════════════════
+         ISSUE ACCOUNT MODAL
+    ═══════════════════════════════════════════ --}}
     <div id="create-account-modal"
-        class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onclick="if(event.target===this)this.classList.add('hidden')">
-        <div class="bg-[#0a0a0c] border border-white/10 rounded-2xl w-full max-w-md p-8 shadow-2xl"
+        <div class="bg-white dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 rounded-2xl w-full max-w-md p-7 shadow-2xl"
             onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center mb-7">
+
+            <div class="flex justify-between items-center mb-6">
                 <div class="flex items-center gap-3">
-                    <div
-                        class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 border border-red-500/20">
-                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                    <div class="w-9 h-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500">
+                        <i data-lucide="user-plus" class="w-4.5 h-4.5"></i>
                     </div>
                     <div>
-                        <h3 class="text-white font-bold">Provision Account</h3>
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">System Access</p>
+                        <h3 class="text-gray-900 dark:text-white font-bold">Issue Account</h3>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">Create new access</p>
                     </div>
                 </div>
                 <button onclick="document.getElementById('create-account-modal').classList.add('hidden')"
-                    class="text-slate-500 hover:text-white transition-colors">
+                    class="text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
             <form action="{{ route('admin.accounts.store') }}" method="POST" class="space-y-4">
                 @csrf
+
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Account
-                        Type</label>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Account type</label>
                     <select name="role" id="modal-role" onchange="toggleRoleFields()" required
-                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 appearance-none">
+                        class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500/60 transition-all appearance-none">
                         @can('create-admin')
-                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }} class="bg-[#0d0d0f]">System Admin</option>
+                            <option value="admin" {{ old('role')==='admin'?'selected':'' }}>System Admin</option>
                         @endcan
-                        <option value="vendor" {{ old('role') === 'vendor' ? 'selected' : '' }} class="bg-[#0d0d0f]">
-                            Processing Vendor</option>
-                        <option value="client" {{ old('role') === 'client' ? 'selected' : '' }} class="bg-[#0d0d0f]">
-                            Client Organization</option>
+                        <option value="vendor" {{ old('role')==='vendor'?'selected':'' }}>Vendor</option>
+                        <option value="client" {{ old('role')==='client'?'selected':'' }}>Client</option>
                     </select>
-                    <div class="mt-3 flex items-center gap-2">
-                        <span id="chip-admin" class="px-2 py-1 rounded-md border text-[9px] font-bold uppercase tracking-wider border-red-500/30 text-red-300 bg-red-500/10">Admin</span>
-                        <span id="chip-vendor" class="px-2 py-1 rounded-md border text-[9px] font-bold uppercase tracking-wider border-indigo-500/30 text-indigo-300 bg-indigo-500/10">Vendor</span>
-                        <span id="chip-client" class="px-2 py-1 rounded-md border text-[9px] font-bold uppercase tracking-wider border-amber-500/30 text-amber-300 bg-amber-500/10">Client</span>
-                    </div>
-                    <p id="role-helper-text" class="text-[10px] text-slate-400 mt-2 leading-relaxed"></p>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Full Name /
-                        Org Name</label>
-                    <input type="text" name="name" value="{{ old('name') }}" required
-                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Email
-                        Address</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required
-                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Mobile Number</label>
-                    <input type="tel" name="phone" value="{{ old('phone') }}"
-                        placeholder="+91 98765 43210"
-                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
-                    <p class="text-[9px] text-slate-500 mt-2">Optional for now. Supports country code and digits.</p>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Temporary
-                        Password</label>
-                    <input type="password" name="password" required
-                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-2">Confirm Password</label>
-                    <input type="password" name="password_confirmation" required
-                        class="w-full bg-[#121218] border border-white/15 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all shadow-inner shadow-black/30 placeholder-slate-600">
-                </div>
-                <div class="min-h-[162px]">
-                    <div id="super-password-section" class="hidden">
-                        <div class="p-4 bg-red-500/5 border border-red-500/20 rounded-xl space-y-3">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-red-400"></i>
-                                <label class="text-[10px] font-bold text-red-400 uppercase tracking-widest">SYSTEM_ROOT Authorization Required</label>
-                            </div>
-                            <input type="password" name="super_password" id="super_password"
-                                class="w-full bg-[#121218] border border-red-500/25 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all font-mono shadow-inner shadow-black/30 placeholder-slate-600"
-                                placeholder="Enter your SYSTEM_ROOT password">
-                            @error('super_password')
-                                <p class="text-[10px] text-red-400">{{ $message }}</p>
-                            @enderror
-                            <ul class="text-[9px] text-slate-500 space-y-1 list-disc list-inside">
-                                <li>Admin accounts have full portal access. This action is logged.</li>
-                                <li>Maximum 5 admin accounts are allowed system-wide.</li>
-                                <li>Enter your own password to authorize this creation.</li>
-                            </ul>
-                        </div>
-                    </div>
 
-                    <div id="slots-field" class="{{ old('role', 'vendor') === 'client' ? '' : 'hidden' }}">
-                        <div class="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-3">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="files" class="w-3.5 h-3.5 text-amber-400"></i>
-                                <label class="text-[10px] font-bold text-amber-400 uppercase tracking-widest">File Credit Limit</label>
-                            </div>
-                            <input type="number" name="slots" id="slots_input" value="{{ old('slots', 50) }}" min="1" max="10000"
-                                class="w-full bg-[#121218] border border-amber-500/25 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500/60 focus:ring-2 focus:ring-amber-500/15 transition-all font-mono shadow-inner shadow-black/30 placeholder-slate-600"
-                                placeholder="e.g. 50">
-                            <p class="text-[9px] text-slate-500">Number of files this client is allowed to submit. Can be refilled later from the Client Matrix.</p>
-                        </div>
-                    </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Full name</label>
+                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="Jane Smith"
+                        class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500/60 transition-all">
+                </div>
 
-                    <div id="vendor-role-note" class="{{ old('role', 'vendor') === 'vendor' ? '' : 'hidden' }}">
-                        <div class="p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-xl space-y-2">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="briefcase" class="w-3.5 h-3.5 text-indigo-400"></i>
-                                <label class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Vendor Access Scope</label>
-                            </div>
-                            <p class="text-[10px] text-slate-400 leading-relaxed">
-                                Processing vendors can claim and deliver jobs. No credit-limit setup is required during provisioning.
-                            </p>
-                        </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Email</label>
+                    <input type="email" name="email" value="{{ old('email') }}" required placeholder="jane@example.com"
+                        class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500/60 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Temporary password</label>
+                    <input type="password" name="password" required placeholder="Min. 8 characters"
+                        class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500/60 transition-all">
+                </div>
+
+                <div id="client-fields" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Organisation name</label>
+                        <input type="text" name="client_name" value="{{ old('client_name') }}" placeholder="Acme Corp"
+                            class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500/60 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Initial slots</label>
+                        <input type="number" name="slots" value="{{ old('slots', 10) }}" min="1"
+                            class="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500/60 transition-all">
                     </div>
                 </div>
-                <div class="pt-4 border-t border-white/[0.05]">
-                    <button type="submit" id="provision-submit-btn"
-                        class="w-full py-3.5 bg-red-600/10 hover:bg-red-600/25 active:scale-[0.99] text-red-400 hover:text-red-300 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-red-600/30 shadow-[0_0_0_0_rgba(239,68,68,0.35)] hover:shadow-[0_0_24px_0_rgba(239,68,68,0.22)] transition-all duration-200 flex justify-center items-center gap-2">
-                        <i data-lucide="zap" class="w-4 h-4" id="provision-submit-icon"></i>
-                        <i data-lucide="loader-2" class="w-4 h-4 hidden animate-spin" id="provision-submit-spinner"></i>
-                        <span id="provision-submit-label">Execute Provisioning</span>
-                    </button>
-                </div>
-                <script>
-                    function toggleRoleFields() {
-                        const role = document.getElementById('modal-role').value;
-                        const superSection = document.getElementById('super-password-section');
-                        const slotsSection = document.getElementById('slots-field');
-                        const vendorRoleNote = document.getElementById('vendor-role-note');
-                        const superPasswordInput = document.getElementById('super_password');
-                        const slotsInput = document.getElementById('slots_input');
-                        const helperText = document.getElementById('role-helper-text');
-                        const adminChip = document.getElementById('chip-admin');
-                        const vendorChip = document.getElementById('chip-vendor');
-                        const clientChip = document.getElementById('chip-client');
 
-                        slotsSection.classList.toggle('hidden', role !== 'client');
-                        superSection.classList.toggle('hidden', role !== 'admin');
-                        vendorRoleNote.classList.toggle('hidden', role !== 'vendor');
+                @if($errors->any())
+                    <div class="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                        @foreach($errors->all() as $error)
+                            <p class="text-xs text-red-400">{{ $error }}</p>
+                        @endforeach
+                    </div>
+                @endif
 
-                        superPasswordInput.required = role === 'admin';
-                        superPasswordInput.disabled = role !== 'admin';
-                        slotsInput.disabled = role !== 'client';
-
-                        if (role !== 'admin') {
-                            superPasswordInput.value = '';
-                        }
-
-                        helperText.textContent = role === 'admin'
-                            ? 'Highest-level access. Authorization from SYSTEM_ROOT is required below.'
-                            : role === 'client'
-                                ? 'Create a client workspace and set the initial file-credit limit.'
-                                : 'Create a processing-only vendor account with standard operational access.';
-
-                        adminChip.classList.toggle('ring-1', role === 'admin');
-                        adminChip.classList.toggle('ring-red-400/60', role === 'admin');
-                        vendorChip.classList.toggle('ring-1', role === 'vendor');
-                        vendorChip.classList.toggle('ring-indigo-400/60', role === 'vendor');
-                        clientChip.classList.toggle('ring-1', role === 'client');
-                        clientChip.classList.toggle('ring-amber-400/60', role === 'client');
-                    }
-                    toggleRoleFields();
-
-                    const provisionForm = document.querySelector('#create-account-modal form');
-                    const submitButton = document.getElementById('provision-submit-btn');
-                    const submitLabel = document.getElementById('provision-submit-label');
-                    const submitIcon = document.getElementById('provision-submit-icon');
-                    const submitSpinner = document.getElementById('provision-submit-spinner');
-
-                    provisionForm.addEventListener('submit', function () {
-                        submitButton.disabled = true;
-                        submitButton.classList.add('opacity-80', 'cursor-wait');
-                        submitIcon.classList.add('hidden');
-                        submitSpinner.classList.remove('hidden');
-                        submitLabel.textContent = 'Provisioning...';
-                    });
-                </script>
+                <button type="submit"
+                    class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition-colors">
+                    Create Account
+                </button>
             </form>
         </div>
     </div>
 
-    {{-- Re-open modal on validation failure --}}
-    @if($errors->any())
-        <script>document.getElementById('create-account-modal').classList.remove('hidden');</script>
-    @endif
+    <script>
+        function toggleRoleFields() {
+            const role = document.getElementById('modal-role').value;
+            document.getElementById('client-fields').classList.toggle('hidden', role !== 'client');
+        }
+        toggleRoleFields();
+    </script>
 
 </x-admin-layout>

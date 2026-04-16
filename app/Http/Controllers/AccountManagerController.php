@@ -60,6 +60,8 @@ class AccountManagerController extends Controller
             ->where('user_id', $user->id)
             ->delete();
 
+        $user->update(['session_expires_at' => null]);
+
         return back()->with('success', 'Account frozen successfully.');
     }
 

@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -15,12 +17,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->alias([
-            'role'           => \App\Http\Middleware\RoleMiddleware::class,
-            'account.status' => \App\Http\Middleware\CheckAccountStatus::class,
-            'nocache'        => \App\Http\Middleware\NoCacheHeaders::class,
+            'role'            => \App\Http\Middleware\RoleMiddleware::class,
+            'account.status'  => \App\Http\Middleware\CheckAccountStatus::class,
+            'nocache'         => \App\Http\Middleware\NoCacheHeaders::class,
+            'session.timeout' => \App\Http\Middleware\EnforceSessionTimeout::class,
         ]);
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\CheckAccountStatus::class,
+            \App\Http\Middleware\EnforceSessionTimeout::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             'telegram/webhook/*',
@@ -28,6 +32,22 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (AccessDeniedHttpException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'You do not have permission to do that.'], 403);
+            }
+
+            if (Auth::check()) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
+
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your session is invalid or you do not have access. Please log in again.',
+            ]);
+        });
+
         $exceptions->render(function (Throwable $e, Request $request) {
             if (! $request->expectsJson()) {
                 return null;

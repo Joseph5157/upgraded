@@ -112,4 +112,7 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    // Absolute session timeout in minutes. Set SESSION_TIMEOUT_MINUTES in .env.
+    'session_timeout' => (int) env('SESSION_TIMEOUT_MINUTES', 480),
+
 ];

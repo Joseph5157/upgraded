@@ -6,15 +6,9 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RoleMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (!Auth::check()) {
@@ -27,30 +21,13 @@ class RoleMiddleware
             return $next($request);
         }
 
-        throw new HttpException(403, 'Unauthorized Access');
-    }
+        // Role mismatch — log out cleanly instead of showing a 403 page
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-    /**
-     * Handle file access for unauthorized roles.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
-    public function handleFileAccess(Request $request, Closure $next, string ...$roles): Response
-    {
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
-
-        $user = Auth::user();
-
-        if ($request->is('files/*') && !in_array($user->role, ['admin', 'vendor'])) {
-            throw new HttpException(403, 'Unauthorized access to files.');
-        }
-
-        if (in_array($user->role, $roles)) {
-            return $next($request);
-        }
-
-        throw new HttpException(403, 'Unauthorized Access');
+        return redirect()->route('login')->withErrors([
+            'email' => 'You do not have access to that page. Please log in with the correct account.',
+        ]);
     }
 }

@@ -38,11 +38,14 @@ class MatrixController extends Controller
             'additional_slots' => 'required|integer|min:1',
         ]);
 
+        $userFrozen = $client->user?->status === 'frozen';
+
         $client->update([
-            'slots' => $client->slots + $request->additional_slots,
-            'status' => 'active',
+            'slots'  => $client->slots + $request->additional_slots,
+            'status' => $userFrozen ? $client->status : 'active',
         ]);
 
-        return back()->with('success', "Added {$request->additional_slots} slots to {$client->name}. Account is now Active.");
+        $note = $userFrozen ? ' (account remains frozen — unfreeze separately)' : '. Account is now Active.';
+        return back()->with('success', "Added {$request->additional_slots} slots to {$client->name}{$note}");
     }
 }

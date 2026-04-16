@@ -38,14 +38,19 @@ class ClientDashboardController extends Controller
             }
         }, $downloadName);
     }
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
         $client = $user->client;
 
         if (!$client) {
-            abort(403, 'No client account is linked to your profile. Please contact the administrator.');
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your account is not fully configured. Please contact support.',
+            ]);
         }
 
         $ordersQuery = Order::where('client_id', $client->id)
@@ -73,13 +78,18 @@ class ClientDashboardController extends Controller
         return view('client.dashboard', compact('client', 'orders', 'dashboardSignature', 'telegramConnectUrl'));
     }
 
-    public function pulse()
+    public function pulse(Request $request)
     {
         $user = Auth::user();
         $client = $user->client;
 
         if (!$client) {
-            abort(403, 'No client account is linked to your profile. Please contact the administrator.');
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your account is not fully configured. Please contact support.',
+            ]);
         }
 
         return response()->json([
@@ -94,7 +104,12 @@ class ClientDashboardController extends Controller
         $client = $user->client;
 
         if (!$client) {
-            abort(403, 'No client account is linked to your profile. Please contact the administrator.');
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your account is not fully configured. Please contact support.',
+            ]);
         }
 
         $request->validate([

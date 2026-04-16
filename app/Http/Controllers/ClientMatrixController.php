@@ -38,12 +38,17 @@ class ClientMatrixController extends Controller
             'additional_slots' => 'required|integer|min:1',
         ]);
 
-        // Update the total slots and set status back to active
+        // Only reactivate the client's portal status if their linked user account
+        // is not frozen by an admin. A frozen user must be unfrozen explicitly —
+        // adding credits should not silently undo that administrative decision.
+        $userFrozen = $client->user?->status === 'frozen';
+
         $client->update([
-            'slots' => $client->slots + $request->additional_slots,
-            'status' => 'active'
+            'slots'  => $client->slots + $request->additional_slots,
+            'status' => $userFrozen ? $client->status : 'active',
         ]);
 
-        return back()->with('success', "Added {$request->additional_slots} slots to {$client->name}. Account is now Active.");
+        $note = $userFrozen ? ' (account remains frozen — unfreeze separately)' : '. Account is now Active.';
+        return back()->with('success', "Added {$request->additional_slots} slots to {$client->name}{$note}");
     }
 }

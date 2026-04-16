@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\RefundRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class RefundController extends Controller
 {
@@ -22,11 +24,19 @@ class RefundController extends Controller
 
         $client = $refundRequest->client;
 
-        // Restore the credit slot by decrementing slots_consumed
-        $client->decrement('slots_consumed');
+        // Guard: never let slots_consumed go negative. This can happen if an
+        // admin approves a refund for an order that was already deleted (which
+        // already restored the credit during deletion).
+        if ($client->slots_consumed > 0) {
+            $client->decrement('slots_consumed');
+        } else {
+            Log::warning("RefundController: slots_consumed is already 0 for client #{$client->id} — skipping decrement.", [
+                'refund_request_id' => $refundRequest->id,
+            ]);
+        }
 
-        // Reactivate client if they were suspended
-        if ($client->status === 'suspended') {
+        // Reactivate client if they were suspended and now have capacity.
+        if ($client->status === 'suspended' && $client->slots_consumed < $client->slots) {
             $client->update(['status' => 'active']);
         }
 
@@ -35,6 +45,9 @@ class RefundController extends Controller
             'admin_note'  => $request->admin_note,
             'resolved_at' => now(),
         ]);
+
+        // Bust the sidebar badge so the resolved count reflects immediately.
+        Cache::forget('admin_nav_pending_refunds');
 
         return back()->with('success', 'Refund approved. Credit slot has been returned to the client.');
     }
@@ -57,6 +70,8 @@ class RefundController extends Controller
             'admin_note'  => $request->admin_note,
             'resolved_at' => now(),
         ]);
+
+        Cache::forget('admin_nav_pending_refunds');
 
         return back()->with('success', 'Refund request rejected.');
     }

@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -40,9 +41,17 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
+        // Invalidate all other active sessions for this user so stale browser
+        // sessions (e.g. shared devices) are killed on new login.
+        DB::table('sessions')
+            ->where('user_id', $user->id)
+            ->where('id', '!=', $request->session()->getId())
+            ->delete();
+
         $user->update([
-            'last_login_at' => now(),
-            'last_login_ip' => $request->ip(),
+            'last_login_at'      => now(),
+            'last_login_ip'      => $request->ip(),
+            'session_expires_at' => now()->addMinutes(config('auth.session_timeout', 480)),
         ]);
 
         return match ($user->role) {
@@ -57,6 +66,10 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        if (Auth::check()) {
+            Auth::user()->update(['session_expires_at' => null]);
+        }
+
         Auth::logout();
 
         $request->session()->invalidate();

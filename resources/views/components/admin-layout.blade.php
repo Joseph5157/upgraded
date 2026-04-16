@@ -1,304 +1,271 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 
 <head>
-    <script>
-        // Force dark mode as default
-        document.documentElement.classList.add('dark');
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ ($title ?? 'Admin') }} — PlagExpert</title>
     <link rel="icon" type="image/png" href="/favicon.png">
-    <title>Admin &mdash; PlagExpert</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <style>
-        /* Admin custom colour tokens */
-        :root {
-            --color-primary: #4F6EF7;
-            --color-surface: #F0F2F5;
-            --color-base:    #FAFBFC;
-            --color-ink:     #1A1D23;
-            --color-muted:   #9CA3AF;
-            --color-border:  #E2E6EA;
-            --color-subtle:  #ECEEF2;
-        }
-    </style>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&display=swap"
-        rel="stylesheet">
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 3px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(0,0,0,0.08);
-            border-radius: 2px;
-        }
-
-        .nav-group-label {
-            font-size: 0.6rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            color: #9CA3AF;
-            padding: 0 0.5rem;
-            margin-bottom: 0.35rem;
-        }
-        .dark .nav-group-label {
-            color: #3a3a4a;
-        }
-
+        /* ── Sidebar nav link ── */
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 0.625rem;
-            padding: 0.45rem 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.68rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #6B7280;
-            transition: all 0.15s;
-            border: 1px solid transparent;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #64748b;
             text-decoration: none;
+            transition: background 0.12s, color 0.12s;
             width: 100%;
         }
+        .nav-link:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
+        .nav-link.active { background: rgba(99,102,241,0.12); color: #818cf8; }
+        .dark .nav-link:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
+        .dark .nav-link.active { background: rgba(99,102,241,0.12); color: #818cf8; }
 
-        .nav-link:hover {
-            background: #ECEEF2;
-            color: #111827;
+        /* Light mode overrides */
+        @media (prefers-color-scheme: light) {
+            .nav-link:hover { background: #ECEEF2; color: #111827; }
+            .nav-link.active { background: #EEF2FF; color: #4F6EF7; }
         }
 
-        .nav-link.active {
-            background: #EEF2FF;
-            color: #4F6EF7;
+        .nav-group-label {
+            font-size: 9px;
             font-weight: 700;
-            border-color: transparent;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #334155;
+            padding: 0 10px;
+            margin-bottom: 4px;
+        }
+        .dark .nav-group-label { color: #334155; }
+
+        /* badge pill inside nav items */
+        .nav-badge {
+            margin-left: auto;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            line-height: 1.4;
         }
 
-        .dark .nav-link {
-            color: #64748b;
-        }
-        .dark .nav-link:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: #e2e8f0;
-        }
-        .dark .nav-link.active {
-            background: rgba(99, 102, 241, 0.12);
-            color: #818cf8;
-            border-color: transparent;
-        }
-
-        .logout-cta {
-            background: #dc2626;
-            color: #fff;
-            border: 1px solid rgba(248, 113, 113, 0.4);
-            box-shadow: 0 6px 20px rgba(127, 29, 29, 0.25);
-        }
-        .logout-cta:hover {
-            background: #ef4444;
-            color: #fff;
-        }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
     </style>
 </head>
 
-<body class="bg-[#F0F2F5] antialiased dark:bg-[#050505] overflow-x-hidden">
-    <div class="flex h-screen overflow-hidden overflow-x-hidden">
+<body class="bg-[#F0F2F5] antialiased dark:bg-[#050505] overflow-x-hidden h-full">
+<div class="flex h-screen overflow-hidden">
 
-        {{-- 1. STICKY SIDEBAR --}}
-        <aside class="hidden md:flex w-64 flex-shrink-0 bg-[#F7F8FA] border-r border-[#E2E6EA] flex-col dark:bg-[#0a0a0c] dark:border-white/5">
+    {{-- ═══════════ SIDEBAR ═══════════ --}}
+    <aside class="hidden md:flex w-56 flex-shrink-0 bg-[#0a0a0c] border-r border-white/5 flex-col">
 
-            {{-- Brand --}}
-            <div class="p-6 border-b border-[#E2E6EA] dark:border-white/5">
-                <div class="flex items-center gap-3">
-                    <div class="w-2 h-8 bg-[#4F6EF7] rounded-full"></div>
-                    <span class="text-sm font-extrabold text-gray-900 tracking-wide uppercase dark:text-white">Control Center</span>
+        {{-- Brand --}}
+        <div class="px-5 py-5 border-b border-white/5">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">P</div>
+                <div>
+                    <p class="text-sm font-bold text-white leading-none">PlagExpert</p>
+                    <p class="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">Admin</p>
                 </div>
             </div>
+        </div>
 
-            {{-- Navigation --}}
-            <nav class="flex-1 overflow-y-auto p-4 space-y-6 py-6 custom-scrollbar">
+        {{-- Navigation --}}
+        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-5">
 
-                {{-- Operations --}}
+            {{-- Overview --}}
+            <div>
+                <p class="nav-group-label">Overview</p>
                 <div class="space-y-0.5">
-                    <p class="nav-group-label">Operations</p>
                     <a href="{{ route('admin.dashboard') }}"
-                        class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                        <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 flex-shrink-0"></i> Dashboard
-                    </a>
-                    <a href="{{ route('admin.matrix.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.matrix.*') ? 'active' : '' }}">
-                        <i data-lucide="users" class="w-3.5 h-3.5 flex-shrink-0"></i> Credit Manager
-                    </a>
-                    <a href="{{ route('admin.billing.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.billing.*') ? 'active' : '' }}">
-                        <i data-lucide="file-text" class="w-3.5 h-3.5 flex-shrink-0"></i> Financial Matrix
+                       class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Dashboard
                     </a>
                     <a href="{{ route('admin.announcements.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
-                        <i data-lucide="megaphone" class="w-3.5 h-3.5 flex-shrink-0"></i> Announcements
+                       class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
+                        <i data-lucide="megaphone" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Announcements
                     </a>
                 </div>
+            </div>
 
-                {{-- Finance & Matrix --}}
+            {{-- Clients --}}
+            <div>
+                <p class="nav-group-label">Clients</p>
                 <div class="space-y-0.5">
-                    <p class="nav-group-label">Finance &amp; Matrix</p>
+                    {{-- Client accounts — with frozen badge --}}
                     @php
-                        $lowCreditCount = \Illuminate\Support\Facades\Cache::remember('admin_nav_low_credit_count', 60, function () {
-                            return \App\Models\Client::withCount('orders')
-                                ->get()
-                                ->filter(fn($c) => ($c->slots - $c->orders_count) <= 0)
-                                ->count();
-                        });
+                        $frozenClients = Cache::remember('admin_nav_frozen_clients', 60, fn() =>
+                            \App\Models\User::where('role','client')->where('status','frozen')->count()
+                        );
+                    @endphp
+                    <a href="{{ route('admin.accounts.index') }}?tab=clients"
+                       class="nav-link {{ request()->routeIs('admin.accounts.*') ? 'active' : '' }}">
+                        <i data-lucide="users" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        <span class="flex-1">Accounts</span>
+                        @if($frozenClients > 0)
+                            <span class="nav-badge bg-red-500/15 text-red-400 border border-red-500/20">{{ $frozenClients }}</span>
+                        @endif
+                    </a>
+
+                    {{-- Credits & quotas --}}
+                    @php
+                        $lowCreditClients = Cache::remember('admin_nav_low_credits', 60, fn() =>
+                            \App\Models\Client::whereRaw('slots_consumed >= slots')->count()
+                        );
                     @endphp
                     <a href="{{ route('admin.matrix.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.matrix.*') ? 'active' : '' }}">
+                       class="nav-link {{ request()->routeIs('admin.matrix.*') ? 'active' : '' }}">
                         <i data-lucide="credit-card" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                        <span class="flex-1">Client Matrix</span>
-                        @if($lowCreditCount > 0)
-                            <span
-                                class="text-[8px] font-black bg-red-500/15 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-md leading-none">
-                                {{ $lowCreditCount }} Low
-                            </span>
+                        <span class="flex-1">Credits</span>
+                        @if($lowCreditClients > 0)
+                            <span class="nav-badge bg-amber-500/15 text-amber-400 border border-amber-500/20">{{ $lowCreditClients }} low</span>
                         @endif
                     </a>
-                    <a href="{{ route('admin.billing.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.billing.*') ? 'active' : '' }}">
-                        <i data-lucide="trending-up" class="w-3.5 h-3.5 flex-shrink-0"></i> Ledger History
+
+                    {{-- Topup requests --}}
+                    @php
+                        $pendingTopups = Cache::remember('admin_nav_pending_topups', 60, fn() =>
+                            \App\Models\TopupRequest::where('status','pending')->count()
+                        );
+                    @endphp
+                    <a href="{{ route('admin.topup.index') }}"
+                       class="nav-link {{ request()->routeIs('admin.topup.*') ? 'active' : '' }}">
+                        <i data-lucide="zap" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        <span class="flex-1">Top-ups</span>
+                        @if($pendingTopups > 0)
+                            <span class="nav-badge bg-amber-500/15 text-amber-400 border border-amber-500/20">{{ $pendingTopups }}</span>
+                        @endif
+                    </a>
+
+                    {{-- Refund requests --}}
+                    @php
+                        $pendingRefunds = Cache::remember('admin_nav_pending_refunds', 60, fn() =>
+                            \App\Models\RefundRequest::where('status','pending')->count()
+                        );
+                    @endphp
+                    <a href="{{ route('admin.refunds.index') }}"
+                       class="nav-link {{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}">
+                        <i data-lucide="refresh-ccw" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        <span class="flex-1">Refunds</span>
+                        @if($pendingRefunds > 0)
+                            <span class="nav-badge bg-amber-500/15 text-amber-400 border border-amber-500/20">{{ $pendingRefunds }}</span>
+                        @endif
+                    </a>
+                </div>
+            </div>
+
+            {{-- Vendors --}}
+            <div>
+                <p class="nav-group-label">Vendors</p>
+                <div class="space-y-0.5">
+                    @php
+                        $frozenVendors = Cache::remember('admin_nav_frozen_vendors', 60, fn() =>
+                            \App\Models\User::where('role','vendor')->where('status','frozen')->count()
+                        );
+                    @endphp
+                    <a href="{{ route('admin.accounts.index') }}?tab=vendors"
+                       class="nav-link {{ request()->routeIs('admin.accounts.*') ? 'active' : '' }}">
+                        <i data-lucide="shield" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        <span class="flex-1">Accounts</span>
+                        @if($frozenVendors > 0)
+                            <span class="nav-badge bg-red-500/15 text-red-400 border border-red-500/20">{{ $frozenVendors }}</span>
+                        @endif
                     </a>
                     <a href="{{ route('admin.finance.payouts.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.finance.payouts.*') ? 'active' : '' }}">
-                        <i data-lucide="wallet" class="w-3.5 h-3.5 flex-shrink-0"></i> Vendor Payouts
+                       class="nav-link {{ request()->routeIs('admin.finance.payouts.*') ? 'active' : '' }}">
+                        <i data-lucide="wallet" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Payouts
                     </a>
-                    <a href="{{ route('admin.refunds.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}">
-                        <i data-lucide="refresh-ccw" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                        <span class="flex-1">Refund Requests</span>
-                        @php $pendingRefunds = \Illuminate\Support\Facades\Cache::remember('admin_nav_pending_refunds', 60, fn() => \App\Models\RefundRequest::where('status', 'pending')->count()); @endphp
-                        @if($pendingRefunds > 0)
-                            <span class="text-[8px] font-black bg-amber-500/15 text-amber-400 border border-amber-500/20 px-1.5 py-0.5 rounded-md leading-none">
-                                {{ $pendingRefunds }}
-                            </span>
-                        @endif
+                    <a href="{{ route('admin.finance.ledger') }}"
+                       class="nav-link {{ request()->routeIs('admin.finance.ledger') ? 'active' : '' }}">
+                        <i data-lucide="trending-up" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Billing & Ledger
                     </a>
                 </div>
-
-                {{-- Management --}}
-                <div class="space-y-0.5">
-                    <p class="nav-group-label">Management</p>
-                    <a href="{{ route('admin.dashboard') }}#create-account" class="nav-link">
-                        <i data-lucide="user-plus" class="w-3.5 h-3.5 flex-shrink-0"></i> Issue Account
-                    </a>
-                    <a href="{{ route('admin.accounts.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.accounts.*') ? 'active' : '' }}">
-                        <i data-lucide="users" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                        <span class="flex-1">Account Manager</span>
-                        @php $_frozenCount = \Illuminate\Support\Facades\Cache::remember('admin_nav_frozen_count', 60, fn() => \App\Models\User::whereIn('role', ['vendor', 'client'])->where('status', 'frozen')->count()); @endphp
-                        @if($_frozenCount > 0)
-                            <span class="text-[8px] font-black bg-red-500/15 text-red-400 border border-red-500/20 px-1.5 py-0.5 rounded-md leading-none">{{ $_frozenCount }}</span>
-                        @endif
-                    </a>
-                    <a href="{{ route('profile.edit') }}"
-                        class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                        <i data-lucide="settings" class="w-3.5 h-3.5 flex-shrink-0"></i> Settings
-                    </a>
-                </div>
-
-            </nav>
-
-            {{-- Operator Section --}}
-            <div class="p-4 border-t border-[#E2E6EA] bg-[#F0F2F5] dark:bg-[#0a0a0c] dark:border-white/5">
-                <div class="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-2 dark:text-slate-700">Operator</div>
-                <div class="flex items-center gap-3 px-2 mb-3">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-red-600/20 text-red-500 flex items-center justify-center text-[10px] font-bold flex-shrink-0 dark:bg-red-500/20 dark:text-red-400">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                    </div>
-                    <div class="min-w-0 truncate">
-                        <p class="text-xs font-bold text-gray-900 uppercase tracking-tight truncate dark:text-white">
-                            {{ auth()->user()->name }}</p>
-                        <p class="text-[10px] font-bold text-red-500">SYSTEM_ROOT</p>
-                    </div>
-                </div>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                        class="logout-cta w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all">
-                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
-                    </button>
-                </form>
             </div>
 
-        </aside>
+        </nav>
 
-        {{-- 2. INDEPENDENT SCROLLING CONTENT --}}
-        <main class="flex-1 h-full overflow-y-auto overflow-x-hidden relative bg-[#F0F2F5] custom-scrollbar dark:bg-[#050505] w-full min-w-0">
-            {{-- Mobile Header (visible only on mobile) --}}
-            <div class="md:hidden sticky top-0 z-20 bg-[#F7F8FA] dark:bg-[#0a0a0c] border-b border-[#E2E6EA] dark:border-white/5 px-4 py-3 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="w-1.5 h-6 bg-[#4F6EF7] rounded-full"></div>
-                    <span class="text-sm font-bold text-gray-900 dark:text-white">Admin</span>
+        {{-- Admin profile + logout --}}
+        <div class="px-3 py-4 border-t border-white/5">
+            <a href="{{ route('profile.edit') }}"
+               class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }} mb-2">
+                <div class="w-6 h-6 rounded-md bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-[9px] font-bold flex-shrink-0">
+                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                 </div>
-                <div class="flex items-center gap-2">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="logout-cta px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5">
-                            <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
-                        </button>
-                    </form>
-                    <div class="relative group">
-                        <button class="w-8 h-8 rounded-lg bg-red-600/20 text-red-500 dark:bg-red-500/20 dark:text-red-400 flex items-center justify-center text-xs font-bold">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                        </button>
-                        <div class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all p-1.5">
-                            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg">
-                                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Dashboard
-                            </a>
-                            <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg">
-                                <i data-lucide="settings" class="w-3.5 h-3.5"></i> Settings
-                            </a>
-                            <hr class="my-1.5 border-gray-200 dark:border-white/10">
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg">
-                                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-semibold text-white truncate leading-none">{{ auth()->user()->name }}</p>
+                    <p class="text-[9px] text-slate-600 mt-0.5">My profile</p>
                 </div>
-            </div>
-            <div class="p-4 sm:p-6 lg:p-10 max-w-[1600px] mx-auto space-y-6 sm:space-y-12">
-                {{ $slot }}
-            </div>
-        </main>
+            </a>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                    class="nav-link w-full text-red-500/70 hover:text-red-400 hover:bg-red-500/10">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                    Sign out
+                </button>
+            </form>
+        </div>
 
+    </aside>
+
+    {{-- ═══════════ MOBILE HEADER ═══════════ --}}
+    <div class="md:hidden fixed top-0 inset-x-0 z-30 bg-[#0a0a0c] border-b border-white/5 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center text-white text-xs font-bold">P</div>
+            <span class="text-sm font-bold text-white">Admin</span>
+        </div>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="text-xs font-bold text-red-400 px-3 py-1.5 border border-red-500/20 rounded-lg">Sign out</button>
+        </form>
     </div>
-    <script>lucide.createIcons();</script>
-    <script>
-        window.addEventListener('pageshow', function(event) {
-            if (event.persisted) {
-                window.location.reload();
-            }
-        });
-    </script>
-</body>
 
+    {{-- ═══════════ MAIN CONTENT ═══════════ --}}
+    <main class="flex-1 h-full overflow-y-auto overflow-x-hidden bg-[#F0F2F5] dark:bg-[#050505] pt-0 md:pt-0">
+        <div class="md:hidden h-14"></div>{{-- mobile spacer --}}
+
+        {{-- Flash messages --}}
+        @if(session('success'))
+            <div class="mx-6 mt-6 flex items-center gap-3 px-5 py-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-400 text-sm font-semibold">
+                <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
+                {{ session('success') }}
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="mx-6 mt-6 flex items-center gap-3 px-5 py-3.5 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm font-semibold">
+                <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <div class="p-6 max-w-7xl mx-auto">
+            {{ $slot }}
+        </div>
+    </main>
+
+</div>
+
+@stack('modals')
+
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+</script>
+@stack('scripts')
+</body>
 </html>

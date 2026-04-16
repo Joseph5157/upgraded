@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\TopupRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class TopupRequestController extends Controller
@@ -92,6 +93,9 @@ class TopupRequestController extends Controller
             ]);
         });
 
+        // Bust the sidebar badge so the pending count drops to the correct value.
+        Cache::forget('admin_nav_pending_topups');
+
         return back()->with('success', "Approved! Added {$topupRequest->amount_requested} slots to {$topupRequest->client->name}.");
     }
 
@@ -115,6 +119,8 @@ class TopupRequestController extends Controller
             'notes'       => $request->notes,
             'reviewed_at' => now(),
         ]);
+
+        Cache::forget('admin_nav_pending_topups');
 
         return back()->with('success', "Rejected the top-up request from {$topupRequest->client->name}.");
     }
