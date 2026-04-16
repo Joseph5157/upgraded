@@ -7,74 +7,76 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ ($title ?? 'Admin') }} — PlagExpert</title>
     <link rel="icon" type="image/png" href="/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
+        body { background: var(--pe-bg-page); font-family: 'DM Sans', sans-serif; }
+
         /* ── Sidebar nav link ── */
         .nav-link {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 7px 10px;
+            padding: 8px 10px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: 500;
-            color: #64748b;
+            color: #4B5563;
             text-decoration: none;
             transition: background 0.12s, color 0.12s;
             width: 100%;
         }
-        .nav-link:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
-        .nav-link.active { background: rgba(99,102,241,0.12); color: #818cf8; }
-        .dark .nav-link:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
-        .dark .nav-link.active { background: rgba(99,102,241,0.12); color: #818cf8; }
-
-        /* Light mode overrides */
-        @media (prefers-color-scheme: light) {
-            .nav-link:hover { background: #ECEEF2; color: #111827; }
-            .nav-link.active { background: #EEF2FF; color: #4F6EF7; }
+        .nav-link:hover { background: #EDE9FE; color: #6D28D9; }
+        .nav-link.active {
+            background: #EDE9FE;
+            color: #6D28D9;
+            font-weight: 600;
+            border-left: 3px solid #6D28D9;
+            border-radius: 0 8px 8px 0;
         }
 
         .nav-group-label {
             font-size: 9px;
+            font-family: 'DM Mono', monospace;
             font-weight: 700;
             letter-spacing: 0.12em;
             text-transform: uppercase;
-            color: #334155;
+            color: #9CA3AF;
             padding: 0 10px;
             margin-bottom: 4px;
         }
-        .dark .nav-group-label { color: #334155; }
 
         /* badge pill inside nav items */
         .nav-badge {
             margin-left: auto;
-            font-size: 9px;
-            font-weight: 700;
-            padding: 1px 6px;
-            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 20px;
             line-height: 1.4;
         }
 
         ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb { background: rgba(109,40,217,0.15); border-radius: 99px; }
     </style>
 </head>
 
-<body class="bg-[#F0F2F5] antialiased dark:bg-[#050505] overflow-x-hidden h-full">
+<body class="bg-[#EEF2FF] antialiased overflow-x-hidden h-full">
 <div class="flex h-screen overflow-hidden">
 
     {{-- ═══════════ SIDEBAR ═══════════ --}}
-    <aside class="hidden md:flex w-56 flex-shrink-0 bg-[#0a0a0c] border-r border-white/5 flex-col">
+    <aside class="hidden md:flex w-56 flex-shrink-0 flex-col" style="background:#FFFFFF;border-right:1px solid #DDD6FE;box-shadow:2px 0 8px rgba(109,40,217,0.08);">
 
         {{-- Brand --}}
-        <div class="px-5 py-5 border-b border-white/5">
+        <div class="px-5 py-5" style="border-bottom:1px solid #DDD6FE;">
             <div class="flex items-center gap-3">
-                <div class="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0">P</div>
+                <div class="brand-mark w-7 h-7 flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                     style="background:linear-gradient(135deg,#6D28D9,#8B5CF6);border-radius:10px;box-shadow:0 4px 12px rgba(109,40,217,0.45);font-weight:700;">P</div>
                 <div>
-                    <p class="text-sm font-bold text-white leading-none">PlagExpert</p>
-                    <p class="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">Admin</p>
+                    <p class="text-sm font-bold leading-none" style="color:#1E1B4B;">PlagExpert</p>
+                    <p class="text-[9px] uppercase tracking-widest mt-0.5" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Admin</p>
                 </div>
             </div>
         </div>
@@ -114,7 +116,7 @@
                         <i data-lucide="users" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Accounts</span>
                         @if($frozenClients > 0)
-                            <span class="nav-badge bg-red-500/15 text-red-400 border border-red-500/20">{{ $frozenClients }}</span>
+                            <span class="nav-badge" style="background:#FEE2E2;color:#DC2626;">{{ $frozenClients }}</span>
                         @endif
                     </a>
 
@@ -129,7 +131,7 @@
                         <i data-lucide="credit-card" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Credits</span>
                         @if($lowCreditClients > 0)
-                            <span class="nav-badge bg-amber-500/15 text-amber-400 border border-amber-500/20">{{ $lowCreditClients }} low</span>
+                            <span class="nav-badge" style="background:#FEF3C7;color:#92400E;">{{ $lowCreditClients }} low</span>
                         @endif
                     </a>
 
@@ -144,7 +146,7 @@
                         <i data-lucide="zap" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Top-ups</span>
                         @if($pendingTopups > 0)
-                            <span class="nav-badge bg-amber-500/15 text-amber-400 border border-amber-500/20">{{ $pendingTopups }}</span>
+                            <span class="nav-badge" style="background:#FEF3C7;color:#92400E;">{{ $pendingTopups }}</span>
                         @endif
                     </a>
 
@@ -159,7 +161,7 @@
                         <i data-lucide="refresh-ccw" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Refunds</span>
                         @if($pendingRefunds > 0)
-                            <span class="nav-badge bg-amber-500/15 text-amber-400 border border-amber-500/20">{{ $pendingRefunds }}</span>
+                            <span class="nav-badge" style="background:#FEF3C7;color:#92400E;">{{ $pendingRefunds }}</span>
                         @endif
                     </a>
                 </div>
@@ -179,7 +181,7 @@
                         <i data-lucide="shield" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Accounts</span>
                         @if($frozenVendors > 0)
-                            <span class="nav-badge bg-red-500/15 text-red-400 border border-red-500/20">{{ $frozenVendors }}</span>
+                            <span class="nav-badge" style="background:#FEE2E2;color:#DC2626;">{{ $frozenVendors }}</span>
                         @endif
                     </a>
                     <a href="{{ route('admin.finance.payouts.index') }}"
@@ -198,15 +200,16 @@
         </nav>
 
         {{-- Admin profile + logout --}}
-        <div class="px-3 py-4 border-t border-white/5">
+        <div class="px-3 py-4" style="border-top:1px solid #DDD6FE;">
             <a href="{{ route('profile.edit') }}"
                class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }} mb-2">
-                <div class="w-6 h-6 rounded-md bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-[9px] font-bold flex-shrink-0">
+                <div class="w-6 h-6 flex items-center justify-center text-[9px] font-bold flex-shrink-0"
+                     style="background:#EDE9FE;border:2px solid #8B5CF6;color:#6D28D9;border-radius:50%;font-weight:700;">
                     {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                 </div>
                 <div class="min-w-0">
-                    <p class="text-xs font-semibold text-white truncate leading-none">{{ auth()->user()->name }}</p>
-                    <p class="text-[9px] text-slate-600 mt-0.5">My profile</p>
+                    <p class="text-xs font-semibold truncate leading-none" style="color:#1E1B4B;">{{ auth()->user()->name }}</p>
+                    <p class="text-[9px] mt-0.5" style="color:#9CA3AF;">My profile</p>
                 </div>
             </a>
             <form method="POST" action="{{ route('logout') }}">
@@ -222,10 +225,11 @@
     </aside>
 
     {{-- ═══════════ MOBILE HEADER ═══════════ --}}
-    <div class="md:hidden fixed top-0 inset-x-0 z-30 bg-[#0a0a0c] border-b border-white/5 px-4 py-3 flex items-center justify-between">
+    <div class="md:hidden fixed top-0 inset-x-0 z-30 px-4 py-3 flex items-center justify-between" style="background:#FFFFFF;border-bottom:1px solid #DDD6FE;box-shadow:0 1px 3px rgba(109,40,217,0.10);">
         <div class="flex items-center gap-2">
-            <div class="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center text-white text-xs font-bold">P</div>
-            <span class="text-sm font-bold text-white">Admin</span>
+            <div class="w-6 h-6 rounded-md flex items-center justify-center text-white text-xs font-bold"
+                 style="background:linear-gradient(135deg,#6D28D9,#8B5CF6);">P</div>
+            <span class="text-sm font-bold" style="color:#1E1B4B;">Admin</span>
         </div>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
@@ -234,18 +238,20 @@
     </div>
 
     {{-- ═══════════ MAIN CONTENT ═══════════ --}}
-    <main class="flex-1 h-full overflow-y-auto overflow-x-hidden bg-[#F0F2F5] dark:bg-[#050505] pt-0 md:pt-0">
+    <main class="flex-1 h-full overflow-y-auto overflow-x-hidden pt-0 md:pt-0" style="background:#EEF2FF;">
         <div class="md:hidden h-14"></div>{{-- mobile spacer --}}
 
         {{-- Flash messages --}}
         @if(session('success'))
-            <div class="mx-6 mt-6 flex items-center gap-3 px-5 py-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-400 text-sm font-semibold">
+            <div class="mx-6 mt-6 flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-semibold"
+                 style="background:#D1FAE5;border:1px solid #059669;color:#064E3B;">
                 <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
                 {{ session('success') }}
             </div>
         @endif
         @if(session('error'))
-            <div class="mx-6 mt-6 flex items-center gap-3 px-5 py-3.5 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm font-semibold">
+            <div class="mx-6 mt-6 flex items-center gap-3 px-5 py-3.5 rounded-2xl text-sm font-semibold"
+                 style="background:#FEE2E2;border:1px solid #DC2626;color:#7F1D1D;">
                 <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
                 {{ session('error') }}
             </div>

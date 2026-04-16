@@ -16,6 +16,17 @@ export default {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
             colors: {
+                'pe-purple':  '#6D28D9',
+                'pe-purple2': '#8B5CF6',
+                'pe-bg':      '#EEF2FF',
+                'pe-card':    '#FFFFFF',
+                'pe-text':    '#1E1B4B',
+                'pe-muted':   '#4B5563',
+                'pe-border':  '#DDD6FE',
+                'pe-green':   '#059669',
+                'pe-red':     '#DC2626',
+                'pe-amber':   '#D97706',
+                'pe-pink':    '#DB2777',
                 primary: {
                     100: '#f3e8ff',
                     200: '#e9d5ff',
