@@ -63,11 +63,11 @@
     </style>
 </head>
 
-<body class="bg-[#EEF2FF] antialiased overflow-x-hidden h-full">
+<body class="bg-[#EEF2FF] antialiased overflow-x-hidden">
 <div class="flex h-screen overflow-hidden">
 
     {{-- ═══════════ SIDEBAR ═══════════ --}}
-    <aside class="hidden md:flex w-56 flex-shrink-0 flex-col" style="background:#FFFFFF;border-right:1px solid #DDD6FE;box-shadow:2px 0 8px rgba(109,40,217,0.08);">
+    <aside class="hidden md:flex w-56 flex-shrink-0 flex-col bg-white border-r border-[#DDD6FE]" style="box-shadow:2px 0 8px rgba(109,40,217,0.08);">
 
         {{-- Brand --}}
         <div class="px-5 py-5" style="border-bottom:1px solid #DDD6FE;">

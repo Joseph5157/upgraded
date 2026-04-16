@@ -20,7 +20,7 @@
     {{-- Header Content Area --}}
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-xl font-bold text-white tracking-tight">Client Matrix</h1>
+            <h1 class="text-xl font-bold text-[#1E1B4B] tracking-tight">Client Matrix</h1>
             <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] font-mono mt-0.5">Auditing &
                 Credits</p>
         </div>
@@ -28,7 +28,7 @@
 
     {{-- Main Container - Matches Ledger History Width --}}
     <div class="space-y-8">
-        <div class="bg-[#0d0d0f] border border-white/5 rounded-2xl p-8 shadow-2xl">
+        <div class="bg-white border border-[#DDD6FE] rounded-xl p-8 shadow-sm">
             <div class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-4">
                     <div
@@ -36,7 +36,7 @@
                         <i data-lucide="building" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-white">Client Organizations</h2>
+                        <h2 class="text-lg font-bold text-[#1E1B4B]">Client Organizations</h2>
                         <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Manage quotas
                         </p>
                     </div>
@@ -66,7 +66,7 @@
                                             <i data-lucide="building" class="w-5 h-5"></i>
                                         </div>
                                         <div>
-                                            <h4 class="text-sm font-bold text-slate-300">{{ $client->name }}</h4>
+                                            <h4 class="text-sm font-bold text-[#1E1B4B]">{{ $client->name }}</h4>
                                             <p class="text-[9px] text-slate-600 font-mono">ID: {{ $client->id }}</p>
                                         </div>
                                     </div>
@@ -120,12 +120,12 @@
         {{-- Pending Top-up Requests — link to dedicated page --}}
         @if($pendingTopups->count() > 0)
             <a href="{{ route('admin.topup.index') }}"
-                class="flex items-center gap-5 bg-[#0d0d0f] border border-amber-500/20 rounded-2xl px-6 py-5 mt-8 hover:border-amber-500/40 transition-all group">
+                class="flex items-center gap-5 bg-white border border-[#DDD6FE] rounded-xl px-6 py-5 mt-8 hover:border-amber-500/40 transition-all group shadow-sm">
                 <div class="w-10 h-10 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500 flex-shrink-0">
                     <i data-lucide="clock" class="w-5 h-5"></i>
                 </div>
                 <div class="flex-1">
-                    <p class="text-sm font-bold text-white">Pending Top-up Requests</p>
+                    <p class="text-sm font-bold text-[#1E1B4B]">Pending Top-up Requests</p>
                     <p class="text-[10px] text-slate-500 font-mono mt-0.5">{{ $pendingTopups->count() }} awaiting review — click to manage</p>
                 </div>
                 <span class="px-3 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold font-mono rounded-full border border-amber-500/20 animate-pulse">
@@ -135,7 +135,7 @@
             </a>
         @else
             <a href="{{ route('admin.topup.index') }}"
-                class="flex items-center gap-4 bg-[#0d0d0f] border border-white/5 rounded-2xl px-6 py-4 mt-8 hover:border-white/10 transition-all group">
+                class="flex items-center gap-4 bg-white border border-[#DDD6FE] rounded-xl px-6 py-4 mt-8 hover:border-[#C4B5FD] transition-all group shadow-sm">
                 <div class="w-8 h-8 bg-white/5 rounded-xl flex items-center justify-center text-slate-500 flex-shrink-0">
                     <i data-lucide="credit-card" class="w-4 h-4"></i>
                 </div>
@@ -149,7 +149,7 @@
     <div id="credits-modal"
         class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onclick="if(event.target===this)this.classList.add('hidden')">
-        <div class="bg-[#0a0a0c] border border-white/10 rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl"
+        <div class="bg-white border border-[#DDD6FE] rounded-xl w-full max-w-sm p-8 shadow-sm"
             onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-3">
@@ -158,12 +158,12 @@
                         <i data-lucide="sliders" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-white font-bold" id="modal-client-name">Adjust Credits</h3>
+                        <h3 class="text-[#1E1B4B] font-bold" id="modal-client-name">Adjust Credits</h3>
                         <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Quota Management</p>
                     </div>
                 </div>
                 <button onclick="document.getElementById('credits-modal').classList.add('hidden')"
-                    class="text-slate-500 hover:text-white transition-colors">
+                    class="text-slate-500 hover:text-[#1E1B4B] transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -174,24 +174,24 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Total
                         Slots</label>
                     <input type="number" name="slots" id="modal-client-slots" required min="0"
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-purple-500/50 transition-colors">
+                        class="w-full bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl px-4 py-3 text-sm text-[#1E1B4B] font-mono focus:outline-none focus:border-purple-500/50 transition-colors">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Price Per
                         File (₹)</label>
                     <input type="number" name="price_per_file" id="modal-client-price" required min="0" step="0.01"
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-purple-500/50 transition-colors">
+                        class="w-full bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl px-4 py-3 text-sm text-[#1E1B4B] font-mono focus:outline-none focus:border-purple-500/50 transition-colors">
                 </div>
                 <div>
                     <label
                         class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Status</label>
                     <select name="status" id="modal-client-status" required
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 appearance-none">
-                        <option value="active" class="bg-[#0a0a0c]">Active</option>
-                        <option value="suspended" class="bg-[#0a0a0c]">Suspended</option>
+                        class="w-full bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl px-4 py-3 text-sm text-[#1E1B4B] focus:outline-none focus:border-purple-500/50 appearance-none">
+                        <option value="active" class="bg-white">Active</option>
+                        <option value="suspended" class="bg-white">Suspended</option>
                     </select>
                 </div>
-                <div class="pt-4 mt-8 border-t border-white/5">
+                <div class="pt-4 mt-8 border-t border-[#DDD6FE]">
                     <button type="submit"
                         class="w-full py-4 bg-purple-600/10 hover:bg-purple-600/20 text-purple-500 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-purple-600/20 transition-all flex justify-center items-center gap-2">
                         <i data-lucide="check" class="w-4 h-4"></i> Save Changes
@@ -205,7 +205,7 @@
     <div id="refill-modal"
         class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onclick="if(event.target===this)this.classList.add('hidden')">
-        <div class="bg-[#0a0a0c] border border-white/10 rounded-[2.5rem] w-full max-w-sm p-8 shadow-2xl"
+        <div class="bg-white border border-[#DDD6FE] rounded-xl w-full max-w-sm p-8 shadow-sm"
             onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-3">
@@ -214,12 +214,12 @@
                         <i data-lucide="plus-circle" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-white font-bold" id="modal-refill-name">Refill Client</h3>
+                        <h3 class="text-[#1E1B4B] font-bold" id="modal-refill-name">Refill Client</h3>
                         <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Add Slots</p>
                     </div>
                 </div>
                 <button onclick="document.getElementById('refill-modal').classList.add('hidden')"
-                    class="text-slate-500 hover:text-white transition-colors">
+                    class="text-slate-500 hover:text-[#1E1B4B] transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -229,9 +229,9 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Number of
                         files to add</label>
                     <input type="number" name="additional_slots" required min="1"
-                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-green-500/50 transition-colors">
+                        class="w-full bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl px-4 py-3 text-sm text-[#1E1B4B] font-mono focus:outline-none focus:border-green-500/50 transition-colors">
                 </div>
-                <div class="pt-4 mt-8 border-t border-white/5">
+                <div class="pt-4 mt-8 border-t border-[#DDD6FE]">
                     <button type="submit"
                         class="w-full py-4 bg-green-600/10 hover:bg-green-600/20 text-green-500 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-green-600/20 transition-all flex justify-center items-center gap-2">
                         <i data-lucide="check" class="w-4 h-4"></i> Confirm Top-up
