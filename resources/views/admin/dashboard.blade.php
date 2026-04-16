@@ -23,7 +23,7 @@
     ═══════════════════════════════════════════ --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
 
-        <a href="{{ route('admin.finance.ledger') }}"
+        <a href="{{ route('admin.billing.index') }}"
            class="bg-white dark:bg-[#0d0d0f] border border-slate-200 dark:border-white/5 rounded-2xl p-5 hover:border-emerald-500/40 transition-colors">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Processed today</span>

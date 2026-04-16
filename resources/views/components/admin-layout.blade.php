@@ -187,8 +187,8 @@
                         <i data-lucide="wallet" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         Payouts
                     </a>
-                    <a href="{{ route('admin.finance.ledger') }}"
-                       class="nav-link {{ request()->routeIs('admin.finance.ledger') ? 'active' : '' }}">
+                    <a href="{{ route('admin.billing.index') }}"
+                       class="nav-link {{ request()->routeIs('admin.billing.*') ? 'active' : '' }}">
                         <i data-lucide="trending-up" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         Billing & Ledger
                     </a>
