@@ -676,6 +676,16 @@
                     <span class="text-[9px] font-bold uppercase tracking-widest">Profile</span>
                 </a>
 
+                {{-- Logout --}}
+                <form method="POST" action="{{ route('logout') }}" class="flex-1">
+                    @csrf
+                    <button type="submit"
+                       class="w-full flex flex-col items-center gap-1 py-3 text-slate-500 hover:text-red-400 transition-colors">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        <span class="text-[9px] font-bold uppercase tracking-widest">Logout</span>
+                    </button>
+                </form>
+
             </div>
         </nav>
 
