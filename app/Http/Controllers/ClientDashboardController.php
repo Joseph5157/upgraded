@@ -74,8 +74,10 @@ class ClientDashboardController extends Controller
             : null;
 
         $dashboardSignature = $this->buildDashboardSignature($user, $client);
+        $consumed = (int) $client->fresh()->slots_consumed;
+        $remaining = max(0, (int) $client->total_slots - $consumed);
 
-        return view('client.dashboard', compact('client', 'orders', 'dashboardSignature', 'telegramConnectUrl'));
+        return view('client.dashboard', compact('client', 'orders', 'dashboardSignature', 'telegramConnectUrl', 'consumed', 'remaining'));
     }
 
     public function pulse(Request $request)
@@ -248,15 +250,8 @@ class ClientDashboardController extends Controller
 
     protected function telegramColumnsReady(): bool
     {
-        static $ready = null;
-        if ($ready !== null) {
-            return $ready;
-        }
-
-        $ready = Schema::hasColumn('users', 'telegram_chat_id')
+        return Schema::hasColumn('users', 'telegram_chat_id')
             && Schema::hasColumn('users', 'telegram_link_token')
             && Schema::hasColumn('users', 'telegram_connected_at');
-
-        return $ready;
     }
 }

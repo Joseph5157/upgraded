@@ -69,10 +69,78 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
             background-size: 200% 100%;
         }
+
+        #mobile-sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.25s ease;
+        }
+        #mobile-sidebar.open {
+            transform: translateX(0);
+        }
+        #sidebar-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        #sidebar-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
     </style>
 </head>
 
 <body class="h-screen flex bg-[#070709] text-slate-400 overflow-hidden overflow-x-hidden">
+
+    <div id="sidebar-overlay"
+         class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+         onclick="closeSidebar()"></div>
+
+    <aside id="mobile-sidebar"
+           class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0b0b0f] border-r border-white/[0.05] flex flex-col md:hidden">
+        <div class="px-5 pt-6 pb-8">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                </div>
+                <span class="font-bold text-white text-[15px] tracking-tight">PlagExpert</span>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-2 space-y-0.5">
+            <a href="#" class="sidebar-active flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
+                <i data-lucide="layout-grid" class="w-4 h-4 flex-shrink-0"></i>
+                Dashboard
+            </a>
+            <div class="flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-600 cursor-not-allowed select-none text-sm font-medium">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="history" class="w-4 h-4 flex-shrink-0"></i>
+                    Order History
+                </div>
+                <span class="text-[7px] font-black uppercase tracking-widest text-indigo-500/40 bg-indigo-500/[0.06] border border-indigo-500/[0.1] px-1.5 py-0.5 rounded">Soon</span>
+            </div>
+            <a href="{{ route('client.subscription') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-200 hover:bg-white/[0.04] transition-all">
+                <i data-lucide="credit-card" class="w-4 h-4 flex-shrink-0"></i>
+                Subscription
+            </a>
+            <div class="flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-600 cursor-not-allowed select-none text-sm font-medium">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="settings" class="w-4 h-4 flex-shrink-0"></i>
+                    Settings
+                </div>
+                <span class="text-[7px] font-black uppercase tracking-widest text-indigo-500/40 bg-indigo-500/[0.06] border border-indigo-500/[0.1] px-1.5 py-0.5 rounded">Soon</span>
+            </div>
+        </nav>
+
+        <div class="px-3 pb-5 pt-2 border-t border-white/[0.05] mt-2">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-bold text-red-400 bg-red-500/[0.08] hover:bg-red-500/[0.15] border border-red-500/[0.15] hover:border-red-500/[0.3] transition-all active:scale-[0.98]">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
+                </button>
+            </form>
+        </div>
+    </aside>
 
     {{-- 
          SIDEBAR
@@ -135,7 +203,7 @@
         {{-- TOP HEADER --}}
         <header class="min-h-[56px] border-b border-white/[0.05] flex items-center justify-between px-3 sm:px-8 py-2 sm:py-0 bg-[#070709]/80 backdrop-blur-xl sticky top-0 z-20">
             {{-- Mobile Menu Button --}}
-            <button class="md:hidden w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white mr-2" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
+            <button class="md:hidden w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white mr-2" onclick="openSidebar()" aria-label="Open menu">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
@@ -152,6 +220,7 @@
             </div>
             <div class="flex items-center gap-2 sm:gap-5 ml-2">
                 <div class="flex items-center gap-2 sm:gap-3 pr-2 sm:pr-5 border-r border-white/[0.05]">
+                    <p class="text-[9px] font-mono text-indigo-400 sm:hidden">{{ str_pad($client->id, 4, '0', STR_PAD_LEFT) }}</p>
                     <div class="text-right hidden sm:block">
                         <p class="text-[9px] text-slate-600 font-bold uppercase tracking-[0.2em]">Client ID</p>
                         <p class="text-[11px] font-mono font-bold text-indigo-400 bg-indigo-500/[0.08] px-2 py-0.5 rounded-md mt-0.5">
@@ -169,36 +238,13 @@
             </div>
         </header>
 
-        {{-- Mobile Menu Dropdown --}}
-        <div id="mobile-menu" class="hidden md:hidden bg-[#0b0b0f] border-b border-white/[0.05]">
-            <nav class="px-4 py-3 space-y-1">
-                <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-white bg-white/[0.06]">
-                    <i data-lucide="layout-grid" class="w-4 h-4"></i> Dashboard
-                </a>
-                <a href="{{ route('client.subscription') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/[0.04]">
-                    <i data-lucide="credit-card" class="w-4 h-4"></i> Subscription
-                </a>
-                <form method="POST" action="{{ route('logout') }}" class="mt-2 pt-2 border-t border-white/[0.05]">
-                    @csrf
-                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-bold text-red-400 bg-red-500/[0.08] hover:bg-red-500/[0.15] border border-red-500/[0.15]">
-                        <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
-                    </button>
-                </form>
-            </nav>
-        </div>
-
         {{--  ANNOUNCEMENTS BANNER  --}}
         <x-announcements-banner class="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 px-6 rounded-lg shadow-lg" />
 
         <div class="px-3 py-4 max-w-[1380px] mx-auto space-y-4 sm:px-6 sm:py-5 sm:space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
 
             @php
-                $totalSlots = (int) $client->total_slots;
-                $consumed = (int) $client->fresh()->slots_consumed;
-                $remaining = max(0, $totalSlots - $consumed);
-            @endphp
-            @php
-                $activeOrders = $orders->where('status', '!=', 'delivered')->count();
+                $activeOrders = $orders->whereNotIn('status', ['delivered', 'cancelled'])->count();
                 $planLabel = $client->plan_expiry && $client->plan_expiry->isPast() ? 'Expired' : 'Professional';
                 $creditTone = $remaining > 10
                     ? 'border-emerald-500/[0.16] bg-emerald-500/[0.05] text-emerald-300'
@@ -268,8 +314,8 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
-                <div class="card rounded-2xl p-4">
+            <div class="grid grid-cols-2 min-w-0 gap-3">
+                <div class="card rounded-2xl p-4 min-w-0">
                     <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Credits</p>
                     <div class="flex items-end justify-between mt-3 gap-3">
                         <div>
@@ -282,7 +328,7 @@
                     </div>
                 </div>
 
-                <div class="card rounded-2xl p-4">
+                <div class="card rounded-2xl p-4 min-w-0">
                     <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Orders</p>
                     <div class="flex items-end justify-between mt-3 gap-3">
                         <div>
@@ -375,7 +421,8 @@
                                     <i data-lucide="file-plus" class="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400"></i>
                                 </div>
                                 <h3 class="text-[13px] sm:text-[15px] font-bold text-white/90 mb-1.5">Drop files here or click</h3>
-                                <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em] sm:tracking-widest">PDF, DOCX up to 50MB</p>
+                                <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em] sm:tracking-widest">PDF, DOCX, DOC, ZIP up to 100MB</p>
+                                <p class="text-[9px] text-indigo-400/50 mt-1 sm:hidden">Tap to browse files</p>
                             </label>
 
                             {{-- STEP 2: File preview + notes + submit (hidden until files selected) --}}
@@ -438,6 +485,7 @@
                     </div>
 
                     <div class="card rounded-3xl p-3 sm:p-4 overflow-y-auto scrollbar-thin max-h-[500px] space-y-2">
+                        <div class="overflow-x-auto -mx-4 px-4">
                         @forelse($orders as $order)
                             <div class="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4 group">
 
@@ -585,6 +633,7 @@
                                 <p class="text-[11px] text-slate-500 mt-1">Upload a document to get started</p>
                             </div>
                         @endforelse
+                        </div>
                     </div>
                 </div>
             </div>
@@ -689,6 +738,24 @@
     {{--
          UPLOAD STAGING
      --}}
+    <script>
+        function openSidebar() {
+            document.getElementById('mobile-sidebar').classList.add('open');
+            document.getElementById('sidebar-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            document.getElementById('mobile-sidebar').classList.remove('open');
+            document.getElementById('sidebar-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('#mobile-sidebar a').forEach(function(el) {
+            el.addEventListener('click', closeSidebar);
+        });
+    </script>
+
     <script>
         // ── Upload staging ──────────────────────────────────────────
         function handleFileSelect(input) {
