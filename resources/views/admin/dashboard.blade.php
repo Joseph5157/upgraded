@@ -497,19 +497,55 @@
                     </div>
                 @endif
 
-                <button type="submit" class="btn-primary w-full justify-center py-3">
-                    Create Account
+                <button type="submit" id="provision-submit-btn" class="btn-primary w-full justify-center py-3">
+                    <i id="provision-submit-icon" data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                    <svg id="provision-submit-spinner" class="hidden w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                    </svg>
+                    <span id="provision-submit-label">Execute Provisioning</span>
                 </button>
             </form>
+
+            <script>
+                function toggleRoleFields() {
+                    const role = document.getElementById('modal-role').value;
+                    document.getElementById('client-fields').classList.toggle('hidden', role !== 'client');
+                }
+
+                toggleRoleFields();
+
+                const createAccountForm = document.querySelector('#create-account-modal form');
+                const provisionSubmitBtn = document.getElementById('provision-submit-btn');
+                const provisionSubmitIcon = document.getElementById('provision-submit-icon');
+                const provisionSubmitSpinner = document.getElementById('provision-submit-spinner');
+                const provisionSubmitLabel = document.getElementById('provision-submit-label');
+
+                createAccountForm?.addEventListener('submit', () => {
+                    if (provisionSubmitBtn) {
+                        provisionSubmitBtn.disabled = true;
+                        provisionSubmitBtn.classList.add('opacity-80', 'cursor-wait');
+                    }
+                    provisionSubmitIcon?.classList.add('hidden');
+                    provisionSubmitSpinner?.classList.remove('hidden');
+                    if (provisionSubmitLabel) provisionSubmitLabel.textContent = 'Provisioning...';
+                });
+            </script>
         </div>
     </div>
 
+    @if($errors->any())
     <script>
-        function toggleRoleFields() {
-            const role = document.getElementById('modal-role').value;
-            document.getElementById('client-fields').classList.toggle('hidden', role !== 'client');
-        }
-        toggleRoleFields();
+        document.getElementById('create-account-modal').classList.remove('hidden');
+        const btn = document.getElementById('provision-submit-btn');
+        const icon = document.getElementById('provision-submit-icon');
+        const spinner = document.getElementById('provision-submit-spinner');
+        const label = document.getElementById('provision-submit-label');
+        if (btn) { btn.disabled = false; btn.classList.remove('opacity-80', 'cursor-wait'); }
+        if (icon) icon.classList.remove('hidden');
+        if (spinner) spinner.classList.add('hidden');
+        if (label) label.textContent = 'Execute Provisioning';
     </script>
+    @endif
 
 </x-admin-layout>

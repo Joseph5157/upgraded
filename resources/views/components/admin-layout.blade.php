@@ -93,6 +93,12 @@
                         <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         Dashboard
                     </a>
+                    <a href="#"
+                       onclick="event.preventDefault(); document.getElementById('create-account-modal')?.classList.remove('hidden');"
+                       class="nav-link">
+                        <i data-lucide="user-plus" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Issue Account
+                    </a>
                     <a href="{{ route('admin.announcements.index') }}"
                        class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
                         <i data-lucide="megaphone" class="w-3.5 h-3.5 flex-shrink-0"></i>
