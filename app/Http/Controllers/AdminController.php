@@ -44,6 +44,7 @@ class AdminController extends Controller
             'phone'    => ['nullable', 'string', 'regex:/^\+?[0-9\s\-\(\)]{7,20}$/'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role'     => ['required', 'in:vendor,client,admin'],
+            'client_name' => ['required_if:role,client', 'nullable', 'string', 'max:255'],
             'slots'    => ['required_if:role,client', 'nullable', 'integer', 'min:1', 'max:10000'],
         ]);
 
@@ -65,7 +66,7 @@ class AdminController extends Controller
 
         if ($request->role === 'client') {
             $client = Client::create([
-                'name'   => $request->name . ' Account',
+                'name'   => $request->client_name,
                 'slots'  => $request->slots,
                 'status' => 'active',
             ]);

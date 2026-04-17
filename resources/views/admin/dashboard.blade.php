@@ -474,6 +474,22 @@
                         style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
                 </div>
 
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Confirm password</label>
+                    <input type="password" name="password_confirmation" required placeholder="Repeat temporary password"
+                        class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
+                        style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
+                </div>
+
+                @can('create-admin')
+                    <div id="admin-fields" class="hidden">
+                        <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">SYSTEM_ROOT password</label>
+                        <input type="password" name="super_password" value="{{ old('super_password') }}" placeholder="Required for admin accounts"
+                            class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
+                            style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
+                    </div>
+                @endcan
+
                 <div id="client-fields" class="hidden space-y-4">
                     <div>
                         <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Organisation name</label>
@@ -511,6 +527,7 @@
                 function toggleRoleFields() {
                     const role = document.getElementById('modal-role').value;
                     document.getElementById('client-fields').classList.toggle('hidden', role !== 'client');
+                    document.getElementById('admin-fields')?.classList.toggle('hidden', role !== 'admin');
                 }
 
                 toggleRoleFields();
