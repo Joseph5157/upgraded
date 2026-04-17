@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(php artisan:*)",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(php82 artisan *)",
+      "Bash(/nix/var/nix/profiles/default/bin/php artisan *)",
+      "Bash(where php *)",
+      "Bash(\"C:/Users/sikha/.config/herd/bin/php.bat\" artisan *)",
+      "Bash(\"C:/Users/sikha/.config/herd/bin/php.bat\" -l resources/views/admin/dashboard.blade.php)",
+      "Bash(\"C:/Users/sikha/.config/herd/bin/php.bat\" -l resources/views/components/admin-layout.blade.php)",
+      "Bash(php -r \"echo PHP_VERSION;\")",
+      "Bash(gh repo *)",
+      "Bash(php -l database/migrations/2026_04_16_000001_add_session_expires_at_to_users_table.php)"
     ]
   }
 }

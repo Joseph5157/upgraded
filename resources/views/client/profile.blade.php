@@ -122,7 +122,7 @@
             </nav>
         </div>
 
-        <div class="p-10 max-w-5xl mx-auto space-y-8">
+        <div class="p-10 pb-24 md:pb-0 max-w-5xl mx-auto space-y-8">
 
             {{-- Success Flashes --}}
             @if(session('status') === 'profile-updated')
@@ -287,7 +287,47 @@
                     </button>
                 </div>
             </div>
+        </div>
 
+        {{-- Mobile Bottom Nav --}}
+        <nav class="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-[#09090c] border-t border-white/[0.06]" style="padding-bottom: env(safe-area-inset-bottom);">
+            <div class="flex items-center">
+
+                {{-- Home --}}
+                <a href="{{ route('client.dashboard') }}"
+                   class="flex-1 flex flex-col items-center gap-1 py-3 text-slate-500 hover:text-slate-300 transition-colors">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Home</span>
+                </a>
+
+                {{-- Orders --}}
+                <button onclick="showComingSoon()"
+                   class="flex-1 flex flex-col items-center gap-1 py-3 text-slate-600">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Orders</span>
+                </button>
+
+                {{-- Credits --}}
+                <a href="{{ route('client.subscription') }}"
+                   class="flex-1 flex flex-col items-center gap-1 py-3 text-slate-500 hover:text-slate-300 transition-colors">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Credits</span>
+                </a>
+
+                {{-- Profile --}}
+                <a href="{{ route('profile.edit') }}"
+                   class="flex-1 flex flex-col items-center gap-1 py-3 text-indigo-400">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Profile</span>
+                </a>
+
+            </div>
+        </nav>
+
+        {{-- Coming Soon Toast --}}
+        <div id="coming-soon-toast"
+             class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 hidden md:hidden bg-[#1e1e2e] border border-indigo-500/20 text-indigo-300 text-xs font-semibold px-5 py-3 rounded-2xl shadow-xl">
+            Order History coming soon
         </div>
     </main>
 
@@ -344,6 +384,12 @@
 
     <script>
         lucide.createIcons();
+        function showComingSoon() {
+            const toast = document.getElementById('coming-soon-toast');
+            if (!toast) return;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2500);
+        }
     </script>
     <script>
         window.addEventListener('pageshow', function(event) {
