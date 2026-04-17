@@ -73,7 +73,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
 
         {{-- LEFT COLUMN (2/3 width) --}}
-        <div class="xl:col-span-2 space-y-4 sm:space-y-5 min-w-0">
+        <div class="lg:col-span-2 space-y-4 sm:space-y-5 min-w-0">
 
             {{-- ===== MY WORKSPACE ===== --}}
             <div id="workspace" class="bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl overflow-hidden dark:bg-[#13151c] dark:border-white/[0.06]">
@@ -323,76 +323,7 @@
             </div>
 
             {{-- ===== AVAILABLE FILES ===== --}}
-            <div id="files" class="bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl overflow-hidden dark:bg-[#13151c] dark:border-white/[0.06]">
-                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/[0.04]">
-                    <div class="flex items-center gap-2.5">
-                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Available Queue</h2>
-                        @if($availableFiles->count() > 0)
-                            <span
-                                class="bg-amber-500/10 text-amber-400 border border-amber-500/15 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{{ $availableFiles->count() }}
-                                waiting</span>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="divide-y divide-gray-100 dark:divide-white/[0.04]">
-                    @forelse($availableFiles as $order)
-                        @php $isUrgent = $order->due_at && $order->due_at->diffInMinutes(now(), false) > -5; @endphp
-                        <div
-                            class="flex items-center justify-between gap-4 px-6 py-4 hover:bg-[#F0F2F5] transition-colors group dark:hover:bg-white/[0.02]">
-                            <div class="flex items-center gap-3 min-w-0">
-                                <div
-                                    class="w-8 h-8 @if($isUrgent) bg-red-500/10 text-red-400 @else bg-gray-100 dark:bg-white/[0.05] text-gray-400 dark:text-slate-500 @endif rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
-                                <div class="min-w-0 space-y-0.5">
-                                    <p class="text-xs font-semibold text-slate-200 truncate dark:text-slate-200">
-                                        {{ $order->files->first() ? basename($order->files->first()->file_path) : 'New Document' }}
-                                    </p>
-                                    <div class="flex flex-wrap items-center gap-1.5">
-                                        @if($order->client)
-                                            <span
-                                                class="text-[9px] text-gray-500 dark:text-slate-500 truncate">{{ $order->client->name }}</span>
-                                        @endif
-                                        <span
-                                            class="text-[8px] font-bold px-1 rounded @if($order->source === 'account') bg-blue-500/10 text-blue-400 @else bg-purple-500/10 text-purple-400 @endif">{{ strtoupper($order->source) }}</span>
-                                        <span
-                                            class="text-[8px] font-bold text-gray-500 dark:text-slate-500 bg-gray-100 dark:bg-white/[0.05] px-1 rounded">{{ $order->files_count }}
-                                            {{ Str::plural('file', $order->files_count) }}</span>
-                                        @if($isUrgent)
-                                            <span
-                                                class="text-[8px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-1.5 rounded animate-pulse">Urgent</span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                            <form action="{{ route('orders.claim', $order) }}" method="POST" class="flex-shrink-0">
-                                @csrf
-                                <button
-                                    class="inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-bold text-black bg-amber-400 hover:bg-amber-300 rounded-xl transition-all shadow-md shadow-amber-400/10 group-hover:scale-105">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    Claim
-                                </button>
-                            </form>
-                        </div>
-                    @empty
-                        <div class="px-6 py-12 text-center">
-                            <p class="text-sm font-semibold text-gray-400 dark:text-slate-500">Queue is empty</p>
-                            <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">No new orders are available right now</p>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
+            @include('dashboard.partials.available-queue')
 
         </div>{{-- end left col --}}
 
@@ -590,7 +521,7 @@
                     </div>
 
                     {{-- Buttons --}}
-                    <div class="flex gap-3 pt-1">
+                    <div class="flex gap-3 pt-1" style="padding-bottom: max(env(safe-area-inset-bottom), 12px);">
                         <button type="button" id="cancel-btn-{{ $order->id }}"
                             onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.add('hidden')"
                             class="px-5 py-2.5 text-[11px] font-semibold text-slate-500 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-xl transition-all border border-white/[0.06]">
@@ -612,11 +543,14 @@
 
     <script>
         const MAX_REPORT_SIZE = 100 * 1024 * 1024;
+        let refreshInProgress = false;
 
         function refreshAvailableQueue() {
-            if (document.hidden) return;
+            if (document.hidden || refreshInProgress) return;
 
-            fetch(window.location.pathname + '?queue_refresh=' + Date.now(), {
+            refreshInProgress = true;
+
+            fetch('/dashboard?queue_only=1&queue_refresh=' + Date.now(), {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                 },
@@ -634,6 +568,9 @@
                 })
                 .catch(() => {
                     // Ignore transient fetch errors; next polling tick will retry.
+                })
+                .finally(() => {
+                    refreshInProgress = false;
                 });
         }
 
@@ -815,6 +752,8 @@
             const fill        = document.getElementById('upload-progress-fill-' + orderId);
             const pctText     = document.getElementById('upload-progress-text-' + orderId);
 
+            if (submitBtn.disabled) return;
+
             clearUploadError(orderId);
 
             // Lock the UI
@@ -886,13 +825,21 @@
 
                     xhr.onerror = function () {
                         resetUploadUi(orderId);
-                        setUploadError(orderId, 'Network or storage connection error. Please try again.');
+                            setUploadError(orderId, 'Network or storage connection error. Please try again.');
                     };
 
                     xhr.open('POST', form.action);
                     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
                     xhr.send(new FormData(form));
                 });
+        }
+
+        if (window.lucide && lucide.createIcons) lucide.createIcons();
+        const uploadSuccess = sessionStorage.getItem('upload_success');
+        if (uploadSuccess) {
+            sessionStorage.removeItem('upload_success');
+            const banner = document.getElementById('flash-success');
+            if (banner) { banner.textContent = uploadSuccess; banner.classList.remove('hidden'); }
         }
     </script>
 

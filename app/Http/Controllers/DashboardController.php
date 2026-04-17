@@ -21,12 +21,12 @@ class DashboardController extends Controller
         $this->storageDisk = config('filesystems.default', 'r2');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
 
-        // Cache stats for 60 seconds per user to reduce query load
-        $stats = Cache::remember(
+        // Cache slower-moving stats for 60 seconds per user to reduce query load.
+        $cachedStats = Cache::remember(
             'vendor_stats_' . $user->id,
             60,
             function () use ($user) {
@@ -44,17 +44,19 @@ class DashboardController extends Controller
                         ->whereDate('delivered_at', today())
                         ->count(),
 
-                    'overdue_count'       => Order::whereNotIn('status', [
-                            OrderStatus::Delivered,
-                            OrderStatus::Cancelled
-                        ])
-                        ->where('due_at', '<', now())
-                        ->count(),
-
                     'total_delivered'     => $user->delivered_orders_count ?? 0,
                 ];
             }
         );
+
+        $stats = $cachedStats + [
+            'overdue_count' => Order::whereNotIn('status', [
+                    OrderStatus::Delivered,
+                    OrderStatus::Cancelled,
+                ])
+                ->where('due_at', '<', now())
+                ->count(),
+        ];
 
         // Eager load relationships + consistent ordering
         $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
@@ -67,7 +69,12 @@ class DashboardController extends Controller
             ->whereNull('claimed_by')
             ->where('status', OrderStatus::Pending)
             ->latest()
-            ->paginate(15);
+            ->take(50)
+            ->get();
+
+        if ($request->boolean('queue_only')) {
+            return view('dashboard.partials.available-queue', compact('availableFiles'));
+        }
 
         $recentHistory = Order::with(['client', 'files', 'report'])
             ->where('claimed_by', $user->id)

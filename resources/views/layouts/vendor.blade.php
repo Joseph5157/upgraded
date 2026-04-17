@@ -134,7 +134,7 @@
             </header>
 
             {{-- Scrollable content --}}
-            <main class="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 lg:px-8 py-4 sm:py-6 lg:py-7 space-y-4 sm:space-y-6 dark:bg-[#0f1117] w-full min-w-0">
+            <main class="flex-1 overflow-y-auto overflow-x-hidden px-3 sm:px-5 lg:px-8 py-4 sm:py-6 lg:py-7 pb-20 md:pb-0 space-y-4 sm:space-y-6 dark:bg-[#0f1117] w-full min-w-0">
 
                 {{-- Flash Messages --}}
                 @if(session('success'))
@@ -153,6 +153,31 @@
                 {{ $slot }}
             </main>
         </div>
+
+        <nav class="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-[#13151c] border-t border-white/[0.06]" style="padding-bottom: env(safe-area-inset-bottom);">
+            <div class="flex items-center">
+                <a href="{{ route('dashboard') }}" class="flex-1 flex flex-col items-center gap-1 py-3 {{ request()->routeIs('dashboard') ? 'text-indigo-400' : 'text-slate-600' }}">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Home</span>
+                </a>
+                <a href="{{ route('dashboard') }}#workspace" class="flex-1 flex flex-col items-center gap-1 py-3 text-slate-600">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Work</span>
+                </a>
+                <a href="{{ route('dashboard') }}#files" class="flex-1 flex flex-col items-center gap-1 py-3 text-slate-600">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Queue</span>
+                </a>
+                <a href="{{ route('vendor.earnings') }}" class="flex-1 flex flex-col items-center gap-1 py-3 {{ request()->routeIs('vendor.earnings') ? 'text-indigo-400' : 'text-slate-600' }}">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Earnings</span>
+                </a>
+                <a href="{{ route('profile.edit') }}" class="flex-1 flex flex-col items-center gap-1 py-3 {{ request()->routeIs('profile.*') ? 'text-indigo-400' : 'text-slate-600' }}">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Profile</span>
+                </a>
+            </div>
+        </nav>
     </div>
 
     <script src="https://unpkg.com/lucide@latest"></script>
