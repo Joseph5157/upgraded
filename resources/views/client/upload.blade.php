@@ -258,6 +258,7 @@
                                                                 @if($order->status->value === 'delivered') bg-green-500/5 text-green-500 border-green-500/10
                                                                 @elseif($order->computed_status == 'overdue') bg-red-500/5 text-red-500 border-red-500/10
                                                                 @elseif($order->status->value === 'processing') bg-blue-500/5 text-blue-400 border-blue-500/10
+                                                                @elseif($order->status->value === 'claimed') bg-amber-500/5 text-amber-400 border-amber-500/10
                                                                 @else bg-slate-500/5 text-slate-400 border-slate-500/10 @endif">
                                         @if($order->status->value === 'delivered')
                                             Ready
@@ -265,6 +266,8 @@
                                             Overdue
                                         @elseif($order->status->value === 'processing')
                                             Processing
+                                        @elseif($order->status->value === 'claimed')
+                                            Reserved
                                         @else
                                             Pending
                                         @endif
@@ -286,16 +289,18 @@
                                             </div>
                                         @endif
 
-                                        <form method="POST"
-                                            action="{{ route('client.link.orders.delete', [$link->token, $order]) }}"
-                                            onsubmit="return confirm('Delete this order and all its files permanently?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-500 hover:bg-red-500/10 transition-all">
-                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                            </button>
-                                        </form>
+                                        @if($order->status->value === 'pending' && !$order->claimed_by)
+                                            <form method="POST"
+                                                action="{{ route('client.link.orders.delete', [$link->token, $order]) }}"
+                                                onsubmit="return confirm('Delete this order and all its files permanently?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-500 hover:bg-red-500/10 transition-all">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

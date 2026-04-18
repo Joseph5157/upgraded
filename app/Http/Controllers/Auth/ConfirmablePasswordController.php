@@ -11,6 +11,15 @@ use Illuminate\View\View;
 
 class ConfirmablePasswordController extends Controller
 {
+    protected function redirectPathForRole(string $role): string
+    {
+        return match ($role) {
+            'admin' => route('admin.dashboard', absolute: false),
+            'client' => route('client.dashboard', absolute: false),
+            default => route('dashboard', absolute: false),
+        };
+    }
+
     /**
      * Show the confirm password view.
      */
@@ -35,6 +44,6 @@ class ConfirmablePasswordController extends Controller
 
         $request->session()->put('auth.password_confirmed_at', time());
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->intended($this->redirectPathForRole($request->user()->role));
     }
 }

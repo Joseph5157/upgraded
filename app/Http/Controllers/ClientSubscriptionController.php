@@ -17,11 +17,8 @@ class ClientSubscriptionController extends Controller
             abort(403, 'No client account linked.');
         }
 
-        $slotsUsed = $client->orders()
-            ->whereNotIn('status', [OrderStatus::Cancelled])
-            ->count();
-
-        $slotsRemaining = max(0, $client->slots - $slotsUsed);
+        $slotsUsed = (int) $client->slots_consumed;
+        $slotsRemaining = max(0, (int) $client->slots - $slotsUsed);
 
         $topupHistory = $client->topupRequests()
             ->latest()

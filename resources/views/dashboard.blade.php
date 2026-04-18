@@ -114,6 +114,10 @@
                                     <span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full flex-shrink-0">
                                         <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> Processing
                                     </span>
+                                @elseif($order->status->value === 'claimed')
+                                    <span class="inline-flex items-center gap-1 text-[9px] font-bold text-amber-400 bg-amber-500/5 border border-amber-500/10 px-2 py-1 rounded-full flex-shrink-0">
+                                        <span class="w-1 h-1 bg-amber-400 rounded-full"></span> Reserved
+                                    </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 text-[9px] font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] px-2 py-1 rounded-full flex-shrink-0">
                                         <span class="w-1 h-1 bg-slate-500 rounded-full"></span> Pending
@@ -153,17 +157,21 @@
                                 @else
                                     <div></div>
                                 @endif
-                                <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button
-                                        class="w-full inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                        </svg>
-                                        Release
-                                    </button>
-                                </form>
+                                @if($order->status->value === 'claimed')
+                                    <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button
+                                            class="w-full inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                            </svg>
+                                            Release
+                                        </button>
+                                    </form>
+                                @else
+                                    <div></div>
+                                @endif
                                 <button
                                     onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
                                     class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
@@ -255,6 +263,11 @@
                                             class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full">
                                             <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> Processing
                                         </span>
+                                    @elseif($order->status->value === 'claimed')
+                                        <span
+                                            class="inline-flex items-center gap-1 text-[9px] font-bold text-amber-400 bg-amber-500/5 border border-amber-500/10 px-2 py-1 rounded-full">
+                                            <span class="w-1 h-1 bg-amber-400 rounded-full"></span> Reserved
+                                        </span>
                                     @else
                                         <span
                                             class="inline-flex items-center gap-1 text-[9px] font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] px-2 py-1 rounded-full">
@@ -283,17 +296,19 @@
                                             </svg>
                                             Upload
                                         </button>
-                                        <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
-                                            @csrf
-                                            <button
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                                </svg>
-                                                Release
-                                            </button>
-                                        </form>
+                                        @if($order->status->value === 'claimed')
+                                            <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
+                                                @csrf
+                                                <button
+                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                                    </svg>
+                                                    Release
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

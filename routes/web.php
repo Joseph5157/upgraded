@@ -50,14 +50,14 @@ Route::middleware('throttle:30,1')->group(function () {
     Route::get('/download/{token_view}', [OrderController::class, 'download'])->name('client.download');
 });
 
-Route::middleware(['auth', 'nocache', 'verified'])->group(function () {
+Route::middleware(['auth', 'nocache'])->group(function () {
     // CSRF token refresh endpoint — keeps long-lived sessions valid
     Route::get('/csrf-refresh', function () {
         return response()->json(['token' => csrf_token()]);
     })->name('csrf.refresh');
 
     // Vendor/Admin Dashboard Routes
-    Route::middleware(['role:vendor,admin', 'account.status'])->group(function () {
+    Route::middleware(['verified', 'role:vendor,admin', 'account.status'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/orders/{order}/claim', [DashboardController::class, 'claim'])->name('orders.claim');
         Route::post('/orders/{order}/unclaim', [DashboardController::class, 'unclaim'])->name('orders.unclaim');

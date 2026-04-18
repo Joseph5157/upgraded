@@ -10,6 +10,7 @@ class ClientMatrixController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', Client::class);
         $clients = Client::withCount('orders')->get();
         $pendingTopups = TopupRequest::with('client')->where('status', 'pending')->latest()->get();
         return view('admin.matrix.index', compact('clients', 'pendingTopups'));
@@ -17,6 +18,7 @@ class ClientMatrixController extends Controller
 
     public function update(Request $request, Client $matrix)
     {
+        $this->authorize('update', $matrix);
         // Parameter is named $matrix based on the resource route convention (admin/matrix/{matrix})
         $request->validate([
             'slots' => 'required|integer|min:0',
@@ -34,6 +36,7 @@ class ClientMatrixController extends Controller
     }
     public function refill(Request $request, Client $client)
     {
+        $this->authorize('refill', $client);
         $request->validate([
             'additional_slots' => 'required|integer|min:1',
         ]);

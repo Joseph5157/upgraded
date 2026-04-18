@@ -125,7 +125,11 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $this->deleteOrderService->execute($order, $link->client);
+        try {
+            $this->deleteOrderService->execute($order, $link->client);
+        } catch (\Exception $e) {
+            return redirect()->route('client.upload', $token)->with('error', $e->getMessage());
+        }
 
         return redirect()->route('client.upload', $token)->with('success', 'Order deleted successfully.');
     }

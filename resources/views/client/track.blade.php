@@ -29,6 +29,7 @@
                     @php
                         $statusClass = [
                             'pending' => 'bg-yellow-500/10 text-yellow-400',
+                            'claimed' => 'bg-amber-500/10 text-amber-400',
                             'processing' => 'bg-blue-500/10 text-blue-400',
                             'delivered' => 'bg-green-500/10 text-green-400',
                             'overdue' => 'bg-red-500/10 text-red-400',
@@ -71,8 +72,8 @@
                 <div class="flex justify-center">
                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                 </div>
-                <h2 class="text-xl font-bold">Processing...</h2>
-                <p class="text-slate-400">Our agents are working on your documents. This page checks for updates automatically.</p>
+                <h2 class="text-xl font-bold">{{ $order->status->value === 'claimed' ? 'Reserved...' : 'Processing...' }}</h2>
+                <p class="text-slate-400">{{ $order->status->value === 'claimed' ? 'Your order has been reserved by a vendor and is waiting to be started.' : 'Our agents are working on your documents. This page checks for updates automatically.' }}</p>
                 <div class="flex items-center justify-center gap-2 mt-1">
                     <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
                     <span id="refresh-badge" class="text-[11px] font-semibold text-blue-400 tracking-wide">Checking for updates in 60s…</span>

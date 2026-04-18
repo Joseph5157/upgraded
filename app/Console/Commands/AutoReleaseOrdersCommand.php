@@ -28,22 +28,22 @@ class AutoReleaseOrdersCommand extends Command
             ->where('due_at', '<', $now)
             ->get(['id', 'claimed_by', 'status']);
 
-        // --- Stuck Pending orders: claimed but vendor never started ---
-        $stuckPendingRows = Order::where('status', OrderStatus::Pending)
+        // --- Claimed orders: reserved but vendor never started ---
+        $claimedRows = Order::where('status', OrderStatus::Claimed)
             ->whereNotNull('claimed_by')
             ->where('due_at', '<', $now)
             ->get(['id', 'claimed_by', 'status']);
 
         $processingIds   = $processingRows->pluck('id')->all();
-        $stuckPendingIds = $stuckPendingRows->pluck('id')->all();
-        $allIds          = array_merge($processingIds, $stuckPendingIds);
+        $claimedIds = $claimedRows->pluck('id')->all();
+        $allIds          = array_merge($processingIds, $claimedIds);
 
         if (empty($allIds)) {
             $this->info('No overdue orders to release.');
             return Command::SUCCESS;
         }
 
-        DB::transaction(function () use ($processingIds, $stuckPendingIds, $processingRows, $stuckPendingRows, $now) {
+        DB::transaction(function () use ($processingIds, $claimedIds, $processingRows, $claimedRows, $now) {
             // Bulk-update processing orders: unclaim + revert to pending + bump counter.
             if (! empty($processingIds)) {
                 Order::whereIn('id', $processingIds)->update([
@@ -55,11 +55,12 @@ class AutoReleaseOrdersCommand extends Command
                 ]);
             }
 
-            // Bulk-update stuck-pending orders: just remove the claim lock.
-            if (! empty($stuckPendingIds)) {
-                Order::whereIn('id', $stuckPendingIds)->update([
+            // Bulk-update claimed-but-not-started orders: remove the claim lock and return to pending.
+            if (! empty($claimedIds)) {
+                Order::whereIn('id', $claimedIds)->update([
                     'claimed_by' => null,
                     'claimed_at' => null,
+                    'status'     => OrderStatus::Pending,
                     'updated_at' => $now,
                 ]);
             }
@@ -81,14 +82,14 @@ class AutoReleaseOrdersCommand extends Command
                 ];
             }
 
-            foreach ($stuckPendingRows as $row) {
+            foreach ($claimedRows as $row) {
                 $logRows[] = [
                     'order_id'   => $row->id,
                     'user_id'    => null,
                     'action'     => 'auto_release',
-                    'old_status' => OrderStatus::Pending->value,
+                    'old_status' => OrderStatus::Claimed->value,
                     'new_status' => OrderStatus::Pending->value,
-                    'notes'      => 'Auto-released: claim lock removed after SLA expiry (was claimed by user #' . $row->claimed_by . ').',
+                    'notes'      => 'Auto-released: reserved order was not started before SLA expiry (was claimed by user #' . $row->claimed_by . ').',
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
@@ -98,7 +99,7 @@ class AutoReleaseOrdersCommand extends Command
             DB::table('order_logs')->insert($logRows);
         });
 
-        $released = count($processingIds) + count($stuckPendingIds);
+        $released = count($processingIds) + count($claimedIds);
         $this->info("Released {$released} overdue order(s) back to the pending pool.");
 
         return Command::SUCCESS;

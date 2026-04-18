@@ -57,7 +57,7 @@ class AdminDashboardController extends Controller
             ->get();
 
         $activeOrders = Order::with(['client', 'vendor', 'files'])
-            ->where('status', OrderStatus::Processing)
+            ->whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
             ->whereNotNull('claimed_by')
             ->orderBy('claimed_at', 'asc') // Oldest claimed first
             ->get();

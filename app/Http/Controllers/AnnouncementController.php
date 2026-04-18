@@ -6,12 +6,14 @@ use App\Models\Announcement;
 use App\Models\AnnouncementDismissal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class AnnouncementController extends Controller
 {
     // Admin — list all announcements
     public function index()
     {
+        Gate::authorize('manage-announcements');
         $announcements = Announcement::with('creator')->latest()->get();
         return view('admin.announcements', compact('announcements'));
     }
@@ -19,6 +21,7 @@ class AnnouncementController extends Controller
     // Admin — create announcement
     public function store(Request $request)
     {
+        Gate::authorize('manage-announcements');
         $request->validate([
             'title'      => 'required|string|max:255',
             'message'    => 'required|string|max:1000',
@@ -43,6 +46,7 @@ class AnnouncementController extends Controller
     // Admin — toggle active/inactive
     public function toggle(Announcement $announcement)
     {
+        Gate::authorize('manage-announcements');
         $announcement->update(['active' => !$announcement->active]);
         return back()->with('success', 'Announcement status updated.');
     }
@@ -50,6 +54,7 @@ class AnnouncementController extends Controller
     // Admin — delete announcement
     public function destroy(Announcement $announcement)
     {
+        Gate::authorize('manage-announcements');
         $announcement->delete();
         return back()->with('success', 'Announcement deleted.');
     }

@@ -35,7 +35,7 @@ class DashboardController extends Controller
                         ->whereNull('claimed_by')
                         ->count(),
 
-                    'active_jobs'         => Order::where('status', OrderStatus::Processing)
+                    'active_jobs'         => Order::whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
                         ->where('claimed_by', $user->id)
                         ->count(),
 
@@ -61,7 +61,7 @@ class DashboardController extends Controller
         // Eager load relationships + consistent ordering
         $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
             ->where('claimed_by', $user->id)
-            ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
+            ->whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
             ->latest()
             ->get();
 
@@ -92,7 +92,7 @@ class DashboardController extends Controller
 
         try {
             $this->workflowService->claim($order, auth()->user());
-            return back()->with('success', 'Order claimed and moved to your active workspace.');
+            return back()->with('success', 'Order claimed and reserved in your workspace.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

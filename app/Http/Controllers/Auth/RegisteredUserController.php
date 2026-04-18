@@ -14,6 +14,15 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
+    protected function redirectPathForRole(string $role): string
+    {
+        return match ($role) {
+            'admin' => route('admin.dashboard', absolute: false),
+            'client' => route('client.dashboard', absolute: false),
+            default => route('dashboard', absolute: false),
+        };
+    }
+
     /**
      * Display the registration view.
      */
@@ -36,15 +45,19 @@ class RegisteredUserController extends Controller
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name'              => $request->name,
+            'email'             => $request->email,
+            'password'          => Hash::make($request->password),
+            'role'              => 'client',
+            'email_verified_at' => now(),
         ]);
 
-        event(new Registered($user));
+        if ($user->requiresEmailVerification()) {
+            event(new Registered($user));
+        }
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect($this->redirectPathForRole($user->role));
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
 use App\Models\Client;
 use App\Models\Order;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,16 +20,18 @@ class DeleteClientOrderService
     }
 
     /**
-     * Permanently delete an order, its files, and its reports from storage and the database.
-     * Restores the client's slot credit if the order was never delivered.
+     * Permanently delete an unclaimed pending order, its files, and its reports.
+     * Restores the client's consumed slots based on the order's file count.
      *
      * @return bool  True if a slot was restored (so the caller can show the appropriate message)
      */
     public function execute(Order $order, Client $client): bool
     {
-        $wasDelivered = $order->status === \App\Enums\OrderStatus::Delivered;
+        if ($order->status !== OrderStatus::Pending || $order->claimed_by !== null) {
+            throw new Exception('Only unclaimed pending orders can be deleted.');
+        }
 
-        DB::transaction(function () use ($order, $client, $wasDelivered) {
+        DB::transaction(function () use ($order, $client) {
             // Re-read the client row with a row-level lock to prevent concurrent
             // delete/credit-restore races (e.g. two simultaneous delete requests).
             $client = Client::where('id', $client->id)->lockForUpdate()->first();
@@ -64,23 +68,16 @@ class DeleteClientOrderService
             $order->delete();
 
             // Restore slot credit if the service was never rendered
-            if (!$wasDelivered) {
-                $creditsToRestore = max(0, (int) $order->files_count);
-                $newConsumed = max(0, $client->slots_consumed - $creditsToRestore);
+            $creditsToRestore = max(0, (int) $order->files_count);
+            $newConsumed = max(0, $client->slots_consumed - $creditsToRestore);
 
-                $client->update(['slots_consumed' => $newConsumed]);
+            $client->update(['slots_consumed' => $newConsumed]);
 
-                if ($client->status === 'suspended' && $newConsumed < $client->slots) {
-                    $client->update(['status' => 'active']);
-                }
+            if ($client->status === 'suspended' && $newConsumed < $client->slots) {
+                $client->update(['status' => 'active']);
             }
         });
 
-        $slotRestored = !$wasDelivered;
-        $message = $slotRestored
-            ? "Order deleted. {$order->files_count} credit(s) have been restored."
-            : 'Order and all files permanently deleted.';
-
-        return $slotRestored;
+        return true;
     }
 }

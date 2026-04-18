@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class AccountManagerController extends Controller
@@ -21,7 +22,7 @@ class AccountManagerController extends Controller
         $vendors = User::where('role', 'vendor')
             ->withCount([
                 'orders as total_files'    => fn($q) => $q->where('status', 'delivered'),
-                'orders as active_orders'  => fn($q) => $q->whereIn('status', ['pending', 'processing']),
+                'orders as active_orders'  => fn($q) => $q->whereIn('status', ['claimed', 'processing']),
             ])
             ->get();
 
@@ -56,9 +57,7 @@ class AccountManagerController extends Controller
 
         $user->client?->update(['status' => 'suspended']);
 
-        DB::table('sessions')
-            ->where('user_id', $user->id)
-            ->delete();
+        $this->invalidateUserSessions($user);
 
         $user->update(['session_expires_at' => null]);
 
@@ -97,12 +96,13 @@ class AccountManagerController extends Controller
         if ($user->role === 'client' && $user->client) {
             $client = $user->client;
 
-            $cancelledCount = Order::where('client_id', $client->id)
-                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
-                ->count();
+            $unfinishedStatuses = [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing];
+            $refundableSlots = (int) Order::where('client_id', $client->id)
+                ->whereIn('status', $unfinishedStatuses)
+                ->sum('files_count');
 
             Order::where('client_id', $client->id)
-                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
+                ->whereIn('status', $unfinishedStatuses)
                 ->update([
                     'status'     => OrderStatus::Cancelled,
                     'claimed_by' => null,
@@ -110,14 +110,16 @@ class AccountManagerController extends Controller
                 ]);
 
             // Restore consumed slot counter for orders that never completed
-            if ($cancelledCount > 0) {
-                $client->decrement('slots_consumed', $cancelledCount);
+            if ($refundableSlots > 0) {
+                $client->update([
+                    'slots_consumed' => max(0, (int) $client->slots_consumed - $refundableSlots),
+                ]);
             }
         }
 
         if ($user->role === 'vendor') {
             Order::where('claimed_by', $user->id)
-                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
+                ->whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
                 ->update([
                     'claimed_by' => null,
                     'claimed_at' => null,
@@ -125,9 +127,7 @@ class AccountManagerController extends Controller
                 ]);
         }
 
-        DB::table('sessions')
-            ->where('user_id', $user->id)
-            ->delete();
+        $this->invalidateUserSessions($user);
 
         $user->delete();
 
@@ -159,12 +159,19 @@ class AccountManagerController extends Controller
         $user = User::withTrashed()->findOrFail($id);
         $this->authorize('forceDelete', $user);
 
-        DB::table('sessions')
-            ->where('user_id', $user->id)
-            ->delete();
+        $this->invalidateUserSessions($user);
 
         $user->forceDelete();
 
         return back()->with('success', 'Account permanently deleted.');
+    }
+
+    protected function invalidateUserSessions(User $user): void
+    {
+        if (config('session.driver') === 'database' && Schema::hasTable(config('session.table', 'sessions'))) {
+            DB::table(config('session.table', 'sessions'))
+                ->where('user_id', $user->id)
+                ->delete();
+        }
     }
 }

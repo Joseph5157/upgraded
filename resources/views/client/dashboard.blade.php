@@ -530,6 +530,10 @@
                                         <span class="status-badge bg-blue-500/[0.1] text-blue-400 border border-blue-500/[0.15] flex-shrink-0">
                                             <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> Processing
                                         </span>
+                                    @elseif($order->status->value === 'claimed')
+                                        <span class="status-badge bg-amber-500/[0.1] text-amber-400 border border-amber-500/[0.15] flex-shrink-0">
+                                            <span class="w-1 h-1 rounded-full bg-amber-400"></span> Reserved
+                                        </span>
                                     @else
                                         <span class="status-badge bg-slate-500/[0.08] text-slate-500 border border-slate-500/[0.1] flex-shrink-0">
                                             <span class="w-1 h-1 rounded-full bg-slate-500 pulse-dot"></span> Pending
@@ -558,16 +562,18 @@
                                                     </a>
                                                 @endif
                                             </div>
-                                            {{-- Delete button --}}
-                                            <form action="{{ route('client.orders.delete', $order) }}" method="POST"
-                                                onsubmit="return confirm('Delete this order and all its files permanently?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-red-500/[0.12] text-red-300 text-[9px] font-bold rounded-lg border border-red-500/[0.12] transition-all active:scale-95">
-                                                    <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
-                                                </button>
-                                            </form>
+                                            @if($order->status->value === 'pending' && !$order->claimed_by)
+                                                {{-- Delete button --}}
+                                                <form action="{{ route('client.orders.delete', $order) }}" method="POST"
+                                                    onsubmit="return confirm('Delete this order and all its files permanently?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-red-500/[0.12] text-red-300 text-[9px] font-bold rounded-lg border border-red-500/[0.12] transition-all active:scale-95">
+                                                        <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
 
                                     {{-- CANCELLED STATE --}}
@@ -622,6 +628,9 @@
                                                 @if($order->status->value === 'processing')
                                                     <span class="w-1.5 h-1.5 bg-blue-500 rounded-full pulse-dot"></span>
                                                     Processing...
+                                                @elseif($order->status->value === 'claimed')
+                                                    <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                                                    Reserved...
                                                 @else
                                                     <span class="w-1.5 h-1.5 bg-slate-600 rounded-full pulse-dot"></span>
                                                     In Queue...

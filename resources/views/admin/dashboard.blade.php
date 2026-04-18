@@ -282,6 +282,10 @@
                                             <span class="stat-badge badge-red">
                                                 <i data-lucide="alert-triangle" class="w-2.5 h-2.5 mr-1"></i> Stalled
                                             </span>
+                                        @elseif($order->status->value === 'claimed')
+                                            <span class="stat-badge" style="background:#FEF3C7;color:#92400E;">
+                                                <span class="w-1.5 h-1.5 rounded-full mr-1" style="background:#D97706;display:inline-block;"></span> Reserved
+                                            </span>
                                         @else
                                             <span class="stat-badge badge-green">
                                                 <span class="w-1.5 h-1.5 rounded-full animate-pulse mr-1" style="background:#059669;display:inline-block;"></span> Working
@@ -309,7 +313,7 @@
             <div class="max-h-[360px] overflow-y-auto">
                 @forelse($recentOrders as $order)
                     <div class="act-item">
-                        <div class="act-av @if($order->status->value==='pending') amber @elseif($order->status->value==='processing') cyan @endif flex-shrink-0">
+                        <div class="act-av @if(in_array($order->status->value, ['pending','claimed'])) amber @elseif($order->status->value==='processing') cyan @endif flex-shrink-0">
                             {{ strtoupper(substr($order->client?->name ?? 'U', 0, 1)) }}
                         </div>
                         <div class="flex-1 min-w-0">

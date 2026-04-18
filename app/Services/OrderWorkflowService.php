@@ -42,7 +42,7 @@ class OrderWorkflowService
 
             // Enforce a per-vendor cap so no single vendor monopolises the queue.
             $activeJobs = Order::where('claimed_by', $user->id)
-                ->whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
+                ->whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
                 ->count();
 
             if ($activeJobs >= 5) {
@@ -54,16 +54,16 @@ class OrderWorkflowService
             $locked->update([
                 'claimed_by' => $user->id,
                 'claimed_at' => now(),
-                'status'     => OrderStatus::Processing,
+                'status'     => OrderStatus::Claimed,
             ]);
 
             $this->logActivity(
                 $locked,
                 $user,
                 'claim',
-                'Order claimed and moved to processing',
+                'Order claimed and reserved for vendor',
                 $oldStatus,
-                OrderStatus::Processing->value
+                OrderStatus::Claimed->value
             );
         });
 
@@ -81,6 +81,12 @@ class OrderWorkflowService
      */
     public function unclaim(Order $order, User $user): void
     {
+        $this->assertVendorOrAdmin($order, $user, 'unclaim');
+
+        if ($order->status !== OrderStatus::Claimed) {
+            throw new Exception("Only reserved orders can be released back to the queue.");
+        }
+
         DB::transaction(function () use ($order, $user) {
             $oldStatus = $order->status->value;
 
@@ -102,7 +108,7 @@ class OrderWorkflowService
     }
 
     /**
-     * Move a pending order to processing.
+     * Move a claimed order to processing.
      */
     public function startProcessing(Order $order, User $user): void
     {
@@ -116,8 +122,8 @@ class OrderWorkflowService
             throw new Exception("Cannot change a delivered order back to processing.");
         }
 
-        if ($order->status !== OrderStatus::Pending) {
-            throw new Exception("Order must be in 'pending' status to start processing. Current status: '{$order->status->value}'.");
+        if ($order->status !== OrderStatus::Claimed) {
+            throw new Exception("Order must be in 'claimed' status to start processing. Current status: '{$order->status->value}'.");
         }
 
         DB::transaction(function () use ($order, $user) {

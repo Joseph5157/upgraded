@@ -150,8 +150,8 @@ class ClientDashboardController extends Controller
             abort(403);
         }
 
-        if (in_array($order->status, [\App\Enums\OrderStatus::Processing, \App\Enums\OrderStatus::Delivered])) {
-            abort(403, 'Files cannot be deleted while the order is being processed or has been delivered.');
+        if (in_array($order->status, [OrderStatus::Claimed, OrderStatus::Processing, OrderStatus::Delivered], true)) {
+            abort(403, 'Files cannot be deleted after the order has been reserved, processed, or delivered.');
         }
 
         Storage::disk($file->disk ?: $this->storageDisk)->delete($file->file_path);
@@ -169,10 +169,14 @@ class ClientDashboardController extends Controller
             abort(403);
         }
 
-        $slotRestored = $this->deleteOrderService->execute($order, $client);
+        try {
+            $slotRestored = $this->deleteOrderService->execute($order, $client);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         $message = $slotRestored
-            ? 'Order deleted. Your credit slot has been restored.'
+            ? 'Order deleted. Your credit slots have been restored.'
             : 'Order and all files permanently deleted.';
 
         return back()->with('success', $message);

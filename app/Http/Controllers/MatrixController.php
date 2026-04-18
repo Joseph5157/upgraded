@@ -10,6 +10,7 @@ class MatrixController extends Controller
 {
     public function index()
     {
+        $this->authorize('viewAny', Client::class);
         $clients = Client::withCount('orders')->get();
         $pendingTopups = TopupRequest::with('client')->where('status', 'pending')->latest()->get();
         return view('admin.finance.matrix', compact('clients', 'pendingTopups'));
@@ -17,6 +18,7 @@ class MatrixController extends Controller
 
     public function update(Request $request, Client $client)
     {
+        $this->authorize('update', $client);
         $request->validate([
             'slots' => 'required|integer|min:0',
             'status' => 'required|in:active,suspended',
@@ -34,6 +36,7 @@ class MatrixController extends Controller
 
     public function refill(Request $request, Client $client)
     {
+        $this->authorize('refill', $client);
         $request->validate([
             'additional_slots' => 'required|integer|min:1',
         ]);

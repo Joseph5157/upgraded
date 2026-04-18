@@ -9,19 +9,35 @@ use Illuminate\Http\RedirectResponse;
 
 class VerifyEmailController extends Controller
 {
+    protected function redirectPathForRole(string $role): string
+    {
+        return match ($role) {
+            'admin' => route('admin.dashboard', absolute: false),
+            'client' => route('client.dashboard', absolute: false),
+            default => route('dashboard', absolute: false),
+        };
+    }
+
     /**
      * Mark the authenticated user's email address as verified.
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        $user = $request->user();
+        $redirectPath = $this->redirectPathForRole($user->role);
+
+        if (! $user->requiresEmailVerification()) {
+            return redirect()->intended($redirectPath);
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
+        if ($user->hasVerifiedEmail()) {
+            return redirect()->intended($redirectPath . '?verified=1');
         }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
+        }
+
+        return redirect()->intended($redirectPath . '?verified=1');
     }
 }
