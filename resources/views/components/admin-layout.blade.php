@@ -137,7 +137,7 @@
                         <i data-lucide="credit-card" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Credits</span>
                         @if($lowCreditClients > 0)
-                            <span class="nav-badge" style="background:#FEF3C7;color:#92400E;">{{ $lowCreditClients }} low</span>
+                            <span class="nav-badge" style="background:#FEF3C7;color:#92400E;">{{ $lowCreditClients }} out</span>
                         @endif
                     </a>
 

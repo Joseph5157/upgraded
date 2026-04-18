@@ -26,6 +26,7 @@ class Order extends Model
 
     protected $casts = [
         'due_at'        => 'datetime',
+        'claimed_at'    => 'datetime',
         'delivered_at'  => 'datetime',
         'is_downloaded' => 'boolean',
         'status'        => OrderStatus::class,

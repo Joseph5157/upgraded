@@ -133,7 +133,7 @@
                         <h2 class="text-xl font-bold text-white">Upload Document</h2>
                         <i data-lucide="help-circle" class="w-5 h-5 text-indigo-500/50"></i>
                     </div>
-                    <p class="text-[10px] font-bold text-slate-500 mb-6 font-mono">MAX 3MB | 30,000 WORDS</p>
+                    <p class="text-[10px] font-bold text-slate-500 mb-6 font-mono">UP TO 20 FILES | 100MB EACH</p>
 
                     @if($client->plan_expiry && $client->plan_expiry->isPast())
                         <div class="border-2 border-dashed border-red-500/20 rounded-3xl p-12 text-center bg-red-500/[0.03]">
@@ -156,7 +156,7 @@
                                     <i data-lucide="cloud-upload" class="w-8 h-8 text-indigo-500"></i>
                                 </div>
                                 <h3 class="text-white font-bold mb-1">Click to Browse</h3>
-                                <p class="text-[10px] text-slate-500 font-mono uppercase">Supports PDF, DOC, DOCX</p>
+                                <p class="text-[10px] text-slate-500 font-mono uppercase">Supports PDF, DOC, DOCX, ZIP</p>
 
                                 <div
                                     class="mt-6 inline-flex items-center gap-2 bg-green-500/5 px-4 py-2 rounded-full border border-green-500/10">
@@ -241,6 +241,11 @@
                                             <h4 class="text-sm font-bold text-slate-200">
                                                 {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Unnamed Document' }}
                                             </h4>
+                                            @if($order->files_count > 1)
+                                                <p class="text-[10px] text-indigo-400 mt-1 font-mono uppercase">
+                                                    + {{ $order->files_count - 1 }} more file{{ $order->files_count - 1 > 1 ? 's' : '' }}
+                                                </p>
+                                            @endif
                                             <p class="text-[10px] text-slate-500 mt-1 font-mono uppercase">
                                                 {{ $order->created_at->format('d M, h:i A') }}
                                             </p>

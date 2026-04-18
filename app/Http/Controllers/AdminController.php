@@ -54,12 +54,12 @@ class AdminController extends Controller
             'phone'    => $this->normalizePhone($request->phone),
             'password' => Hash::make($request->password),
             'role'     => $request->role,
+            'email_verified_at' => now(),
         ];
 
         if ($request->role === 'admin') {
             $userData['admin_created_by']   = auth()->id();
             $userData['is_super_admin']     = false;
-            $userData['email_verified_at']  = now();
         }
 
         $user = User::create($userData);

@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -43,10 +44,12 @@ class AuthenticatedSessionController extends Controller
 
         // Invalidate all other active sessions for this user so stale browser
         // sessions (e.g. shared devices) are killed on new login.
-        DB::table('sessions')
-            ->where('user_id', $user->id)
-            ->where('id', '!=', $request->session()->getId())
-            ->delete();
+        if (config('session.driver') === 'database' && Schema::hasTable(config('session.table', 'sessions'))) {
+            DB::table(config('session.table', 'sessions'))
+                ->where('user_id', $user->id)
+                ->where('id', '!=', $request->session()->getId())
+                ->delete();
+        }
 
         $user->update([
             'last_login_at'      => now(),

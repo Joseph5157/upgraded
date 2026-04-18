@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Models\Client;
 use App\Models\Order;
+use App\Models\RefundRequest;
+use App\Models\TopupRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,12 +23,22 @@ class AdminDashboardController extends Controller
                     ->whereDate('delivered_at', today())
                     ->count(),
                 'pending_pool'    => Order::where('status', OrderStatus::Pending)->whereNull('claimed_by')->count(),
-                'active_vendors'  => User::where('role', 'vendor')
+                'active_vendors_today'  => User::where('role', 'vendor')
                     ->whereHas('orders', fn($q) => $q->whereDate('delivered_at', today()))
                     ->count(),
+                'working_vendors_now' => Order::where('status', OrderStatus::Processing)
+                    ->whereNotNull('claimed_by')
+                    ->distinct('claimed_by')
+                    ->count('claimed_by'),
                 'new_clients_today' => Client::whereDate('created_at', today())->count(),
                 'total_clients'   => Client::count(),
                 'total_vendors'   => User::where('role', 'vendor')->count(),
+                'suspended_clients' => Client::where('status', 'suspended')->count(),
+                'frozen_client_users' => User::where('role', 'client')->where('status', 'frozen')->count(),
+                'pending_topups' => TopupRequest::where('status', 'pending')->count(),
+                'out_of_credit_clients' => Client::whereRaw('slots_consumed >= slots')->count(),
+                'pending_refunds' => RefundRequest::where('status', 'pending')->count(),
+                'frozen_vendors' => User::where('role', 'vendor')->where('status', 'frozen')->count(),
             ];
         });
 

@@ -422,6 +422,7 @@
                                 </div>
                                 <h3 class="text-[13px] sm:text-[15px] font-bold text-white/90 mb-1.5">Drop files here or click</h3>
                                 <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em] sm:tracking-widest">PDF, DOCX, DOC, ZIP up to 100MB</p>
+                                <p id="selected-file-count" class="hidden text-[10px] text-emerald-400 font-bold mt-2 uppercase tracking-[0.18em]"></p>
                                 <p class="text-[9px] text-indigo-400/50 mt-1 sm:hidden">Tap to browse files</p>
                             </label>
 
@@ -496,9 +497,16 @@
                                             <i data-lucide="file-text" class="w-5 h-5"></i>
                                         </div>
                                         <div class="min-w-0">
-                                            <h4 class="text-[12px] sm:text-[13px] font-bold text-white truncate leading-snug max-w-[170px] sm:max-w-none">
-                                                {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
-                                            </h4>
+                                            <div class="min-w-0">
+                                                <h4 class="text-[12px] sm:text-[13px] font-bold text-white truncate leading-snug max-w-[170px] sm:max-w-none">
+                                                    {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
+                                                </h4>
+                                                @if($order->files_count > 1)
+                                                    <p class="text-[9px] text-indigo-300 font-bold uppercase tracking-widest mt-1">
+                                                        + {{ $order->files_count - 1 }} more file{{ $order->files_count - 1 > 1 ? 's' : '' }}
+                                                    </p>
+                                                @endif
+                                            </div>
                                             <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
                                                 {{ $order->created_at->format('d M, h:i A') }}
                                             </p>
@@ -814,6 +822,7 @@
             if (!files.length) return;
 
             const preview = document.getElementById('file-preview');
+            const countText = document.getElementById('selected-file-count');
             preview.innerHTML = '';
 
             files.forEach(file => {
@@ -836,6 +845,8 @@
                     </div>`;
             });
 
+            countText.textContent = files.length + ' file' + (files.length > 1 ? 's' : '') + ' selected';
+            countText.classList.remove('hidden');
             document.getElementById('upload-stage').classList.remove('hidden');
             document.getElementById('drop-zone').classList.add('opacity-60', 'pointer-events-none');
         }
@@ -843,6 +854,8 @@
         function resetUpload() {
             document.getElementById('files').value = '';
             document.getElementById('file-preview').innerHTML = '';
+            document.getElementById('selected-file-count').textContent = '';
+            document.getElementById('selected-file-count').classList.add('hidden');
             document.getElementById('upload-stage').classList.add('hidden');
             document.getElementById('drop-zone').classList.remove('opacity-60', 'pointer-events-none');
             document.getElementById('notes-input').value = '';

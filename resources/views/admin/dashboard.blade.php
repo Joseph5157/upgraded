@@ -83,10 +83,10 @@
                 <i data-lucide="shield" class="w-5 h-5 text-white"></i>
             </div>
             <div>
-                <p class="stat-label">Active vendors</p>
-                <p class="stat-number">{{ $stats['active_vendors'] }}</p>
-                <p class="stat-sub">of {{ $stats['total_vendors'] }} vendors</p>
-                <span class="stat-badge" style="background:#FCE7F3;color:#831843;">Active</span>
+                <p class="stat-label">Working now</p>
+                <p class="stat-number">{{ $stats['working_vendors_now'] }}</p>
+                <p class="stat-sub">{{ $stats['active_vendors_today'] }} active today</p>
+                <span class="stat-badge" style="background:#FCE7F3;color:#831843;">Live</span>
             </div>
         </a>
 
@@ -107,14 +107,6 @@
     {{-- ═══════════════════════════════════════════
          CLIENT HEALTH ROW
     ═══════════════════════════════════════════ --}}
-    @php
-        $suspendedClients  = \App\Models\Client::where('status','suspended')->count();
-        $frozenClientUsers = \App\Models\User::where('role','client')->where('status','frozen')->count();
-        $pendingTopupCount = \App\Models\TopupRequest::where('status','pending')->count();
-        $lowCreditCount    = \App\Models\Client::whereRaw('slots_consumed >= slots')->count();
-        $pendingRefundCount = \App\Models\RefundRequest::where('status','pending')->count();
-    @endphp
-
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
 
         {{-- Client health --}}
@@ -137,37 +129,37 @@
                     </a>
                     <a href="{{ route('admin.accounts.index') }}?tab=clients&filter=frozen"
                        class="text-center p-3 rounded-xl transition-colors"
-                       style="{{ $frozenClientUsers > 0 ? 'background:#FEE2E2;' : 'background:#F5F3FF;' }}">
-                        <p class="text-lg font-bold font-mono" style="{{ $frozenClientUsers > 0 ? 'color:#DC2626;' : 'color:#1E1B4B;' }}">{{ $frozenClientUsers }}</p>
-                        <p class="text-[10px] mt-0.5" style="{{ $frozenClientUsers > 0 ? 'color:#DC2626;' : 'color:#9CA3AF;' }}">Frozen</p>
+                       style="{{ $stats['frozen_client_users'] > 0 ? 'background:#FEE2E2;' : 'background:#F5F3FF;' }}">
+                        <p class="text-lg font-bold font-mono" style="{{ $stats['frozen_client_users'] > 0 ? 'color:#DC2626;' : 'color:#1E1B4B;' }}">{{ $stats['frozen_client_users'] }}</p>
+                        <p class="text-[10px] mt-0.5" style="{{ $stats['frozen_client_users'] > 0 ? 'color:#DC2626;' : 'color:#9CA3AF;' }}">Frozen</p>
                     </a>
                     <a href="{{ route('admin.matrix.index') }}"
                        class="text-center p-3 rounded-xl transition-colors"
-                       style="{{ $suspendedClients > 0 ? 'background:#FEF3C7;' : 'background:#F5F3FF;' }}">
-                        <p class="text-lg font-bold font-mono" style="{{ $suspendedClients > 0 ? 'color:#D97706;' : 'color:#1E1B4B;' }}">{{ $suspendedClients }}</p>
-                        <p class="text-[10px] mt-0.5" style="{{ $suspendedClients > 0 ? 'color:#D97706;' : 'color:#9CA3AF;' }}">Suspended</p>
+                       style="{{ $stats['suspended_clients'] > 0 ? 'background:#FEF3C7;' : 'background:#F5F3FF;' }}">
+                        <p class="text-lg font-bold font-mono" style="{{ $stats['suspended_clients'] > 0 ? 'color:#D97706;' : 'color:#1E1B4B;' }}">{{ $stats['suspended_clients'] }}</p>
+                        <p class="text-[10px] mt-0.5" style="{{ $stats['suspended_clients'] > 0 ? 'color:#D97706;' : 'color:#9CA3AF;' }}">Suspended</p>
                     </a>
                     <a href="{{ route('admin.topup.index') }}"
                        class="text-center p-3 rounded-xl transition-colors"
-                       style="{{ $pendingTopupCount > 0 ? 'background:#D1FAE5;' : 'background:#F5F3FF;' }}">
-                        <p class="text-lg font-bold font-mono" style="{{ $pendingTopupCount > 0 ? 'color:#059669;' : 'color:#1E1B4B;' }}">{{ $pendingTopupCount }}</p>
-                        <p class="text-[10px] mt-0.5" style="{{ $pendingTopupCount > 0 ? 'color:#059669;' : 'color:#9CA3AF;' }}">Top-ups</p>
+                       style="{{ $stats['pending_topups'] > 0 ? 'background:#D1FAE5;' : 'background:#F5F3FF;' }}">
+                        <p class="text-lg font-bold font-mono" style="{{ $stats['pending_topups'] > 0 ? 'color:#059669;' : 'color:#1E1B4B;' }}">{{ $stats['pending_topups'] }}</p>
+                        <p class="text-[10px] mt-0.5" style="{{ $stats['pending_topups'] > 0 ? 'color:#059669;' : 'color:#9CA3AF;' }}">Top-ups</p>
                     </a>
                 </div>
 
                 {{-- Low credit alert --}}
-                @if($lowCreditCount > 0 || $pendingRefundCount > 0)
+                @if($stats['out_of_credit_clients'] > 0 || $stats['pending_refunds'] > 0)
                     <div class="mt-3 pt-3 flex items-center gap-4" style="border-top:1px solid #DDD6FE;">
-                        @if($lowCreditCount > 0)
+                        @if($stats['out_of_credit_clients'] > 0)
                             <a href="{{ route('admin.matrix.index') }}" class="flex items-center gap-1.5 text-[11px] font-semibold" style="color:#D97706;">
                                 <i data-lucide="alert-triangle" class="w-3 h-3"></i>
-                                {{ $lowCreditCount }} client{{ $lowCreditCount !== 1 ? 's' : '' }} out of credits
+                                {{ $stats['out_of_credit_clients'] }} client{{ $stats['out_of_credit_clients'] !== 1 ? 's' : '' }} out of credits
                             </a>
                         @endif
-                        @if($pendingRefundCount > 0)
+                        @if($stats['pending_refunds'] > 0)
                             <a href="{{ route('admin.refunds.index') }}" class="flex items-center gap-1.5 text-[11px] font-semibold" style="color:#D97706;">
                                 <i data-lucide="refresh-ccw" class="w-3 h-3"></i>
-                                {{ $pendingRefundCount }} refund{{ $pendingRefundCount !== 1 ? 's' : '' }} pending
+                                {{ $stats['pending_refunds'] }} refund{{ $stats['pending_refunds'] !== 1 ? 's' : '' }} pending
                             </a>
                         @endif
                     </div>
@@ -176,11 +168,6 @@
         </div>
 
         {{-- Vendor health --}}
-        @php
-            $frozenVendors  = \App\Models\User::where('role','vendor')->where('status','frozen')->count();
-            $activeVendors  = $stats['active_vendors'];
-            $totalVendors   = $stats['total_vendors'];
-        @endphp
         <div class="dash-card">
             <div class="dash-card-header">
                 <span class="dash-card-title">
@@ -195,32 +182,32 @@
                 <div class="grid grid-cols-3 gap-3">
                     <a href="{{ route('admin.accounts.index') }}?tab=vendors"
                        class="text-center p-3 rounded-xl transition-colors" style="background:#F5F3FF;">
-                        <p class="text-lg font-bold font-mono" style="color:#1E1B4B;">{{ $totalVendors }}</p>
+                        <p class="text-lg font-bold font-mono" style="color:#1E1B4B;">{{ $stats['total_vendors'] }}</p>
                         <p class="text-[10px] mt-0.5" style="color:#9CA3AF;">Total</p>
                     </a>
                     <div class="text-center p-3 rounded-xl"
-                         style="{{ $activeVendors > 0 ? 'background:#D1FAE5;' : 'background:#F5F3FF;' }}">
-                        <p class="text-lg font-bold font-mono" style="{{ $activeVendors > 0 ? 'color:#059669;' : 'color:#1E1B4B;' }}">{{ $activeVendors }}</p>
-                        <p class="text-[10px] mt-0.5" style="{{ $activeVendors > 0 ? 'color:#059669;' : 'color:#9CA3AF;' }}">Working now</p>
+                         style="{{ $stats['working_vendors_now'] > 0 ? 'background:#D1FAE5;' : 'background:#F5F3FF;' }}">
+                        <p class="text-lg font-bold font-mono" style="{{ $stats['working_vendors_now'] > 0 ? 'color:#059669;' : 'color:#1E1B4B;' }}">{{ $stats['working_vendors_now'] }}</p>
+                        <p class="text-[10px] mt-0.5" style="{{ $stats['working_vendors_now'] > 0 ? 'color:#059669;' : 'color:#9CA3AF;' }}">Working now</p>
                     </div>
                     <a href="{{ route('admin.accounts.index') }}?tab=vendors&filter=frozen"
                        class="text-center p-3 rounded-xl transition-colors"
-                       style="{{ $frozenVendors > 0 ? 'background:#FEE2E2;' : 'background:#F5F3FF;' }}">
-                        <p class="text-lg font-bold font-mono" style="{{ $frozenVendors > 0 ? 'color:#DC2626;' : 'color:#1E1B4B;' }}">{{ $frozenVendors }}</p>
-                        <p class="text-[10px] mt-0.5" style="{{ $frozenVendors > 0 ? 'color:#DC2626;' : 'color:#9CA3AF;' }}">Frozen</p>
+                       style="{{ $stats['frozen_vendors'] > 0 ? 'background:#FEE2E2;' : 'background:#F5F3FF;' }}">
+                        <p class="text-lg font-bold font-mono" style="{{ $stats['frozen_vendors'] > 0 ? 'color:#DC2626;' : 'color:#1E1B4B;' }}">{{ $stats['frozen_vendors'] }}</p>
+                        <p class="text-[10px] mt-0.5" style="{{ $stats['frozen_vendors'] > 0 ? 'color:#DC2626;' : 'color:#9CA3AF;' }}">Frozen</p>
                     </a>
                 </div>
 
                 {{-- Vendor performance bar --}}
-                @if($totalVendors > 0)
+                @if($stats['total_vendors'] > 0)
                     <div class="mt-3 pt-3" style="border-top:1px solid #DDD6FE;">
                         <div class="flex items-center justify-between mb-1.5">
                             <span class="text-[10px]" style="color:#9CA3AF;">Active today</span>
-                            <span class="text-[10px] font-mono" style="color:#9CA3AF;font-family:'DM Mono',monospace;">{{ $activeVendors }}/{{ $totalVendors }}</span>
+                            <span class="text-[10px] font-mono" style="color:#9CA3AF;font-family:'DM Mono',monospace;">{{ $stats['active_vendors_today'] }}/{{ $stats['total_vendors'] }}</span>
                         </div>
                         <div class="h-1.5 rounded-full overflow-hidden" style="background:#EDE9FE;">
                             <div class="h-full rounded-full transition-all"
-                                 style="width:{{ $totalVendors > 0 ? round(($activeVendors / $totalVendors) * 100) : 0 }}%;background:linear-gradient(90deg,#6D28D9,#8B5CF6);"></div>
+                                 style="width:{{ $stats['total_vendors'] > 0 ? round(($stats['active_vendors_today'] / $stats['total_vendors']) * 100) : 0 }}%;background:linear-gradient(90deg,#6D28D9,#8B5CF6);"></div>
                         </div>
                     </div>
                 @endif
