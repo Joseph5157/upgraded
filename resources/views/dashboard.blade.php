@@ -391,7 +391,7 @@
 
     {{-- ===== UPLOAD MODALS ===== --}}
     @foreach($myWorkspace as $order)
-        @if($order->status->value == 'processing')
+        @if(in_array($order->status->value, ['claimed', 'processing']))
             <div id="upload-modal-{{ $order->id }}"
                 class="hidden fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4"
                 onclick="if(event.target===this)this.classList.add('hidden')">
