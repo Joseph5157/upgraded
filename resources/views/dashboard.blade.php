@@ -144,8 +144,23 @@
                                 @endif
                             </div>
 
+                            {{-- Per-file downloads (multi-file orders) --}}
+                            @if($order->files->count() > 1)
+                                <div class="mt-3 space-y-1">
+                                    @foreach($order->files as $file)
+                                        <a href="{{ route('orders.files.download', [$order, $file]) }}"
+                                            class="w-full inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[9px] font-semibold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:bg-white/[0.05] dark:border-white/[0.08] dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/[0.08] rounded-lg transition-all">
+                                            <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                            </svg>
+                                            <span class="truncate">{{ basename($file->file_path) }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
+
                             <div class="grid grid-cols-2 gap-2 mt-3">
-                                @if($order->files->first())
+                                @if($order->files->first() && $order->files->count() === 1)
                                     <a href="{{ route('orders.files.download', [$order, $order->files->first()]) }}"
                                         class="inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-semibold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:bg-white/[0.05] dark:border-white/[0.08] dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/[0.08] rounded-lg transition-all">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -277,16 +292,17 @@
                                 </td>
                                 <td class="px-3 sm:px-6 py-3 sm:py-4 text-right">
                                     <div class="flex items-center justify-end gap-1.5 sm:gap-2">
-                                        @if($order->files->first())
-                                            <a href="{{ route('orders.files.download', [$order, $order->files->first()]) }}"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:bg-white/[0.05] dark:border-white/[0.08] dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/[0.08] rounded-lg transition-all">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        @foreach($order->files as $file)
+                                            <a href="{{ route('orders.files.download', [$order, $file]) }}"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:bg-white/[0.05] dark:border-white/[0.08] dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/[0.08] rounded-lg transition-all"
+                                                title="{{ basename($file->file_path) }}">
+                                                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                                 </svg>
-                                                Download
+                                                {{ $order->files->count() > 1 ? 'File '.$loop->iteration : 'Download' }}
                                             </a>
-                                        @endif
+                                        @endforeach
                                         <button
                                             onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
                                             class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
