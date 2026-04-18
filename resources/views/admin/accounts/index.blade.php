@@ -75,6 +75,7 @@
                             <th class="text-center px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Files Today</th>
                             <th class="text-center px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Lifetime</th>
                             <th class="text-center px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Active Orders</th>
+                            <th class="text-center px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Payout Rate</th>
                             <th class="text-left px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Joined</th>
                             <th class="text-right px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Actions</th>
                         </tr>
@@ -120,6 +121,12 @@
                                 </td>
                                 <td class="px-5 py-3.5 text-center">
                                     <span class="text-xs font-mono text-gray-700 dark:text-slate-300">{{ $vendor->active_orders }}</span>
+                                </td>
+                                <td class="px-5 py-3.5 text-center">
+                                    @php $vendorRate = $vendor->payout_rate ?? config('services.portal.vendor_payout_per_order'); @endphp
+                                    <span class="text-xs font-mono {{ $vendor->payout_rate ? 'text-indigo-500 font-bold' : 'text-gray-400 dark:text-slate-500' }}">
+                                        ₹{{ number_format($vendorRate, 0) }}/order
+                                    </span>
                                 </td>
                                 <td class="px-5 py-3.5">
                                     <span class="text-xs text-gray-400 dark:text-slate-500">{{ $vendor->created_at->format('d M Y') }}</span>
@@ -187,7 +194,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-5 py-10 text-center text-xs text-gray-400 dark:text-slate-600">No vendor accounts found.</td>
+                                <td colspan="8" class="px-5 py-10 text-center text-xs text-gray-400 dark:text-slate-600">No vendor accounts found.</td>
                             </tr>
                         @endforelse
                     </tbody>

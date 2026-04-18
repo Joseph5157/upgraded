@@ -1,3 +1,9 @@
+@php
+    $_vendor        = auth()->user();
+    $_totalEarned   = \App\Models\VendorDailySnapshot::where('user_id', $_vendor->id)->sum('amount_earned');
+    $_totalPaid     = \App\Models\VendorPayout::where('user_id', $_vendor->id)->sum('amount');
+    $_pendingPayout = max(0, $_totalEarned - $_totalPaid);
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -94,6 +100,18 @@
 
                 {{-- Right: actions --}}
                 <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                    {{-- Balance pill --}}
+                    <a href="{{ route('vendor.earnings') }}"
+                       class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all
+                              {{ $_pendingPayout > 0
+                                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
+                                  : 'bg-white/[0.03] border-white/[0.06] text-slate-500 hover:bg-white/[0.06]' }}">
+                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1"/>
+                        </svg>
+                        <span>₹{{ number_format($_pendingPayout, 0) }}</span>
+                    </a>
+
                     {{-- Live Sync --}}
                     <div class="hidden sm:flex items-center gap-1.5 bg-[#162a1f] border border-emerald-500/20 px-3 py-1.5 rounded-full">
                         <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-[0_0_6px_#34d399] animate-pulse"></span>

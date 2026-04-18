@@ -85,11 +85,12 @@ class CloseDayCommand extends Command
         \App\Models\User::where('role', 'vendor')
             ->where('daily_delivered_count', '>', 0)
             ->each(function ($vendor) use ($date, $payoutRate) {
+                $vendorRate = $vendor->payout_rate ?? $payoutRate;
                 \App\Models\VendorDailySnapshot::updateOrCreate(
                     ['user_id' => $vendor->id, 'date' => $date],
                     [
                         'orders_delivered' => $vendor->daily_delivered_count,
-                        'amount_earned'    => $vendor->daily_delivered_count * $payoutRate,
+                        'amount_earned'    => $vendor->daily_delivered_count * $vendorRate,
                     ]
                 );
             });

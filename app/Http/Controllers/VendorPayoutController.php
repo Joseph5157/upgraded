@@ -26,13 +26,15 @@ class VendorPayoutController extends Controller
             // which would reduce the count and wipe vendor's earned credits.
             $delivered = $vendor->delivered_orders_count;
 
-            $earned  = $delivered * $payoutRate;
+            $rate    = $vendor->payout_rate ?? $payoutRate;
+            $earned  = $delivered * $rate;
             $paid    = VendorPayout::where('user_id', $vendor->id)->sum('amount');
             $balance = $earned - $paid;
 
             return [
                 'vendor'    => $vendor,
                 'delivered' => $delivered,
+                'rate'      => $rate,
                 'earned'    => $earned,
                 'paid'      => $paid,
                 'balance'   => $balance,

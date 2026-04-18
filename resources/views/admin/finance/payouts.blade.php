@@ -62,8 +62,8 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="py-6 text-center text-sm font-mono text-slate-400">
-                                    ₹{{ number_format($payoutRate, 0) }}
+                                <td class="py-6 text-center text-sm font-mono {{ $row['vendor']->payout_rate ? 'text-indigo-500 font-bold' : 'text-slate-400' }}">
+                                    ₹{{ number_format($row['rate'], 0) }}
                                 </td>
                                 <td class="py-6 text-center">
                                     <span

@@ -47,6 +47,7 @@ class AdminController extends Controller
             'client_name'    => ['required_if:role,client', 'nullable', 'string', 'max:255'],
             'slots'          => ['required_if:role,client', 'nullable', 'integer', 'min:1', 'max:10000'],
             'price_per_file' => ['required_if:role,client', 'nullable', 'numeric', 'min:0', 'max:99999'],
+            'payout_rate'    => ['nullable', 'numeric', 'min:1'],
         ]);
 
         $userData = [
@@ -61,6 +62,10 @@ class AdminController extends Controller
         if ($request->role === 'admin') {
             $userData['admin_created_by']   = auth()->id();
             $userData['is_super_admin']     = false;
+        }
+
+        if ($request->role === 'vendor' && $request->filled('payout_rate')) {
+            $userData['payout_rate'] = $request->payout_rate;
         }
 
         $user = User::create($userData);

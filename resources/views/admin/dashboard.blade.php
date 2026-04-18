@@ -481,6 +481,17 @@
                     </div>
                 @endcan
 
+                <div id="vendor-fields" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Custom Payout Rate (₹/order)</label>
+                        <input type="number" name="payout_rate" value="{{ old('payout_rate') }}" min="1" step="0.01"
+                            placeholder="Default: {{ config('services.portal.vendor_payout_per_order') }}"
+                            class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
+                            style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
+                        <p class="text-[10px] mt-1" style="color:#9CA3AF;">Leave blank to use the system default (₹{{ config('services.portal.vendor_payout_per_order') }}/order).</p>
+                    </div>
+                </div>
+
                 <div id="client-fields" class="hidden space-y-4">
                     <div>
                         <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Organisation name</label>
@@ -525,6 +536,7 @@
                 function toggleRoleFields() {
                     const role = document.getElementById('modal-role').value;
                     document.getElementById('client-fields').classList.toggle('hidden', role !== 'client');
+                    document.getElementById('vendor-fields').classList.toggle('hidden', role !== 'vendor');
                     document.getElementById('admin-fields')?.classList.toggle('hidden', role !== 'admin');
                 }
 

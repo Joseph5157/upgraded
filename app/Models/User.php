@@ -41,6 +41,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'last_login_at',
         'last_login_ip',
         'session_expires_at',
+        'payout_rate',
     ];
 
     /**
