@@ -85,7 +85,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 });
 
 // Admin Routes — single consolidated group
-Route::middleware(['auth', 'nocache', 'verified', 'role:admin', 'account.status'])
+Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
