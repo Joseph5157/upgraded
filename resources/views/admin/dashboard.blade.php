@@ -494,6 +494,13 @@
                             class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
                             style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
                     </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Price per file</label>
+                        <input type="number" name="price_per_file" value="{{ old('price_per_file', config('services.portal.default_client_price')) }}" min="0" step="0.01"
+                            class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
+                            style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
+                        <p class="text-[10px] mt-1" style="color:#9CA3AF;">Default: {{ config('services.portal.default_client_price') }}. Sets the per-file rate used in billing and revenue reports.</p>
+                    </div>
                 </div>
 
                 @if($errors->any())
