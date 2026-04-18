@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'session.timeout' => \App\Http\Middleware\EnforceSessionTimeout::class,
         ]);
         $middleware->appendToGroup('web', [
+            \App\Http\Middleware\RequestCorrelation::class,
             \App\Http\Middleware\CheckAccountStatus::class,
             \App\Http\Middleware\EnforceSessionTimeout::class,
         ]);
@@ -34,7 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AccessDeniedHttpException $e, Request $request) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'You do not have permission to do that.'], 403);
+                return response()
+                    ->json(['message' => 'You do not have permission to do that.'], 403)
+                    ->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
             }
 
             if (Auth::check()) {
@@ -45,7 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return redirect()->route('login')->withErrors([
                 'email' => 'Your session is invalid or you do not have access. Please log in again.',
-            ]);
+            ])->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
         });
 
         $exceptions->render(function (Throwable $e, Request $request) {
@@ -75,6 +78,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 $payload['detail'] = $e->getMessage();
             }
 
-            return response()->json($payload, $status);
+            return response()
+                ->json($payload, $status)
+                ->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
         });
     })->create();

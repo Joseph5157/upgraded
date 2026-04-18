@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Enums\OrderStatus;
 use App\Models\Client;
 use App\Models\Order;
+use App\Support\LogContext;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class DeleteClientOrderService
@@ -14,6 +16,7 @@ class DeleteClientOrderService
     protected string $storageDisk;
 
     public function __construct(
+        protected AuditLogger $auditLogger,
         string $storageDisk = '',
     ) {
         $this->storageDisk = $storageDisk ?: config('filesystems.default', 'r2');
@@ -27,7 +30,35 @@ class DeleteClientOrderService
      */
     public function execute(Order $order, Client $client): bool
     {
+        $requestContext = LogContext::currentRequest();
+        $actor = request()?->user();
+
+        Log::info('client_order.delete_attempted', LogContext::forClient(
+            $client,
+            LogContext::forOrder($order, $actor ? LogContext::forUser($actor, $requestContext) : $requestContext)
+        ));
+        $this->auditLogger->record('client_order.delete_attempted', $order, [
+            'order_status' => $order->status?->value,
+            'claimed_by' => $order->claimed_by,
+            'client_id' => $client->id,
+        ], $actor?->id);
+
         if ($order->status !== OrderStatus::Pending || $order->claimed_by !== null) {
+            $context = LogContext::forClient(
+                $client,
+                LogContext::forOrder($order, $actor ? LogContext::forUser($actor, $requestContext) : $requestContext)
+            );
+
+            Log::warning('client_order.delete_denied', array_merge($context, [
+                'reason' => 'order_not_unclaimed_pending',
+            ]));
+            $this->auditLogger->record('client_order.delete_denied', $order, [
+                'reason' => 'order_not_unclaimed_pending',
+                'order_status' => $order->status?->value,
+                'claimed_by' => $order->claimed_by,
+                'client_id' => $client->id,
+            ], $actor?->id);
+
             throw new Exception('Only unclaimed pending orders can be deleted.');
         }
 
@@ -72,6 +103,19 @@ class DeleteClientOrderService
             $newConsumed = max(0, $client->slots_consumed - $creditsToRestore);
 
             $client->update(['slots_consumed' => $newConsumed]);
+
+            $actor = request()?->user();
+            $requestContext = LogContext::currentRequest();
+
+            Log::info('credits.restored', LogContext::forClient(
+                $client,
+                LogContext::forOrder($order, $actor ? LogContext::forUser($actor, $requestContext) : $requestContext)
+            ));
+            $this->auditLogger->record('credits.restored', $order, [
+                'client_id' => $client->id,
+                'credits_restored' => $creditsToRestore,
+                'slots_consumed_after' => $newConsumed,
+            ], $actor?->id);
 
             if ($client->status === 'suspended' && $newConsumed < $client->slots) {
                 $client->update(['status' => 'active']);

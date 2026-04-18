@@ -94,10 +94,10 @@ class OrderPolicyTest extends TestCase
 
     // ─── unclaim ──────────────────────────────────────────────────────────────
 
-    public function test_owner_can_unclaim_pending_order(): void
+    public function test_owner_can_unclaim_claimed_order(): void
     {
         $vendor = $this->user(['id' => 5]);
-        $order  = $this->order(['status' => OrderStatus::Pending, 'claimed_by' => 5]);
+        $order  = $this->order(['status' => OrderStatus::Claimed, 'claimed_by' => 5]);
 
         $this->assertTrue($this->policy->unclaim($vendor, $order));
     }
@@ -105,7 +105,7 @@ class OrderPolicyTest extends TestCase
     public function test_non_owner_cannot_unclaim(): void
     {
         $vendor = $this->user(['id' => 5]);
-        $order  = $this->order(['status' => OrderStatus::Pending, 'claimed_by' => 99]);
+        $order  = $this->order(['status' => OrderStatus::Claimed, 'claimed_by' => 99]);
 
         $this->assertFalse($this->policy->unclaim($vendor, $order));
     }
@@ -120,18 +120,18 @@ class OrderPolicyTest extends TestCase
 
     // ─── process ──────────────────────────────────────────────────────────────
 
-    public function test_owner_can_process_order(): void
+    public function test_owner_can_process_claimed_order(): void
     {
         $vendor = $this->user(['id' => 5]);
-        $order  = $this->order(['status' => OrderStatus::Pending, 'claimed_by' => 5]);
+        $order  = $this->order(['status' => OrderStatus::Claimed, 'claimed_by' => 5]);
 
         $this->assertTrue($this->policy->process($vendor, $order));
     }
 
-    public function test_admin_can_process_any_order(): void
+    public function test_admin_can_process_claimed_order(): void
     {
         $admin = $this->user(['id' => 2, 'role' => 'admin']);
-        $order = $this->order(['status' => OrderStatus::Pending, 'claimed_by' => 99]);
+        $order = $this->order(['status' => OrderStatus::Claimed, 'claimed_by' => 99]);
 
         $this->assertTrue($this->policy->process($admin, $order));
     }
@@ -139,7 +139,7 @@ class OrderPolicyTest extends TestCase
     public function test_vendor_cannot_process_order_they_do_not_own(): void
     {
         $vendor = $this->user(['id' => 5, 'role' => 'vendor']);
-        $order  = $this->order(['status' => OrderStatus::Pending, 'claimed_by' => 99]);
+        $order  = $this->order(['status' => OrderStatus::Claimed, 'claimed_by' => 99]);
 
         $this->assertFalse($this->policy->process($vendor, $order));
     }
@@ -231,12 +231,28 @@ class OrderPolicyTest extends TestCase
 
     // ─── delete ───────────────────────────────────────────────────────────────
 
-    public function test_client_can_delete_their_own_order(): void
+    public function test_client_can_delete_their_own_unclaimed_pending_order(): void
     {
         $client = $this->user(['id' => 7, 'role' => 'client', 'client_id' => 10]);
-        $order  = $this->order(['status' => OrderStatus::Delivered, 'client_id' => 10]);
+        $order  = $this->order(['status' => OrderStatus::Pending, 'client_id' => 10, 'claimed_by' => null]);
 
         $this->assertTrue($this->policy->delete($client, $order));
+    }
+
+    public function test_client_cannot_delete_claimed_order(): void
+    {
+        $client = $this->user(['id' => 7, 'role' => 'client', 'client_id' => 10]);
+        $order  = $this->order(['status' => OrderStatus::Claimed, 'client_id' => 10, 'claimed_by' => 99]);
+
+        $this->assertFalse($this->policy->delete($client, $order));
+    }
+
+    public function test_client_cannot_delete_processing_order(): void
+    {
+        $client = $this->user(['id' => 7, 'role' => 'client', 'client_id' => 10]);
+        $order  = $this->order(['status' => OrderStatus::Processing, 'client_id' => 10, 'claimed_by' => 99]);
+
+        $this->assertFalse($this->policy->delete($client, $order));
     }
 
     public function test_client_cannot_delete_another_clients_order(): void

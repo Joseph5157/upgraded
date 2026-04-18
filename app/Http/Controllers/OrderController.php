@@ -8,8 +8,10 @@ use App\Enums\OrderStatus;
 use App\Rules\ValidTurnstile;
 use App\Services\CreateClientOrderService;
 use App\Services\DeleteClientOrderService;
+use App\Support\LogContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
@@ -111,6 +113,17 @@ class OrderController extends Controller
                 ['client_link_id' => $link->id],
             );
         } catch (\Exception $e) {
+            Log::warning('order.create_failed', array_merge(
+                LogContext::currentRequest(),
+                [
+                    'source' => 'link',
+                    'client_id' => $link->client_id,
+                    'client_link_id' => $link->id,
+                    'file_count' => is_array($request->file('files')) ? count($request->file('files')) : null,
+                    'exception' => class_basename($e),
+                    'message' => $e->getMessage(),
+                ]
+            ));
             return back()->with('error', $e->getMessage());
         }
 

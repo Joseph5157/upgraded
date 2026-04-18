@@ -17,7 +17,7 @@ class OrderSourceTest extends TestCase
 
     public function test_order_created_via_link_has_correct_metadata()
     {
-        Storage::fake('r2');
+        Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
         $client = Client::create(['name' => 'Test Client', 'slots' => 10]);
         $link = ClientLink::create(['client_id' => $client->id, 'token' => 'test-token', 'is_active' => true]);
 
@@ -37,7 +37,7 @@ class OrderSourceTest extends TestCase
 
     public function test_order_created_via_dashboard_has_correct_metadata()
     {
-        Storage::fake('r2');
+        Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
         $client = Client::create(['name' => 'Test Client', 'slots' => 10]);
         $user = User::factory()->create(['role' => 'client', 'client_id' => $client->id]);
 

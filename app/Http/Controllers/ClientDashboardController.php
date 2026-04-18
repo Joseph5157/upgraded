@@ -10,8 +10,10 @@ use App\Enums\OrderStatus;
 use App\Services\CreateClientOrderService;
 use App\Services\DeleteClientOrderService;
 use App\Services\TelegramService;
+use App\Support\LogContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -131,6 +133,16 @@ class ClientDashboardController extends Controller
                 ],
             );
         } catch (\Exception $e) {
+            Log::warning('order.create_failed', array_merge(
+                LogContext::forUser($user, LogContext::currentRequest()),
+                [
+                    'source' => 'account',
+                    'client_id' => $client->id,
+                    'file_count' => is_array($request->file('files')) ? count($request->file('files')) : null,
+                    'exception' => class_basename($e),
+                    'message' => $e->getMessage(),
+                ]
+            ));
             return back()->with('error', $e->getMessage());
         }
 

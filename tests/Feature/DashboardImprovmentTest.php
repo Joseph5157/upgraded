@@ -18,7 +18,8 @@ class DashboardImprovmentTest extends TestCase
             'name' => 'Agent Smith',
             'email' => 'smith@example.com',
             'password' => bcrypt('password'),
-            'role' => 'vendor'
+            'role' => 'vendor',
+            'email_verified_at' => now(),
         ]);
 
         $client = Client::create([

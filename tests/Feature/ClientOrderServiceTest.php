@@ -17,7 +17,7 @@ class ClientOrderServiceTest extends TestCase
     #[Test]
     public function test_uploading_three_files_consumes_three_credits(): void
     {
-        Storage::fake('r2');
+        Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
 
         $client = Client::create([
             'name' => 'Test Client',
@@ -43,7 +43,7 @@ class ClientOrderServiceTest extends TestCase
     #[Test]
     public function test_upload_fails_when_selected_files_exceed_remaining_credits(): void
     {
-        Storage::fake('r2');
+        Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
 
         $client = Client::create([
             'name' => 'Test Client',
@@ -65,7 +65,7 @@ class ClientOrderServiceTest extends TestCase
     #[Test]
     public function test_deleting_undelivered_order_restores_file_credits(): void
     {
-        Storage::fake('r2');
+        Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
 
         $client = Client::create([
             'name' => 'Test Client',
@@ -94,7 +94,7 @@ class ClientOrderServiceTest extends TestCase
     #[Test]
     public function test_deleting_delivered_order_does_not_restore_credits(): void
     {
-        Storage::fake('r2');
+        Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
 
         $client = Client::create([
             'name' => 'Test Client',
@@ -113,7 +113,12 @@ class ClientOrderServiceTest extends TestCase
         ]);
 
         $service = app(\App\Services\DeleteClientOrderService::class);
-        $service->execute($order, $client);
+        try {
+            $service->execute($order, $client);
+            $this->fail('Expected delivered orders to be non-deletable.');
+        } catch (\Exception $e) {
+            $this->assertSame('Only unclaimed pending orders can be deleted.', $e->getMessage());
+        }
 
         $client->refresh();
 

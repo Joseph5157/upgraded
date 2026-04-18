@@ -16,7 +16,7 @@ return new class extends Migration
         // Backfill existing vendors with their current delivered count.
         // Using DB::table() rather than Eloquent models so this migration remains
         // stable even if the models are renamed, removed, or their casts change.
-        DB::table('users')->where('role', 'vendor')->each(function ($vendor) {
+        DB::table('users')->where('role', 'vendor')->orderBy('id')->each(function ($vendor) {
             $count = DB::table('orders')
                 ->where('claimed_by', $vendor->id)
                 ->where('status', 'delivered')

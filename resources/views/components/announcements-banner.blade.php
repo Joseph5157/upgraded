@@ -1,5 +1,10 @@
 @php
-    $announcements = \App\Models\Announcement::activeForUser(auth()->user())->latest()->get();
+    $announcements = auth()->check()
+        ? \App\Models\Announcement::activeForUser(auth()->user())
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get()
+        : collect();
 @endphp
 
 @foreach($announcements as $announcement)

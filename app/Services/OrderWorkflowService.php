@@ -7,12 +7,19 @@ use App\Models\Order;
 use App\Models\OrderLog;
 use App\Models\OrderReport;
 use App\Models\User;
+use App\Support\LogContext;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderWorkflowService
 {
+    public function __construct(
+        protected AuditLogger $auditLogger,
+    ) {
+    }
+
     /**
      * Claim a pending, unclaimed order.
      *
@@ -65,6 +72,14 @@ class OrderWorkflowService
                 $oldStatus,
                 OrderStatus::Claimed->value
             );
+
+            $context = LogContext::forOrder($locked, LogContext::forUser($user, LogContext::currentRequest()));
+
+            Log::info('order.claimed', $context);
+            $this->auditLogger->record('order.claimed', $locked, [
+                'old_status' => $oldStatus,
+                'new_status' => OrderStatus::Claimed->value,
+            ], $user->id);
         });
 
         // Claiming changes "available orders" and "active vendors" on the admin
@@ -104,6 +119,14 @@ class OrderWorkflowService
                 $oldStatus,
                 OrderStatus::Pending->value
             );
+
+            $context = LogContext::forOrder($order, LogContext::forUser($user, LogContext::currentRequest()));
+
+            Log::info('order.unclaimed', $context);
+            $this->auditLogger->record('order.unclaimed', $order, [
+                'old_status' => $oldStatus,
+                'new_status' => OrderStatus::Pending->value,
+            ], $user->id);
         });
     }
 
@@ -130,6 +153,14 @@ class OrderWorkflowService
             $oldStatus = $order->status->value;
             $order->update(['status' => OrderStatus::Processing]);
             $this->logActivity($order, $user, 'start_processing', 'Order processing started', $oldStatus, OrderStatus::Processing->value);
+
+            $context = LogContext::forOrder($order, LogContext::forUser($user, LogContext::currentRequest()));
+
+            Log::info('order.processing_started', $context);
+            $this->auditLogger->record('order.processing_started', $order, [
+                'old_status' => $oldStatus,
+                'new_status' => OrderStatus::Processing->value,
+            ], $user->id);
         });
     }
 
