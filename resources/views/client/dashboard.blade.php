@@ -416,14 +416,15 @@
 
                             {{-- STEP 1: Drop zone --}}
                             <label for="files" id="drop-zone" class="group block rounded-[1.25rem] sm:rounded-[1.5rem] px-4 sm:px-8 py-6 sm:py-7 text-center cursor-pointer transition-all border border-dashed border-indigo-500/[0.16] bg-indigo-500/[0.03] hover:border-indigo-400/40 hover:bg-indigo-500/[0.05]">
-                                <input type="file" name="files[]" id="files" multiple required class="hidden" onchange="handleFileSelect(this)">
+                                <input type="file" name="files[]" id="files" required class="hidden" onchange="handleFileSelect(this)">
                                 <div id="drop-icon" class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
                                     <i data-lucide="file-plus" class="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400"></i>
                                 </div>
-                                <h3 class="text-[13px] sm:text-[15px] font-bold text-white/90 mb-1.5">Drop files here or click</h3>
-                                <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em] sm:tracking-widest">PDF, DOCX, DOC, ZIP up to 100MB</p>
+                                <h3 class="text-[13px] sm:text-[15px] font-bold text-white/90 mb-1.5">Drop a file here or click</h3>
+                                <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em] sm:tracking-widest">PDF, DOCX, DOC, ZIP up to 100MB · One file per order</p>
                                 <p id="selected-file-count" class="hidden text-[10px] text-emerald-400 font-bold mt-2 uppercase tracking-[0.18em]"></p>
-                                <p class="text-[9px] text-indigo-400/50 mt-1 sm:hidden">Tap to browse files</p>
+                                <p id="multi-file-error" class="hidden text-[10px] text-red-400 font-bold mt-2 uppercase tracking-[0.18em]">Only 1 file allowed per order</p>
+                                <p class="text-[9px] text-indigo-400/50 mt-1 sm:hidden">Tap to browse</p>
                             </label>
 
                             {{-- STEP 2: File preview + notes + submit (hidden until files selected) --}}
@@ -830,31 +831,43 @@
             const files = Array.from(input.files);
             if (!files.length) return;
 
-            const preview = document.getElementById('file-preview');
+            const errorText = document.getElementById('multi-file-error');
             const countText = document.getElementById('selected-file-count');
+
+            if (files.length > 1) {
+                input.value = '';
+                errorText.classList.remove('hidden');
+                countText.classList.add('hidden');
+                document.getElementById('upload-stage').classList.add('hidden');
+                document.getElementById('drop-zone').classList.remove('opacity-60', 'pointer-events-none');
+                return;
+            }
+
+            errorText.classList.add('hidden');
+
+            const preview = document.getElementById('file-preview');
             preview.innerHTML = '';
 
-            files.forEach(file => {
-                const ext  = file.name.split('.').pop().toUpperCase();
-                const size = file.size > 1048576
-                    ? (file.size / 1048576).toFixed(1) + ' MB'
-                    : (file.size / 1024).toFixed(0) + ' KB';
-                const colors = {
-                    PDF:  'text-red-400 bg-red-500/[0.08] border-red-500/[0.12]',
-                    DOCX: 'text-blue-400 bg-blue-500/[0.08] border-blue-500/[0.12]',
-                    DOC:  'text-blue-400 bg-blue-500/[0.08] border-blue-500/[0.12]',
-                    ZIP:  'text-amber-400 bg-amber-500/[0.08] border-amber-500/[0.12]'
-                };
-                const c = colors[ext] || 'text-slate-400 bg-slate-500/[0.08] border-slate-500/[0.12]';
-                preview.innerHTML += `
-                    <div class="flex items-center gap-3 px-4 py-3">
-                        <span class="text-[8px] font-black px-1.5 py-0.5 rounded border ${c}">${ext}</span>
-                        <span class="text-[12px] font-semibold text-slate-200 truncate flex-1">${file.name}</span>
-                        <span class="text-[9px] text-slate-600 font-mono flex-shrink-0">${size}</span>
-                    </div>`;
-            });
+            const file = files[0];
+            const ext  = file.name.split('.').pop().toUpperCase();
+            const size = file.size > 1048576
+                ? (file.size / 1048576).toFixed(1) + ' MB'
+                : (file.size / 1024).toFixed(0) + ' KB';
+            const colors = {
+                PDF:  'text-red-400 bg-red-500/[0.08] border-red-500/[0.12]',
+                DOCX: 'text-blue-400 bg-blue-500/[0.08] border-blue-500/[0.12]',
+                DOC:  'text-blue-400 bg-blue-500/[0.08] border-blue-500/[0.12]',
+                ZIP:  'text-amber-400 bg-amber-500/[0.08] border-amber-500/[0.12]'
+            };
+            const c = colors[ext] || 'text-slate-400 bg-slate-500/[0.08] border-slate-500/[0.12]';
+            preview.innerHTML = `
+                <div class="flex items-center gap-3 px-4 py-3">
+                    <span class="text-[8px] font-black px-1.5 py-0.5 rounded border ${c}">${ext}</span>
+                    <span class="text-[12px] font-semibold text-slate-200 truncate flex-1">${file.name}</span>
+                    <span class="text-[9px] text-slate-600 font-mono flex-shrink-0">${size}</span>
+                </div>`;
 
-            countText.textContent = files.length + ' file' + (files.length > 1 ? 's' : '') + ' selected';
+            countText.textContent = '1 file selected';
             countText.classList.remove('hidden');
             document.getElementById('upload-stage').classList.remove('hidden');
             document.getElementById('drop-zone').classList.add('opacity-60', 'pointer-events-none');

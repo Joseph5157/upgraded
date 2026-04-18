@@ -118,7 +118,7 @@ class ClientDashboardController extends Controller
 
         $request->validate([
             'files.*' => 'required|file|mimes:pdf,doc,docx,zip|max:102400',
-            'files'   => 'required|array|min:1|max:20',
+            'files'   => 'required|array|min:1|max:1',
             'notes'   => 'nullable|string|max:1000',
         ]);
 
