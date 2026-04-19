@@ -137,6 +137,16 @@ class DashboardController extends Controller
 
     public function uploadReport(Request $request, Order $order)
     {
+        // When the auto-release command has reclaimed an order (claimed_by is null),
+        // the policy would return a generic 403. Surface a specific, helpful message instead.
+        if (is_null($order->claimed_by) && auth()->user()->role !== 'admin') {
+            $message = 'This order was released back to the available pool because the deadline passed. You can re-claim it from the Available Queue.';
+            if ($request->ajax()) {
+                return response()->json(['error' => $message], 403);
+            }
+            return redirect()->route('dashboard')->with('error', $message);
+        }
+
         $this->authorize('uploadReport', $order);
 
         $request->validate([

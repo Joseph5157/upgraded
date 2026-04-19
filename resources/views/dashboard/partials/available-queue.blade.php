@@ -45,6 +45,10 @@
                                 <span
                                     class="text-[8px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-1.5 rounded animate-pulse">Urgent</span>
                             @endif
+                            @if($order->due_at)
+                                <span class="countdown-timer text-[10px] font-mono text-amber-400"
+                                      data-due="{{ $order->due_at->toIso8601String() }}">--:--</span>
+                            @endif
                         </div>
                     </div>
                 </div>

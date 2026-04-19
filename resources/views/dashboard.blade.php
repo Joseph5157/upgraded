@@ -142,6 +142,10 @@
                                 @else
                                     <div class="min-h-[2rem]"></div>
                                 @endif
+                                @if($order->due_at)
+                                    <span class="countdown-timer text-[10px] font-mono text-indigo-400 mt-1 block"
+                                          data-due="{{ $order->due_at->toIso8601String() }}">--:--</span>
+                                @endif
                             </div>
 
                             {{-- Per-file downloads (multi-file orders) --}}
@@ -263,6 +267,10 @@
                                                 <p class="text-[9px] text-amber-400/80 mt-1.5 leading-relaxed line-clamp-2 max-w-[220px]">
                                                     <i data-lucide="message-square" class="w-2.5 h-2.5 inline-block mr-0.5 -mt-0.5"></i>{{ $order->notes }}
                                                 </p>
+                                            @endif
+                                            @if($order->due_at)
+                                                <span class="countdown-timer text-[10px] font-mono text-indigo-400 mt-1 block"
+                                                      data-due="{{ $order->due_at->toIso8601String() }}">--:--</span>
                                             @endif
                                         </div>
                                     </div>
@@ -872,6 +880,100 @@
             const banner = document.getElementById('flash-success');
             if (banner) { banner.textContent = uploadSuccess; banner.classList.remove('hidden'); }
         }
+    </script>
+
+    <script>
+        (function () {
+            var overdueReloadScheduled = false;
+            var reloadSecondsLeft = 60;
+            var reloadInterval = null;
+
+            function showOverdueReloadNotice() {
+                if (document.getElementById('overdue-reload-notice')) return;
+                var workspace = document.getElementById('workspace');
+                if (!workspace) return;
+
+                var notice = document.createElement('div');
+                notice.id = 'overdue-reload-notice';
+                notice.className = 'flex items-center gap-2.5 px-4 sm:px-6 py-2.5 bg-red-500/[0.07] border-b border-red-500/[0.12] text-[10px] text-red-400 font-semibold';
+                notice.innerHTML =
+                    '<svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
+                    'An order has passed its deadline and will be released. Refreshing in ' +
+                    '<span id="overdue-reload-counter" class="tabular-nums font-bold">60</span>s\u2026';
+
+                // Insert immediately after the header (first child of #workspace)
+                workspace.insertBefore(notice, workspace.firstChild.nextSibling);
+
+                reloadInterval = setInterval(function () {
+                    reloadSecondsLeft -= 1;
+                    var counter = document.getElementById('overdue-reload-counter');
+                    if (counter) counter.textContent = reloadSecondsLeft;
+                    if (reloadSecondsLeft <= 0) {
+                        clearInterval(reloadInterval);
+                        location.reload();
+                    }
+                }, 1000);
+            }
+
+            function checkWorkspaceOverdue() {
+                if (overdueReloadScheduled) return;
+                var workspace = document.getElementById('workspace');
+                if (!workspace) return;
+                var now = Date.now();
+                var timers = workspace.querySelectorAll('.countdown-timer[data-due]');
+                var hasOverdue = false;
+                timers.forEach(function (el) {
+                    if (new Date(el.dataset.due).getTime() <= now) hasOverdue = true;
+                });
+                if (!hasOverdue) return;
+                overdueReloadScheduled = true;
+                showOverdueReloadNotice();
+            }
+
+            function updateCountdownTimers() {
+                var now = Date.now();
+                document.querySelectorAll('.countdown-timer').forEach(function (el) {
+                    // Save the original color class on first encounter so we can restore it later
+                    if (!el.dataset.colorSaved) {
+                        el.dataset.colorSaved = el.classList.contains('text-amber-400') ? 'amber' : 'indigo';
+                    }
+                    var baseColor = el.dataset.colorSaved === 'amber' ? 'text-amber-400' : 'text-indigo-400';
+
+                    var due = el.dataset.due;
+                    if (!due) return;
+                    var diff = Math.floor((new Date(due).getTime() - now) / 1000);
+
+                    if (diff <= 0) {
+                        el.textContent = 'OVERDUE';
+                        el.classList.remove(baseColor);
+                        el.classList.add('text-red-400', 'animate-pulse');
+                        return;
+                    }
+
+                    var h = Math.floor(diff / 3600);
+                    var m = Math.floor((diff % 3600) / 60);
+                    var s = diff % 60;
+                    var pad = function (n) { return String(n).padStart(2, '0'); };
+                    el.textContent = h > 0
+                        ? pad(h) + ':' + pad(m) + ':' + pad(s)
+                        : pad(m) + ':' + pad(s);
+
+                    if (diff < 120) {
+                        el.classList.remove(baseColor);
+                        el.classList.add('text-red-400', 'animate-pulse');
+                    } else {
+                        el.classList.remove('text-red-400', 'animate-pulse');
+                        el.classList.add(baseColor);
+                    }
+                });
+
+                checkWorkspaceOverdue();
+            }
+
+            updateCountdownTimers();
+            setInterval(updateCountdownTimers, 1000);
+        })();
     </script>
 
 </x-vendor-layout>
