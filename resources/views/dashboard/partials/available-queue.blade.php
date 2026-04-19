@@ -7,25 +7,16 @@
             </svg>
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Available Queue</h2>
             @if($availableFiles->count() > 0)
-                <span
-                    class="bg-amber-500/10 text-amber-400 border border-amber-500/15 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{{ $availableFiles->count() }}
-                    waiting</span>
+                <span class="bg-amber-500/10 text-amber-400 border border-amber-500/15 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{{ $availableFiles->count() }} waiting</span>
             @endif
         </div>
     </div>
 
     <div class="divide-y divide-gray-100 dark:divide-white/[0.04]">
         @forelse($availableFiles as $order)
-            @php
-                $minutesLeft = $order->due_at ? $order->due_at->diffInMinutes(now(), false) : -999;
-                $isUrgent    = $minutesLeft > -5 && $minutesLeft < 0; // within 5 min of deadline
-                $isPastDue   = $order->due_at && $order->due_at->isPast();
-            @endphp
-            <div
-                class="flex items-center justify-between gap-4 px-6 py-4 hover:bg-[#F0F2F5] transition-colors group dark:hover:bg-white/[0.02]">
+            <div class="flex items-center justify-between gap-4 px-6 py-4 hover:bg-[#F0F2F5] transition-colors group dark:hover:bg-white/[0.02]">
                 <div class="flex items-center gap-3 min-w-0">
-                    <div
-                        class="w-8 h-8 @if($isUrgent) bg-red-500/10 text-red-400 @else bg-gray-100 dark:bg-white/[0.05] text-gray-400 dark:text-slate-500 @endif rounded-xl flex items-center justify-center flex-shrink-0">
+                    <div class="w-8 h-8 bg-gray-100 dark:bg-white/[0.05] text-gray-400 dark:text-slate-500 rounded-xl flex items-center justify-center flex-shrink-0">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -37,35 +28,18 @@
                         </p>
                         <div class="flex flex-wrap items-center gap-1.5">
                             @if($order->client)
-                                <span
-                                    class="text-[9px] text-gray-500 dark:text-slate-500 truncate">{{ $order->client->name }}</span>
+                                <span class="text-[9px] text-gray-500 dark:text-slate-500 truncate">{{ $order->client->name }}</span>
                             @endif
-                            <span
-                                class="text-[8px] font-bold px-1 rounded @if($order->source === 'account') bg-blue-500/10 text-blue-400 @else bg-purple-500/10 text-purple-400 @endif">{{ strtoupper($order->source) }}</span>
-                            <span
-                                class="text-[8px] font-bold text-gray-500 dark:text-slate-500 bg-gray-100 dark:bg-white/[0.05] px-1 rounded">{{ $order->files_count }}
-                                {{ Str::plural('file', $order->files_count) }}</span>
-                            @if($isUrgent)
-                                <span
-                                    class="text-[8px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-1.5 rounded animate-pulse">Urgent</span>
-                            @elseif($isPastDue)
-                                <span
-                                    class="text-[8px] font-bold text-orange-400 bg-orange-500/5 border border-orange-500/10 px-1.5 rounded">Waiting</span>
-                            @endif
-                            @if($order->due_at && !$isPastDue)
-                                <span class="countdown-timer text-[10px] font-mono text-amber-400"
-                                      data-due="{{ $order->due_at->toIso8601String() }}">--:--</span>
-                            @endif
+                            <span class="text-[8px] font-bold px-1 rounded @if($order->source === 'account') bg-blue-500/10 text-blue-400 @else bg-purple-500/10 text-purple-400 @endif">{{ strtoupper($order->source) }}</span>
+                            <span class="text-[8px] font-bold text-gray-500 dark:text-slate-500 bg-gray-100 dark:bg-white/[0.05] px-1 rounded">{{ $order->files_count }} {{ Str::plural('file', $order->files_count) }}</span>
                         </div>
                     </div>
                 </div>
                 <form action="{{ route('orders.claim', $order) }}" method="POST" class="flex-shrink-0">
                     @csrf
-                    <button
-                        class="inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-bold text-black bg-amber-400 hover:bg-amber-300 rounded-xl transition-all shadow-md shadow-amber-400/10 group-hover:scale-105">
+                    <button class="inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-bold text-black bg-amber-400 hover:bg-amber-300 rounded-xl transition-all shadow-md shadow-amber-400/10 group-hover:scale-105">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 4v16m8-8H4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
                         Claim
                     </button>
