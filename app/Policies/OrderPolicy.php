@@ -28,7 +28,8 @@ class OrderPolicy
         $isAdmin = $user->role === 'admin';
 
         return ($isOwner || $isAdmin)
-            && $order->status === OrderStatus::Claimed;
+            && $order->status !== OrderStatus::Delivered
+            && $order->status !== OrderStatus::Cancelled;
     }
 
     /**
@@ -40,7 +41,8 @@ class OrderPolicy
         $isAdmin = $user->role === 'admin';
 
         return ($isOwner || $isAdmin)
-            && $order->status === OrderStatus::Claimed;
+            && $order->status !== OrderStatus::Cancelled
+            && $order->status !== OrderStatus::Delivered;
     }
 
     /**
@@ -65,7 +67,8 @@ class OrderPolicy
         $isAdmin = $user->role === 'admin';
 
         return ($isOwner || $isAdmin)
-            && $order->status === OrderStatus::Processing;
+            && $order->status !== OrderStatus::Cancelled
+            && $order->status !== OrderStatus::Delivered;
     }
 
     /**
@@ -74,9 +77,7 @@ class OrderPolicy
     public function delete(User $user, Order $order): bool
     {
         return $user->role === 'client'
-            && (int) $user->client_id === (int) $order->client_id
-            && $order->status === OrderStatus::Pending
-            && $order->claimed_by === null;
+            && (int) $user->client_id === (int) $order->client_id;
     }
 
     public function cancel(User $user, Order $order): bool
