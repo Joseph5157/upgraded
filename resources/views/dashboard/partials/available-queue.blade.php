@@ -16,7 +16,11 @@
 
     <div class="divide-y divide-gray-100 dark:divide-white/[0.04]">
         @forelse($availableFiles as $order)
-            @php $isUrgent = $order->due_at && $order->due_at->diffInMinutes(now(), false) > -5; @endphp
+            @php
+                $minutesLeft = $order->due_at ? $order->due_at->diffInMinutes(now(), false) : -999;
+                $isUrgent    = $minutesLeft > -5 && $minutesLeft < 0; // within 5 min of deadline
+                $isPastDue   = $order->due_at && $order->due_at->isPast();
+            @endphp
             <div
                 class="flex items-center justify-between gap-4 px-6 py-4 hover:bg-[#F0F2F5] transition-colors group dark:hover:bg-white/[0.02]">
                 <div class="flex items-center gap-3 min-w-0">
@@ -44,8 +48,11 @@
                             @if($isUrgent)
                                 <span
                                     class="text-[8px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-1.5 rounded animate-pulse">Urgent</span>
+                            @elseif($isPastDue)
+                                <span
+                                    class="text-[8px] font-bold text-orange-400 bg-orange-500/5 border border-orange-500/10 px-1.5 rounded">Waiting</span>
                             @endif
-                            @if($order->due_at)
+                            @if($order->due_at && !$isPastDue)
                                 <span class="countdown-timer text-[10px] font-mono text-amber-400"
                                       data-due="{{ $order->due_at->toIso8601String() }}">--:--</span>
                             @endif
