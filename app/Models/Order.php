@@ -46,21 +46,11 @@ class Order extends Model
         if ($this->status === OrderStatus::Delivered)  return 'delivered';
         if ($this->status === OrderStatus::Claimed)    return 'claimed';
         if ($this->status === OrderStatus::Processing) return 'processing';
-
-        // Only mark as overdue if a vendor has claimed it and missed the deadline
-        if ($this->due_at && $this->due_at->isPast() && $this->claimed_by !== null) {
-            return 'overdue';
-        }
-
         return 'pending';
     }
 
     public function getIsOverdueAttribute(): bool
     {
-        // Only overdue if claimed by a vendor AND deadline has passed AND not delivered
-        return $this->due_at
-            && $this->claimed_by !== null
-            && $this->status !== OrderStatus::Delivered
-            && now()->gt($this->due_at);
+        return false;
     }
 }
