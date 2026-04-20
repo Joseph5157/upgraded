@@ -291,9 +291,9 @@ class OrderWorkflowService
         Order $order,
         User $user,
         string $action,
-        string $notes = null,
-        string $oldStatus = null,
-        string $newStatus = null
+        ?string $notes = null,
+        ?string $oldStatus = null,
+        ?string $newStatus = null
     ): void {
         OrderLog::create([
             'order_id'   => $order->id,
