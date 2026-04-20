@@ -93,14 +93,14 @@
         onclick="event.stopPropagation()">
 
         {{-- Header --}}
-        <div class="flex items-center justify-between px-7 pt-6 pb-5 border-b border-white/[0.06]">
+        <div class="flex items-center justify-between px-5 pt-4 pb-4 border-b border-white/[0.06]">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-500/[0.12] rounded-xl flex items-center justify-center border border-indigo-500/[0.2]">
-                    <i data-lucide="upload-cloud" class="w-5 h-5 text-indigo-400"></i>
+                <div class="w-8 h-8 bg-indigo-500/[0.12] rounded-xl flex items-center justify-center border border-indigo-500/[0.2]">
+                    <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-400"></i>
                 </div>
                 <div>
-                    <h3 class="text-[15px] font-bold text-white tracking-tight">Submit Results</h3>
-                    <p class="text-[9px] text-slate-600 font-mono uppercase tracking-widest mt-0.5 truncate max-w-[240px]">
+                    <h3 class="text-[14px] font-bold text-white tracking-tight">Submit Results</h3>
+                    <p class="text-[9px] text-slate-600 font-mono uppercase tracking-widest mt-0.5 truncate max-w-[220px]">
                         {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Order #' . $order->id }}
                     </p>
                 </div>
@@ -113,90 +113,56 @@
 
         {{-- Form --}}
         <form action="{{ route('orders.report', $order) }}" method="POST" enctype="multipart/form-data"
-            class="px-7 py-6 space-y-4">
+            class="px-5 py-4 space-y-3">
             @csrf
 
-            {{-- Info strip --}}
-            <div class="flex items-start gap-3 px-4 py-3 bg-indigo-500/[0.08] border border-indigo-500/[0.14] rounded-2xl">
-                <div class="w-8 h-8 rounded-xl bg-indigo-500/[0.12] border border-indigo-500/[0.2] flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="info" class="w-4 h-4 text-indigo-300"></i>
-                </div>
-                <div class="space-y-1">
-                    <p class="text-[11px] text-indigo-100 font-semibold leading-relaxed">
-                        Upload the required result PDFs to complete this order.
-                    </p>
-                    <p class="text-[10px] text-indigo-200/70 leading-relaxed">
-                        AI report plus plagiarism report are expected. If the AI report cannot be generated, use the fallback option below and add a short reason.
-                    </p>
-                </div>
-            </div>
-
             {{-- AI Bypass Checkbox --}}
-            <div class="flex flex-col gap-3 rounded-2xl border border-amber-500/[0.16] bg-amber-500/[0.06] px-4 py-3">
-                <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 rounded-xl bg-amber-500/[0.12] border border-amber-500/[0.18] flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="triangle-alert" class="w-4 h-4 text-amber-300"></i>
-                    </div>
-                    <div class="space-y-1 min-w-0">
-                        <p class="text-[11px] font-semibold text-amber-100">Alternative if AI report is unavailable</p>
-                        <p class="text-[10px] text-amber-200/70 leading-relaxed">Use this only when the AI tool cannot generate a valid PDF. Add a short reason so the team can track the exception.</p>
-                    </div>
+            <div class="flex flex-col gap-2 rounded-xl border border-amber-500/[0.16] bg-amber-500/[0.06] p-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="triangle-alert" class="w-3.5 h-3.5 text-amber-300 flex-shrink-0"></i>
+                    <p class="text-[10px] font-semibold text-amber-100">AI report unavailable?</p>
                 </div>
-                <label class="flex items-center gap-2 text-[11px] font-semibold text-slate-200 cursor-pointer w-fit">
+                <label class="flex items-center gap-2 text-[10px] font-semibold text-slate-200 cursor-pointer w-fit">
                     <input type="checkbox" id="ai-skipped-{{ $order->id }}" name="ai_skipped" value="1" class="rounded bg-white/[0.04] border-white/[0.1] text-indigo-500 focus:ring-indigo-500/30" onchange="toggleAiBypass({{ $order->id }}, this.checked)">
                     AI report could not be generated
                 </label>
                 <div id="ai-skip-reason-container-{{ $order->id }}" class="hidden">
-                    <input type="text" name="ai_skip_reason" id="ai-skip-reason-input-{{ $order->id }}" placeholder="Brief reason, for example: file too short for AI check" class="w-full bg-black/20 border border-amber-500/[0.18] rounded-xl px-3.5 py-2.5 text-[11px] text-white placeholder-amber-100/30 focus:outline-none focus:border-amber-400/50" oninput="checkUploadReady({{ $order->id }})">
+                    <input type="text" name="ai_skip_reason" id="ai-skip-reason-input-{{ $order->id }}" placeholder="Brief reason (e.g. file too short for AI check)" class="w-full bg-black/20 border border-amber-500/[0.18] rounded-lg px-3 py-2 text-[10px] text-white placeholder-amber-100/30 focus:outline-none focus:border-amber-400/50" oninput="checkUploadReady({{ $order->id }})">
                 </div>
             </div>
 
             {{-- TWO UPLOAD ZONES --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="space-y-2">
 
                 {{-- AI Report --}}
-                <div id="ai-upload-container-{{ $order->id }}" class="space-y-2">
-                    <label class="flex items-center justify-between gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                            AI Detection Report
-                        </span>
-                        <span class="text-[8px] text-red-300/70">Required</span>
-                    </label>
+                <div id="ai-upload-container-{{ $order->id }}">
                     <label id="ai-label-{{ $order->id }}"
-                        class="group flex min-h-[168px] flex-col items-center justify-center gap-2.5 w-full bg-white/[0.04] hover:bg-red-500/[0.06] border-2 border-dashed border-white/[0.12] hover:border-red-400/40 rounded-2xl py-6 px-4 text-center cursor-pointer transition-all">
+                        class="flex items-center gap-3 w-full px-4 py-3 bg-white/[0.03] border border-dashed border-white/[0.08] rounded-xl cursor-pointer hover:border-red-400/40 hover:bg-red-500/[0.04] transition-all">
+                        <svg class="w-5 h-5 text-red-300/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <div id="ai-preview-{{ $order->id }}" class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold text-white">AI Report PDF</p>
+                            <p class="text-[10px] text-slate-500">Tap to select PDF</p>
+                        </div>
                         <input type="file" name="ai_report" accept=".pdf" required class="hidden"
                             onchange="previewFile(this, 'ai-preview-{{ $order->id }}', 'ai-label-{{ $order->id }}', 'red', {{ $order->id }})">
-                        <div id="ai-preview-{{ $order->id }}" class="flex flex-col items-center gap-1.5">
-                            <div class="w-12 h-12 bg-red-500/[0.08] rounded-2xl flex items-center justify-center border border-red-500/[0.15] group-hover:scale-105 transition-all">
-                                <i data-lucide="file-scan" class="w-5 h-5 text-red-300"></i>
-                            </div>
-                            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">AI Report PDF</span>
-                            <span class="text-[10px] text-slate-500 leading-relaxed">Click to upload PDF</span>
-                        </div>
                     </label>
                 </div>
 
                 {{-- Plagiarism Report --}}
-                <div class="space-y-2">
-                    <label class="flex items-center justify-between gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                            Plagiarism Report
-                        </span>
-                        <span class="text-[8px] text-amber-300/70">Required</span>
-                    </label>
+                <div>
                     <label id="plag-label-{{ $order->id }}"
-                        class="group flex min-h-[168px] flex-col items-center justify-center gap-2.5 w-full bg-white/[0.04] hover:bg-amber-500/[0.06] border-2 border-dashed border-white/[0.12] hover:border-amber-400/40 rounded-2xl py-6 px-4 text-center cursor-pointer transition-all">
+                        class="flex items-center gap-3 w-full px-4 py-3 bg-white/[0.03] border border-dashed border-white/[0.08] rounded-xl cursor-pointer hover:border-amber-400/40 hover:bg-amber-500/[0.04] transition-all">
+                        <svg class="w-5 h-5 text-amber-300/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <div id="plag-preview-{{ $order->id }}" class="min-w-0 flex-1">
+                            <p class="text-xs font-semibold text-white">Plagiarism Report PDF</p>
+                            <p class="text-[10px] text-slate-500">Tap to select PDF</p>
+                        </div>
                         <input type="file" name="plag_report" accept=".pdf" required class="hidden"
                             onchange="previewFile(this, 'plag-preview-{{ $order->id }}', 'plag-label-{{ $order->id }}', 'amber', {{ $order->id }})">
-                        <div id="plag-preview-{{ $order->id }}" class="flex flex-col items-center gap-1.5">
-                            <div class="w-12 h-12 bg-amber-500/[0.08] rounded-2xl flex items-center justify-center border border-amber-500/[0.15] group-hover:scale-105 transition-all">
-                                <i data-lucide="file-search" class="w-5 h-5 text-amber-300"></i>
-                            </div>
-                            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">Plagiarism Report PDF</span>
-                            <span class="text-[10px] text-slate-500 leading-relaxed">Click to upload PDF</span>
-                        </div>
                     </label>
                 </div>
             </div>

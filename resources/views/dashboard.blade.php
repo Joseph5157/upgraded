@@ -328,15 +328,10 @@
             };
             const c = colorMap[color];
 
-            // Replace zone content with checkmark + filename
+            // Replace zone content with filename + ready indicator
             preview.innerHTML = `
-                <div class="w-9 h-9 ${c.iconBg} rounded-xl flex items-center justify-center border ${c.iconBorder}">
-                    <svg class="w-4 h-4 ${c.text}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                    </svg>
-                </div>
-                <span class="text-[10px] font-bold ${c.text} tracking-wide text-center leading-tight max-w-full px-1 break-all">${name}</span>
-                <span class="text-[10px] text-slate-400">Ready to submit</span>
+                <p class="text-xs font-bold ${c.text} truncate">${name}</p>
+                <p class="text-[10px] text-slate-400">Ready to submit</p>
             `;
 
             // Swap zone to "selected" state — solid border + tinted bg
