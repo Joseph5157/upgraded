@@ -91,17 +91,13 @@
 
                 {{-- Mobile cards --}}
                 <div class="sm:hidden">
-                    @forelse($myWorkspace as $order)
-                        @if ($loop->first)
-                            <div class="px-4 pt-4 pb-2 border-t border-gray-100 dark:border-white/[0.04]">
-                                <div class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                        @endif
-                        @include('partials.workspace-card', ['order' => $order])
-                        @if ($loop->last)
-                                </div>
-                            </div>
-                        @endif
-                    @empty
+                    @if($myWorkspace->isNotEmpty())
+                        <div class="flex flex-col gap-3 px-4 pt-4 pb-2">
+                            @foreach($myWorkspace as $order)
+                                @include('partials.workspace-card', ['order' => $order])
+                            @endforeach
+                        </div>
+                    @else
                         <div class="px-4 pt-4 pb-3 border-t border-gray-100 dark:border-white/[0.04]">
                             <div class="rounded-2xl border border-dashed border-white/[0.08] bg-black/10 dark:bg-white/[0.02] px-4 py-5">
                                 <div class="flex items-center gap-3">
@@ -119,7 +115,7 @@
                                 </div>
                             </div>
                         </div>
-                    @endforelse
+                    @endif
                 </div>
 
                 {{-- Desktop table --}}
@@ -588,7 +584,7 @@ function ajaxAction(url, btn, type, orderId, status = null) {
                     showToast(data.message, 'success');
 
                 } else if (isMobile && data.cardHtml) {
-                    const cardScroll = document.querySelector('#workspace .flex.gap-3.overflow-x-auto');
+                    const cardScroll = document.querySelector('#workspace .flex.flex-col.gap-3');
                     if (cardScroll) {
                         const emptyState = document.querySelector('#workspace .rounded-2xl.border.border-dashed');
                         if (emptyState) emptyState.closest('div').remove();
