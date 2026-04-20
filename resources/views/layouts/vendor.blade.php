@@ -178,14 +178,6 @@
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                     <span class="text-[9px] font-bold uppercase tracking-widest">Home</span>
                 </a>
-                <a href="{{ route('dashboard') }}#workspace" class="flex-1 flex flex-col items-center gap-1 py-3 text-slate-600">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                    <span class="text-[9px] font-bold uppercase tracking-widest">Work</span>
-                </a>
-                <a href="{{ route('dashboard') }}#files" class="flex-1 flex flex-col items-center gap-1 py-3 text-slate-600">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                    <span class="text-[9px] font-bold uppercase tracking-widest">Queue</span>
-                </a>
                 <a href="{{ route('vendor.earnings') }}" class="flex-1 flex flex-col items-center gap-1 py-3 {{ request()->routeIs('vendor.earnings') ? 'text-indigo-400' : 'text-slate-600' }}">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1"/></svg>
                     <span class="text-[9px] font-bold uppercase tracking-widest">Earnings</span>
