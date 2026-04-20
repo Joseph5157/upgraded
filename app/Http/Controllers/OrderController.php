@@ -58,7 +58,7 @@ class OrderController extends Controller
             $aiDisk = $report->ai_report_disk ?: $this->storageDisk;
             if (Storage::disk($aiDisk)->exists($report->ai_report_path)) {
                 $zip->addFromString(
-                    'ai-report-' . $order->id . '.pdf',
+                    basename($report->ai_report_path),
                     Storage::disk($aiDisk)->get($report->ai_report_path)
                 );
             }
@@ -73,7 +73,7 @@ class OrderController extends Controller
             $plagDisk = $report->plag_report_disk ?: $this->storageDisk;
             if (Storage::disk($plagDisk)->exists($report->plag_report_path)) {
                 $zip->addFromString(
-                    'plagiarism-report-' . $order->id . '.pdf',
+                    basename($report->plag_report_path),
                     Storage::disk($plagDisk)->get($report->plag_report_path)
                 );
             }
@@ -176,12 +176,12 @@ class OrderController extends Controller
             if (!$order->report->plag_report_path) abort(404);
             $disk = $order->report->plag_report_disk ?: $this->storageDisk;
             if (!Storage::disk($disk)->exists($order->report->plag_report_path)) abort(404);
-            return $this->downloadFromDisk($order->report->plag_report_path, 'plagiarism-report-' . $order->id . '.pdf', $disk);
+            return $this->downloadFromDisk($order->report->plag_report_path, basename($order->report->plag_report_path), $disk);
         }
 
         if (!$order->report->ai_report_path) abort(404);
         $disk = $order->report->ai_report_disk ?: $this->storageDisk;
         if (!Storage::disk($disk)->exists($order->report->ai_report_path)) abort(404);
-        return $this->downloadFromDisk($order->report->ai_report_path, 'ai-report-' . $order->id . '.pdf', $disk);
+        return $this->downloadFromDisk($order->report->ai_report_path, basename($order->report->ai_report_path), $disk);
     }
 }

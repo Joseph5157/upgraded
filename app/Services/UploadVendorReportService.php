@@ -34,11 +34,13 @@ class UploadVendorReportService
 
         try {
             if ($aiReport) {
-                $aiPath = $aiReport->store('reports/' . $order->id . '/ai', $disk);
+                $aiName = $this->sanitizeFilename($aiReport->getClientOriginalName());
+                $aiPath = $aiReport->storeAs('reports/' . $order->id . '/ai', $aiName, $disk);
             }
 
             try {
-                $plagPath = $plagReport->store('reports/' . $order->id . '/plag', $disk);
+                $plagName = $this->sanitizeFilename($plagReport->getClientOriginalName());
+                $plagPath = $plagReport->storeAs('reports/' . $order->id . '/plag', $plagName, $disk);
             } catch (\Throwable $e) {
                 if ($aiPath) {
                     Storage::disk($disk)->delete($aiPath);
@@ -86,6 +88,23 @@ class UploadVendorReportService
 
             throw $e;
         }
+    }
+
+    private function sanitizeFilename(string $name): string
+    {
+        // Strip non-ASCII, replace whitespace and dangerous chars with underscores,
+        // then collapse repeated underscores and trim.
+        $name = preg_replace('/[^\x00-\x7F]+/', '_', $name);
+        $name = preg_replace('/[\s\/\\\\:*?"<>|]+/', '_', $name);
+        $name = preg_replace('/_+/', '_', $name);
+        $name = trim($name, '_');
+
+        // Fall back to a timestamp name if nothing usable remains.
+        if ($name === '' || $name === '.pdf') {
+            $name = 'report_' . now()->timestamp . '.pdf';
+        }
+
+        return $name;
     }
 
     private function cleanupFile(string $disk, ?string $path, string $label, int $orderId): void
