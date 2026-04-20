@@ -967,6 +967,9 @@
                     const payload = await response.json();
 
                     if (payload.signature && currentSignature && payload.signature !== currentSignature) {
+                        if (window.__clientUploadInProgress) {
+                            return;
+                        }
                         window.location.reload();
                         return;
                     }

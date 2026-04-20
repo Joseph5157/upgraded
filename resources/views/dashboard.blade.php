@@ -413,6 +413,25 @@
             if (window.lucide && lucide.createIcons) lucide.createIcons();
         }
 
+        // Move every upload modal to <body> so it is never trapped inside a
+        // display:none responsive container (sm:hidden / hidden sm:block).
+        // Duplicates (mobile card + desktop row render the same modal ID) are
+        // deduplicated by keeping only the first occurrence.
+        function hoistUploadModals() {
+            const seen = new Set();
+            document.querySelectorAll('[id^="upload-modal-"]').forEach(function (modal) {
+                if (seen.has(modal.id)) {
+                    modal.remove();
+                } else {
+                    seen.add(modal.id);
+                    if (modal.parentElement !== document.body) {
+                        document.body.appendChild(modal);
+                    }
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', hoistUploadModals);
+
         function submitUploadForm(orderId) {
             const modal       = document.getElementById('upload-modal-' + orderId);
             const form        = modal.querySelector('form');
@@ -435,12 +454,20 @@
             progressBar.classList.remove('hidden');
             progressBar.classList.add('flex');
 
+            // Seed with whatever is currently in the meta tag (kept fresh by the
+            // 30-minute auto-refresh).  The fetch below will overwrite this with
+            // the latest server-issued token when it succeeds.
+            let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
             // Refresh CSRF token first to handle long-lived sessions
             fetch(CSRF_REFRESH_URL)
                 .then(r => r.json())
                 .then(data => {
+                    csrfToken = data.token;
                     const tokenField = form.querySelector('input[name="_token"]');
-                    if (tokenField) tokenField.value = data.token;
+                    if (tokenField) tokenField.value = csrfToken;
+                    const meta = document.querySelector('meta[name="csrf-token"]');
+                    if (meta) meta.setAttribute('content', csrfToken);
                 })
                 .catch(() => { /* proceed with existing token on fetch failure */ })
                 .finally(() => {
@@ -496,11 +523,15 @@
 
                     xhr.onerror = function () {
                         resetUploadUi(orderId);
-                            setUploadError(orderId, 'Network or storage connection error. Please try again.');
+                        setUploadError(orderId, 'Network or storage connection error. Please try again.');
                     };
 
                     xhr.open('POST', form.action);
                     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    // Send the token both as a header (most reliable) and in the
+                    // FormData body (_token field updated above) so Laravel's CSRF
+                    // middleware can match it via either path.
+                    xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
                     xhr.send(new FormData(form));
                 });
         }
@@ -571,6 +602,7 @@ function ajaxAction(url, btn, type, orderId, status = null) {
                     const badge = document.querySelector('.workspace-count-badge');
                     if (badge) { const c = parseInt(badge.textContent||'0')||0; badge.textContent = c+1; badge.classList.remove('hidden'); }
                     if (window.lucide) lucide.createIcons();
+                    hoistUploadModals();
                     showToast(data.message, 'success');
 
                 } else if (isMobile && data.cardHtml) {
@@ -583,6 +615,7 @@ function ajaxAction(url, btn, type, orderId, status = null) {
                     const badge = document.querySelector('.workspace-count-badge');
                     if (badge) { const c = parseInt(badge.textContent||'0')||0; badge.textContent = c+1; badge.classList.remove('hidden'); }
                     if (window.lucide) lucide.createIcons();
+                    hoistUploadModals();
                     showToast(data.message, 'success');
 
                 } else {
