@@ -149,7 +149,8 @@
                             @csrf
                             <label for="files"
                                 class="group block border-2 border-dashed border-white/5 rounded-3xl p-12 text-center hover:border-indigo-600/50 transition-all cursor-pointer bg-white/[0.02]">
-                                <input type="file" name="files[]" id="files" multiple required class="hidden"
+                                <input type="file" name="files[]" id="files" multiple required class="sr-only"
+                                    accept=".pdf,.doc,.docx,.zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip"
                                     onchange="updateFileCount(this)">
                                 <div
                                     class="w-16 h-16 bg-indigo-600/10 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
