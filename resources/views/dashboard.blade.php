@@ -574,7 +574,9 @@ function ajaxAction(url, btn, type, orderId, status = null) {
                 const isMobile = window.innerWidth < 640;
 
                 if (!isMobile && data.rowHtml) {
-                    const tbody = document.querySelector('#workspace table tbody');
+                    const table = document.querySelector('#workspace table');
+                    const tbody = table?.querySelector('tbody') || table;
+                    console.log('tbody found:', tbody, 'rowHtml length:', data.rowHtml?.length);
                     if (tbody) {
                         const emptyRow = tbody.querySelector('td[colspan]')?.closest('tr');
                         if (emptyRow) emptyRow.remove();

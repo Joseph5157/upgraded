@@ -89,7 +89,7 @@
     class="hidden fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4"
     onclick="if(event.target===this)this.classList.add('hidden')">
 
-    <div class="bg-[#0f0f14] border border-white/[0.08] rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden"
+    <div class="bg-[#0f0f14] border border-white/[0.08] rounded-3xl w-full max-w-lg shadow-2xl overflow-y-auto max-h-[90vh]"
         onclick="event.stopPropagation()">
 
         {{-- Header --}}
