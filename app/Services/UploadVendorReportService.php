@@ -64,7 +64,7 @@ class UploadVendorReportService
 
             $freshOrder = $order->fresh();
 
-            if ($freshOrder->status === OrderStatus::Claimed) {
+            if (in_array($freshOrder->status, [OrderStatus::Pending, OrderStatus::Claimed])) {
                 $this->workflowService->startProcessing($freshOrder, $user);
                 $freshOrder->refresh();
             }

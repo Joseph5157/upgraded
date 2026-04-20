@@ -781,10 +781,6 @@ function ajaxAction(url, btn, type, orderId, status = null) {
                 setTimeout(() => refreshAvailableQueue(), 400);
             }
 
-            if (type === 'status') {
-                showToast(data.message, 'success');
-                setTimeout(() => window.location.reload(), 600);
-            }
         } else {
             btn.disabled = false;
             btn.innerHTML = original;

@@ -59,17 +59,6 @@
                     {{ $order->files->count() > 1 ? 'File '.$loop->iteration : 'Download' }}
                 </a>
             @endforeach
-            @if($order->status->value === 'claimed')
-                <button
-                    onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'processing')"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-amber-600 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-all border border-amber-500/20"
-                    data-order-id="{{ $order->id }}">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    Mark Processing
-                </button>
-            @endif
             @if($order->status->value === 'processing')
                 <button
                     onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"

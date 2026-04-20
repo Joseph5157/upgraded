@@ -237,8 +237,17 @@ class DashboardController extends Controller
             return back()->with('error', 'File not found on storage. It may have been uploaded before the storage volume was attached. Please ask the client to re-upload.');
         }
 
-        // ✅ FIXED: This single line solves the mobile garbage text issue
-        // Laravel automatically sets correct MIME type, filename, and download headers
+        // Auto-advance order to Processing when vendor downloads the file.
+        if ($order->status === OrderStatus::Claimed) {
+            try {
+                app(\App\Services\OrderWorkflowService::class)
+                    ->startProcessing($order, auth()->user());
+            } catch (\Throwable $e) {
+                // Non-fatal — download still proceeds even if status update fails
+                report($e);
+            }
+        }
+
         $downloadName = $file->original_name ?? basename($file->file_path);
 
         return Storage::disk($disk)->download($file->file_path, $downloadName);
