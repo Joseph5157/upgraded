@@ -169,7 +169,7 @@
                                 @endif
                                 <button
                                     onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
-                                    class="w-full inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
+                                    class="w-full inline-flex items-center justify-center gap-1 px-4 py-2.5 text-xs font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
                                     data-order-id="{{ $order->id }}">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -181,7 +181,7 @@
                                 @if($order->status->value === 'claimed')
                                     <button
                                         onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'processing')"
-                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-amber-600 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-all border border-amber-500/20"
+                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-amber-600 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-all border border-amber-500/20"
                                         data-order-id="{{ $order->id }}">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -192,7 +192,7 @@
                                 @if($order->status->value === 'processing')
                                     <button
                                         onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
-                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
+                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -615,6 +615,7 @@
 
         setInterval(refreshAvailableQueue, 30000);
 
+
         function setUploadError(orderId, message) {
             const errStrip = document.getElementById('error-strip-' + orderId);
             const errMsg   = document.getElementById('error-msg-' + orderId);
@@ -888,7 +889,7 @@ const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('con
 function ajaxAction(url, btn, type, orderId, status = null) {
     btn.disabled = true;
     const original = btn.innerHTML;
-    btn.innerHTML = '<svg class="animate-spin w-3 h-3 inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>';
+    btn.innerHTML = '<svg class="animate-spin w-4 h-4 inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>';
 
     const body = status ? JSON.stringify({ status }) : null;
 
@@ -947,10 +948,11 @@ function ajaxAction(url, btn, type, orderId, status = null) {
 
 function showToast(message, type) {
     const toast = document.createElement('div');
-    toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-semibold shadow-2xl transition-all ' +
+    toast.className = 'fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-semibold shadow-2xl transition-all ' +
         (type === 'success'
             ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
             : 'bg-red-500/10 border border-red-500/20 text-red-400');
+    toast.style.transform = 'translateX(-50%)';
     toast.textContent = message;
     document.body.appendChild(toast);
     setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
