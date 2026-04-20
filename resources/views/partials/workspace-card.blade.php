@@ -80,7 +80,7 @@
             Release
         </button>
         <div></div>
-        @if($order->status->value === 'processing')
+        @if($order->status->value === 'processing' || $order->status->value === 'claimed')
             <button
                 onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
                 class="col-span-2 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
