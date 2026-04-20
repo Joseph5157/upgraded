@@ -416,7 +416,9 @@
 
                             {{-- STEP 1: Drop zone --}}
                             <label for="files" id="drop-zone" class="group block rounded-[1.25rem] sm:rounded-[1.5rem] px-4 sm:px-8 py-6 sm:py-7 text-center cursor-pointer transition-all border border-dashed border-indigo-500/[0.16] bg-indigo-500/[0.03] hover:border-indigo-400/40 hover:bg-indigo-500/[0.05]">
-                                <input type="file" name="files[]" id="files" required class="hidden" onchange="handleFileSelect(this)">
+                                <input type="file" name="files[]" id="files" required class="hidden"
+                                    accept=".pdf,.doc,.docx,.zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip"
+                                    onchange="handleFileSelect(this)">
                                 <div id="drop-icon" class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
                                     <i data-lucide="file-plus" class="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400"></i>
                                 </div>
@@ -453,7 +455,6 @@
                                         <i data-lucide="x" class="w-3.5 h-3.5"></i> Clear
                                     </button>
                                     <button type="submit" id="upload-submit-btn"
-                                        onclick="this.disabled=true;this.innerHTML='<svg class=\'w-4 h-4 animate-spin\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15\'/></svg> Uploading…';this.form.submit();"
                                         class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
                                         <i data-lucide="upload-cloud" class="w-4 h-4"></i>
                                         Submit Order
@@ -880,14 +881,23 @@
             document.getElementById('notes-counter').textContent = '0 / 1000';
         }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const notesInput = document.getElementById('notes-input');
-            if (notesInput) {
-                notesInput.addEventListener('input', function () {
-                    document.getElementById('notes-counter').textContent = this.value.length + ' / 1000';
-                });
-            }
-        });
+         document.addEventListener('DOMContentLoaded', function () {
+             const notesInput = document.getElementById('notes-input');
+             if (notesInput) {
+                 notesInput.addEventListener('input', function () {
+                     document.getElementById('notes-counter').textContent = this.value.length + ' / 1000';
+                 });
+             }
+
+             const form = document.getElementById('upload-form');
+             const btn = document.getElementById('upload-submit-btn');
+             if (form && btn) {
+                 form.addEventListener('submit', function () {
+                     btn.disabled = true;
+                     btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Uploading...';
+                 });
+             }
+         });
         // ── End upload staging ───────────────────────────────────────
     </script>
 
