@@ -19,7 +19,7 @@
                 </div>
                 <span class="text-[9px] font-bold text-indigo-400 bg-indigo-400/5 border border-indigo-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Pool</span>
             </div>
-            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['available_pool'] }}</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white" data-stat="available_pool">{{ $stats['available_pool'] }}</p>
             <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Available Orders</p>
         </div>
 
@@ -34,7 +34,7 @@
                 </div>
                 <span class="text-[9px] font-bold text-blue-400 bg-blue-400/5 border border-blue-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Active</span>
             </div>
-            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['active_jobs'] }}</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white" data-stat="active_jobs">{{ $stats['active_jobs'] }}</p>
             <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">In Progress</p>
         </div>
 
@@ -50,7 +50,7 @@
                 </div>
                 <span class="text-[9px] font-bold text-emerald-400 bg-emerald-400/5 border border-emerald-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Today</span>
             </div>
-            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['total_checked_today'] }}</p>
+            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white" data-stat="total_checked_today">{{ $stats['total_checked_today'] }}</p>
             <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Delivered Today</p>
         </div>
 
@@ -906,32 +906,57 @@ function ajaxAction(url, btn, type, orderId, status = null) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            const btn = document.querySelector('[data-order-id="' + orderId + '"]');
-            const row = btn?.closest('tr') || btn?.closest('.order-card') || btn?.closest('div[class*="border"]') || btn?.parentElement?.closest('div');
-
             if (type === 'claim') {
+                const btn = document.querySelector('[data-order-id="' + orderId + '"]');
+                const row = btn?.closest('tr') || btn?.closest('.order-card')
+                    || btn?.closest('div[class*="border"]') || btn?.parentElement?.closest('div');
                 if (row) {
                     row.style.transition = 'opacity 0.3s';
                     row.style.opacity = '0';
-                    setTimeout(() => { row.remove(); }, 300);
+                    setTimeout(() => row.remove(), 300);
                 }
                 showToast(data.message, 'success');
-                setTimeout(() => { if (window.lucide) lucide.createIcons(); window.location.reload(); }, 800);
+
+                const poolEl = document.querySelector('[data-stat="available_pool"]');
+                if (poolEl) {
+                    const current = parseInt(poolEl.textContent) || 0;
+                    if (current > 0) poolEl.textContent = current - 1;
+                }
+
+                const activeEl = document.querySelector('[data-stat="active_jobs"]');
+                if (activeEl) {
+                    const current = parseInt(activeEl.textContent) || 0;
+                    activeEl.textContent = current + 1;
+                }
             }
 
             if (type === 'unclaim') {
+                const btn = document.querySelector('[data-order-id="' + orderId + '"]');
+                const row = btn?.closest('tr') || btn?.closest('.order-card')
+                    || btn?.closest('div[class*="border"]') || btn?.parentElement?.closest('div');
                 if (row) {
                     row.style.transition = 'opacity 0.3s';
                     row.style.opacity = '0';
-                    setTimeout(() => { row.remove(); }, 300);
+                    setTimeout(() => row.remove(), 300);
                 }
                 showToast(data.message, 'success');
-                setTimeout(() => { if (window.lucide) lucide.createIcons(); window.location.reload(); }, 800);
+
+                const activeEl = document.querySelector('[data-stat="active_jobs"]');
+                if (activeEl) {
+                    const current = parseInt(activeEl.textContent) || 0;
+                    if (current > 0) activeEl.textContent = current - 1;
+                }
+
+                const poolEl = document.querySelector('[data-stat="available_pool"]');
+                if (poolEl) {
+                    const current = parseInt(poolEl.textContent) || 0;
+                    poolEl.textContent = current + 1;
+                }
             }
 
-            if (type === 'status' || type === 'processing') {
+            if (type === 'status') {
                 showToast(data.message, 'success');
-                setTimeout(() => { if (window.lucide) lucide.createIcons(); window.location.reload(); }, 600);
+                setTimeout(() => window.location.reload(), 600);
             }
         } else {
             btn.disabled = false;

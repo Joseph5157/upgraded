@@ -14,7 +14,7 @@
 
     <div class="divide-y divide-gray-100 dark:divide-white/[0.04]">
         @forelse($availableFiles as $order)
-            <div class="order-card flex items-center justify-between gap-4 px-6 py-4 hover:bg-[#F0F2F5] transition-colors group dark:hover:bg-white/[0.02]">
+            <div class="order-card flex items-center justify-between gap-4 px-6 py-4 hover:bg-[#F0F2F5] transition-colors group dark:hover:bg-white/[0.02]" data-order-id="{{ $order->id }}">
                 <div class="flex items-center gap-3 min-w-0">
                     <div class="w-8 h-8 bg-gray-100 dark:bg-white/[0.05] text-gray-400 dark:text-slate-500 rounded-xl flex items-center justify-center flex-shrink-0">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,9 +37,9 @@
                 </div>
                 <button
                     onclick="ajaxAction('{{ route('orders.claim', $order) }}', this, 'claim', {{ $order->id }})"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-bold text-black bg-amber-400 hover:bg-amber-300 rounded-xl transition-all shadow-md shadow-amber-400/10 group-hover:scale-105"
+                    class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-black bg-amber-400 hover:bg-amber-300 rounded-xl transition-all shadow-md shadow-amber-400/10 group-hover:scale-105"
                     data-order-id="{{ $order->id }}">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
                     Claim
