@@ -85,18 +85,31 @@ class DashboardController extends Controller
 
         try {
             $this->workflowService->claim($order, auth()->user());
+
             if ($request->expectsJson()) {
-                return response()->json(['success' => true, 'message' => 'Order claimed.']);
+                $claimedOrder = Order::with(['client', 'files', 'report', 'vendor'])->find($order->id);
+                $rowHtml  = view('partials.workspace-row',  ['order' => $claimedOrder])->render();
+                $cardHtml = view('partials.workspace-card', ['order' => $claimedOrder])->render();
+
+                return response()->json([
+                    'success'  => true,
+                    'message'  => 'Order claimed.',
+                    'rowHtml'  => $rowHtml,
+                    'cardHtml' => $cardHtml,
+                ]);
             }
+
             return back()->with('success', 'Order claimed and reserved in your workspace.');
         } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
             return back()->with('error', $e->getMessage());
         }
     }
 
     public function unclaim(Request $request, Order $order)
     {
-        \Log::info('unclaim attempt', ['order' => $order->id, 'status' => $order->status, 'claimed_by' => $order->claimed_by, 'user' => auth()->id()]);
         $this->authorize('unclaim', $order);
 
         try {
