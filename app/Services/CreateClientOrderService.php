@@ -72,7 +72,6 @@ class CreateClientOrderService
                 'files_count'        => $fileCount,
                 'notes'              => $meta['notes'] ?? null,
                 'status'             => OrderStatus::Pending,
-                'due_at'             => now()->addMinutes(config('services.portal.default_sla_minutes', 20)),
                 'source'             => $source,
                 'client_link_id'     => $meta['client_link_id'] ?? null,
                 'created_by_user_id' => $meta['created_by_user_id'] ?? null,

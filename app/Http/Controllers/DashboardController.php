@@ -49,14 +49,7 @@ class DashboardController extends Controller
             }
         );
 
-        $stats = $cachedStats + [
-            'overdue_count' => Order::whereNotIn('status', [
-                    OrderStatus::Delivered,
-                    OrderStatus::Cancelled,
-                ])
-                ->where('due_at', '<', now())
-                ->count(),
-        ];
+        $stats = $cachedStats;
 
         // Eager load relationships + consistent ordering
         $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
@@ -86,19 +79,22 @@ class DashboardController extends Controller
         return view('dashboard', compact('stats', 'myWorkspace', 'availableFiles', 'recentHistory'));
     }
 
-    public function claim(Order $order)
+    public function claim(Request $request, Order $order)
     {
         $this->authorize('claim', $order);
 
         try {
             $this->workflowService->claim($order, auth()->user());
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Order claimed.']);
+            }
             return back()->with('success', 'Order claimed and reserved in your workspace.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
     }
 
-    public function unclaim(Order $order)
+    public function unclaim(Request $request, Order $order)
     {
         $this->authorize('unclaim', $order);
 
@@ -106,6 +102,9 @@ class DashboardController extends Controller
             // Delegate to the service so the order update and audit log are
             // always written atomically inside a single DB transaction.
             $this->workflowService->unclaim($order, auth()->user());
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Order returned to pool.']);
+            }
             return back()->with('success', 'Order returned to the available pool.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
@@ -129,6 +128,9 @@ class DashboardController extends Controller
 
             Cache::forget('vendor_stats_' . auth()->id());
 
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true, 'message' => 'Status updated.']);
+            }
             return back()->with('success', 'Status updated.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());

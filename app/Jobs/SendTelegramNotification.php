@@ -58,14 +58,12 @@ class SendTelegramNotification implements ShouldQueue
     {
         $order      = $this->order;
         $clientName = $this->escapeMarkdown($order->client->name ?? 'Unknown Client');
-        $dueTime    = $order->due_at ? $order->due_at->format('M d, Y H:i') : 'Not set';
 
         $message  = " *New Order Received!*\n\n";
         $message .= " *Order ID:* #{$order->id}\n";
         $message .= " *Tracking:* `{$order->token_view}`\n";
         $message .= " *Client:* {$clientName}\n";
         $message .= " *Files:* {$order->files_count}\n";
-        $message .= " *Due:* {$dueTime}\n";
         $message .= " *Source:* " . ucfirst($order->source) . "\n";
 
         if ($order->notes) {

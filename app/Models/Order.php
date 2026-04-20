@@ -49,8 +49,4 @@ class Order extends Model
         return 'pending';
     }
 
-    public function getIsOverdueAttribute(): bool
-    {
-        return false;
-    }
 }

@@ -12,8 +12,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Release overdue claimed orders back to the pending pool every minute
-// Schedule::command(AutoReleaseOrdersCommand::class)->everyMinute();
+// Release orders that have exceeded their claim windows — runs every minute
+Schedule::command(AutoReleaseOrdersCommand::class)->everyMinute();
 
 // Close-of-day ledger snapshot at 11:59 PM every night
 Schedule::command(CloseDayCommand::class)->dailyAt('23:59');

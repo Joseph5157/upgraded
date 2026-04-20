@@ -256,14 +256,11 @@
                                     <span
                                         class="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border
                                                                 @if($order->status->value === 'delivered') bg-green-500/5 text-green-500 border-green-500/10
-                                                                @elseif($order->computed_status == 'overdue') bg-red-500/5 text-red-500 border-red-500/10
                                                                 @elseif($order->status->value === 'processing') bg-blue-500/5 text-blue-400 border-blue-500/10
                                                                 @elseif($order->status->value === 'claimed') bg-amber-500/5 text-amber-400 border-amber-500/10
                                                                 @else bg-slate-500/5 text-slate-400 border-slate-500/10 @endif">
                                         @if($order->status->value === 'delivered')
                                             Ready
-                                        @elseif($order->computed_status == 'overdue')
-                                            Overdue
                                         @elseif($order->status->value === 'processing')
                                             Processing
                                         @elseif($order->status->value === 'claimed')
@@ -284,8 +281,7 @@
                                             <div
                                                 class="px-4 py-1.5 bg-white/5 text-slate-500 rounded-xl text-[10px] font-bold border border-white/10 flex items-center gap-2">
                                                 <i data-lucide="clock" class="w-3 h-3 text-indigo-400"></i>
-                                                <span class="countdown-timer text-[10px] font-mono text-indigo-400"
-                                                    data-due="{{ $order->due_at->toIso8601String() }}">--:--</span>
+                                                <span class="text-[10px] text-indigo-400">In Progress</span>
                                             </div>
                                         @endif
 
@@ -390,36 +386,6 @@
             }
         }
 
-        function updateTimers() {
-            const timers = document.querySelectorAll('.countdown-timer');
-            timers.forEach(timer => {
-                const dueAt = new Date(timer.dataset.due).getTime();
-                const now = new Date().getTime();
-                const diff = dueAt - now;
-
-                if (diff <= 0) {
-                    timer.parentElement.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 text-amber-500 animate-spin"></i><span class="text-[10px] text-amber-500 font-bold">ETA exceeded — report is being finalized.</span>`;
-                    lucide.createIcons();
-                    return;
-                }
-
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-                timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            });
-        }
-
-        setInterval(updateTimers, 1000);
-        updateTimers();
-
-        // Auto reload if any pending orders
-        const pending = document.querySelector('.countdown-timer');
-        if (pending) {
-            setTimeout(() => {
-                window.location.reload();
-            }, 60000); // 1 minute auto refresh
-        }
     </script>
 </body>
 

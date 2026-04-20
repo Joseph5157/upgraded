@@ -92,7 +92,6 @@
                 {{-- Mobile cards --}}
                 <div class="sm:hidden">
                     @forelse($myWorkspace as $order)
-                        @php $isOverdue = $order->is_overdue; @endphp
                         @if ($loop->first)
                             <div class="px-4 pt-4 pb-2 border-t border-gray-100 dark:border-white/[0.04]">
                                 <div class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -106,11 +105,7 @@
                                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                 </div>
-                                @if($isOverdue)
-                                    <span class="inline-flex items-center gap-1 text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-full flex-shrink-0">
-                                        <span class="w-1 h-1 bg-red-400 rounded-full"></span> Overdue
-                                    </span>
-                                @elseif($order->status->value === 'processing')
+                                @if($order->status->value === 'processing')
                                     <span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full flex-shrink-0">
                                         <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> Processing
                                     </span>
@@ -141,10 +136,6 @@
                                     </p>
                                 @else
                                     <div class="min-h-[2rem]"></div>
-                                @endif
-                                @if($order->due_at)
-                                    <span class="countdown-timer text-[10px] font-mono text-indigo-400 mt-1 block"
-                                          data-due="{{ $order->due_at->toIso8601String() }}">--:--</span>
                                 @endif
                             </div>
 
@@ -177,19 +168,39 @@
                                     <div></div>
                                 @endif
                                 @if($order->status->value === 'claimed')
-                                    <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button
-                                            class="w-full inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                            </svg>
-                                            Release
-                                        </button>
-                                    </form>
+                                    <button
+                                        onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
+                                        class="w-full inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
+                                        data-order-id="{{ $order->id }}">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                        </svg>
+                                        Release
+                                    </button>
                                 @else
                                     <div></div>
+                                @endif
+                                @if($order->status->value === 'claimed')
+                                    <button
+                                        onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'processing')"
+                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-amber-600 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-all border border-amber-500/20"
+                                        data-order-id="{{ $order->id }}">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        Mark Processing
+                                    </button>
+                                @elseif($order->status->value === 'processing')
+                                    <button
+                                        onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'delivered')"
+                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-all border border-emerald-500/20"
+                                        data-order-id="{{ $order->id }}">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Mark Delivered
+                                    </button>
                                 @endif
                                 <button
                                     onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
@@ -240,8 +251,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-white/[0.04]">
                         @forelse($myWorkspace as $order)
-                            @php $isOverdue = $order->is_overdue; @endphp
-                            <tr class="hover:bg-gray-50 transition-colors group dark:hover:bg-white/[0.02]">
+                            <tr class="hover:bg-gray-50 transition-colors group dark:hover:bg-white/[0.02]" data-order-id="{{ $order->id }}">
                                 <td class="px-3 sm:px-6 py-3 sm:py-4">
                                     <div class="flex items-center gap-2 sm:gap-3">
                                         <div
@@ -268,20 +278,11 @@
                                                     <i data-lucide="message-square" class="w-2.5 h-2.5 inline-block mr-0.5 -mt-0.5"></i>{{ $order->notes }}
                                                 </p>
                                             @endif
-                                            @if($order->due_at)
-                                                <span class="countdown-timer text-[10px] font-mono text-indigo-400 mt-1 block"
-                                                      data-due="{{ $order->due_at->toIso8601String() }}">--:--</span>
-                                            @endif
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-2 sm:px-4 py-3 sm:py-4 text-center hidden sm:table-cell">
-                                    @if($isOverdue)
-                                        <span
-                                            class="inline-flex items-center gap-1 text-[9px] font-bold text-red-400 bg-red-500/5 border border-red-500/10 px-2 py-1 rounded-full">
-                                            <span class="w-1 h-1 bg-red-400 rounded-full"></span> Overdue
-                                        </span>
-                                    @elseif($order->status->value === 'processing')
+                                    @if($order->status->value === 'processing')
                                         <span
                                             class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full">
                                             <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> Processing
@@ -321,17 +322,35 @@
                                             Upload
                                         </button>
                                         @if($order->status->value === 'claimed')
-                                            <form action="{{ route('orders.unclaim', $order) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                                    </svg>
-                                                    Release
-                                                </button>
-                                            </form>
+                                            <button
+                                                onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'processing')"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-amber-600 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg transition-all border border-amber-500/20"
+                                                data-order-id="{{ $order->id }}">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                                Mark Processing
+                                            </button>
+                                            <button
+                                                onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
+                                                data-order-id="{{ $order->id }}">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                                </svg>
+                                                Release
+                                            </button>
+                                        @elseif($order->status->value === 'processing')
+                                            <button
+                                                onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'delivered')"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-all border border-emerald-500/20"
+                                                data-order-id="{{ $order->id }}">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                Mark Delivered
+                                            </button>
                                         @endif
                                     </div>
                                 </td>
@@ -883,97 +902,78 @@
     </script>
 
     <script>
-        (function () {
-            var overdueReloadScheduled = false;
-            var reloadSecondsLeft = 60;
-            var reloadInterval = null;
+const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-            function showOverdueReloadNotice() {
-                if (document.getElementById('overdue-reload-notice')) return;
-                var workspace = document.getElementById('workspace');
-                if (!workspace) return;
+function ajaxAction(url, btn, type, orderId, status = null) {
+    btn.disabled = true;
+    const original = btn.innerHTML;
+    btn.innerHTML = '<svg class="animate-spin w-3 h-3 inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>';
 
-                var notice = document.createElement('div');
-                notice.id = 'overdue-reload-notice';
-                notice.className = 'flex items-center gap-2.5 px-4 sm:px-6 py-2.5 bg-red-500/[0.07] border-b border-red-500/[0.12] text-[10px] text-red-400 font-semibold';
-                notice.innerHTML =
-                    '<svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
-                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
-                    'An order has passed its deadline and will be released. Refreshing in ' +
-                    '<span id="overdue-reload-counter" class="tabular-nums font-bold">60</span>s\u2026';
+    const body = status ? JSON.stringify({ status }) : null;
 
-                // Insert immediately after the header (first child of #workspace)
-                workspace.insertBefore(notice, workspace.firstChild.nextSibling);
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': CSRF,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            ...(status ? { 'Content-Type': 'application/json' } : {}),
+        },
+        body: body,
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const btn = document.querySelector('[data-order-id="' + orderId + '"]');
+            const row = btn?.closest('tr') || btn?.closest('.order-card') || btn?.closest('div[class*="border"]') || btn?.parentElement?.closest('div');
 
-                reloadInterval = setInterval(function () {
-                    reloadSecondsLeft -= 1;
-                    var counter = document.getElementById('overdue-reload-counter');
-                    if (counter) counter.textContent = reloadSecondsLeft;
-                    if (reloadSecondsLeft <= 0) {
-                        clearInterval(reloadInterval);
-                        location.reload();
-                    }
-                }, 1000);
+            if (type === 'claim') {
+                if (row) {
+                    row.style.transition = 'opacity 0.3s';
+                    row.style.opacity = '0';
+                    setTimeout(() => { row.remove(); }, 300);
+                }
+                showToast(data.message, 'success');
+                setTimeout(() => { if (window.lucide) lucide.createIcons(); window.location.reload(); }, 800);
             }
 
-            function checkWorkspaceOverdue() {
-                if (overdueReloadScheduled) return;
-                var workspace = document.getElementById('workspace');
-                if (!workspace) return;
-                var now = Date.now();
-                var timers = workspace.querySelectorAll('.countdown-timer[data-due]');
-                var hasOverdue = false;
-                timers.forEach(function (el) {
-                    if (new Date(el.dataset.due).getTime() <= now) hasOverdue = true;
-                });
-                if (!hasOverdue) return;
-                overdueReloadScheduled = true;
-                showOverdueReloadNotice();
+            if (type === 'unclaim') {
+                if (row) {
+                    row.style.transition = 'opacity 0.3s';
+                    row.style.opacity = '0';
+                    setTimeout(() => { row.remove(); }, 300);
+                }
+                showToast(data.message, 'success');
+                setTimeout(() => { if (window.lucide) lucide.createIcons(); window.location.reload(); }, 800);
             }
 
-            function updateCountdownTimers() {
-                var now = Date.now();
-                document.querySelectorAll('.countdown-timer').forEach(function (el) {
-                    // Save the original color class on first encounter so we can restore it later
-                    if (!el.dataset.colorSaved) {
-                        el.dataset.colorSaved = el.classList.contains('text-amber-400') ? 'amber' : 'indigo';
-                    }
-                    var baseColor = el.dataset.colorSaved === 'amber' ? 'text-amber-400' : 'text-indigo-400';
-
-                    var due = el.dataset.due;
-                    if (!due) return;
-                    var diff = Math.floor((new Date(due).getTime() - now) / 1000);
-
-                    if (diff <= 0) {
-                        el.textContent = 'OVERDUE';
-                        el.classList.remove(baseColor);
-                        el.classList.add('text-red-400', 'animate-pulse');
-                        return;
-                    }
-
-                    var h = Math.floor(diff / 3600);
-                    var m = Math.floor((diff % 3600) / 60);
-                    var s = diff % 60;
-                    var pad = function (n) { return String(n).padStart(2, '0'); };
-                    el.textContent = h > 0
-                        ? pad(h) + ':' + pad(m) + ':' + pad(s)
-                        : pad(m) + ':' + pad(s);
-
-                    if (diff < 120) {
-                        el.classList.remove(baseColor);
-                        el.classList.add('text-red-400', 'animate-pulse');
-                    } else {
-                        el.classList.remove('text-red-400', 'animate-pulse');
-                        el.classList.add(baseColor);
-                    }
-                });
-
-                checkWorkspaceOverdue();
+            if (type === 'status') {
+                showToast(data.message, 'success');
+                setTimeout(() => { if (window.lucide) lucide.createIcons(); window.location.reload(); }, 600);
             }
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = original;
+            showToast(data.message || 'Something went wrong.', 'error');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = original;
+        showToast('Network error. Please try again.', 'error');
+    });
+}
 
-            updateCountdownTimers();
-            setInterval(updateCountdownTimers, 1000);
-        })();
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-semibold shadow-2xl transition-all ' +
+        (type === 'success'
+            ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+            : 'bg-red-500/10 border border-red-500/20 text-red-400');
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
     </script>
 
 </x-vendor-layout>

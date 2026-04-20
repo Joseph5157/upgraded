@@ -32,7 +32,6 @@
                             'claimed' => 'bg-amber-500/10 text-amber-400',
                             'processing' => 'bg-blue-500/10 text-blue-400',
                             'delivered' => 'bg-green-500/10 text-green-400',
-                            'overdue' => 'bg-red-500/10 text-red-400',
                         ][$order->computed_status];
                     @endphp
                     <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $statusClass }}">
@@ -41,12 +40,6 @@
                 </p>
             </div>
 
-            <div class="text-center md:text-right">
-                <p class="text-slate-500 text-sm mb-1 uppercase tracking-widest font-bold">Time Remaining</p>
-                <div id="countdown" class="text-4xl font-mono font-bold text-white tracking-tighter tabular-nums">
-                    --:--
-                </div>
-            </div>
         </div>
 
         @if($order->status == 'delivered')
@@ -97,36 +90,8 @@
     </div>
 
     <script>
-        const dueTime = new Date("{{ $order->due_at->toIso8601String() }}").getTime();
-        const countdownElement = document.getElementById('countdown');
-        const status = "{{ $order->status }}";
-
-        function updateCountdown() {
-            const now = new Date().getTime();
-            const distance = dueTime - now;
-
-            if (distance < 0) {
-                if (status !== 'delivered') {
-                    countdownElement.innerHTML = `<span class="text-amber-500 text-2xl">Finalizing...</span>`;
-                    countdownElement.classList.add('animate-pulse');
-                } else {
-                    countdownElement.innerHTML = "00:00";
-                }
-                return;
-            }
-
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            countdownElement.innerHTML =
-                (minutes < 10 ? "0" : "") + minutes + ":" +
-                (seconds < 10 ? "0" : "") + seconds;
-        }
-
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
-
         // Auto-refresh with live badge — stops once delivered
+        const status = "{{ $order->status }}";
         if (status !== 'delivered') {
             let refreshIn = 60;
             const badge = document.getElementById('refresh-badge');

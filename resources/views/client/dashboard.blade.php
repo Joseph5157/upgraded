@@ -523,10 +523,6 @@
                                         <span class="status-badge bg-slate-500/[0.1] text-slate-500 border border-slate-500/[0.15] flex-shrink-0">
                                             <span class="w-1 h-1 rounded-full bg-slate-500"></span> Cancelled
                                         </span>
-                                    @elseif(isset($order->is_overdue) && $order->is_overdue)
-                                        <span class="status-badge bg-red-500/[0.1] text-red-400 border border-red-500/[0.15] flex-shrink-0">
-                                            <span class="w-1 h-1 rounded-full bg-red-400 pulse-dot"></span> Overdue
-                                        </span>
                                     @elseif($order->status->value === 'processing')
                                         <span class="status-badge bg-blue-500/[0.1] text-blue-400 border border-blue-500/[0.15] flex-shrink-0">
                                             <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> Processing
