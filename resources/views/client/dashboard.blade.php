@@ -547,6 +547,12 @@
                                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                                             {{-- Download buttons --}}
                                             <div class="flex flex-wrap items-center gap-2">
+                                                @if($order->report?->ai_report_path && $order->report?->plag_report_path)
+                                                    <a href="{{ route('client.download', $order->token_view) }}"
+                                                        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-500/[0.12] hover:bg-indigo-500/[0.2] text-indigo-300 text-[9px] font-bold rounded-lg border border-indigo-500/[0.2] transition-all active:scale-95">
+                                                        <i data-lucide="archive" class="w-3 h-3"></i> Download Both
+                                                    </a>
+                                                @endif
                                                 @if($order->report?->ai_report_path)
                                                     <a href="{{ route('client.download', $order->token_view) }}?type=ai"
                                                         class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-red-500/[0.12] text-red-300 text-[9px] font-bold rounded-lg border border-red-500/[0.12] transition-all active:scale-95">
