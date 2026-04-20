@@ -167,20 +167,17 @@
                                 @else
                                     <div></div>
                                 @endif
-                                @if($order->status->value === 'claimed')
-                                    <button
-                                        onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
-                                        class="w-full inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
-                                        data-order-id="{{ $order->id }}">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                        </svg>
-                                        Release
-                                    </button>
-                                @else
-                                    <div></div>
-                                @endif
+                                <button
+                                    onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
+                                    class="w-full inline-flex items-center justify-center gap-1 px-2.5 py-2 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
+                                    data-order-id="{{ $order->id }}">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                    </svg>
+                                    Release
+                                </button>
+                                <div></div>
                                 @if($order->status->value === 'claimed')
                                     <button
                                         onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'processing')"
@@ -191,26 +188,18 @@
                                         </svg>
                                         Mark Processing
                                     </button>
-                                @elseif($order->status->value === 'processing')
+                                @endif
+                                @if($order->status->value === 'processing')
                                     <button
-                                        onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'delivered')"
-                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-all border border-emerald-500/20"
-                                        data-order-id="{{ $order->id }}">
+                                        onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
+                                        class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                         </svg>
-                                        Mark Delivered
+                                        Upload Reports
                                     </button>
                                 @endif
-                                <button
-                                    onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
-                                    class="col-span-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                    </svg>
-                                    Upload Reports
-                                </button>
                             </div>
                         </div>
                         @if ($loop->last)
@@ -312,15 +301,6 @@
                                                 {{ $order->files->count() > 1 ? 'File '.$loop->iteration : 'Download' }}
                                             </a>
                                         @endforeach
-                                        <button
-                                            onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                            </svg>
-                                            Upload
-                                        </button>
                                         @if($order->status->value === 'claimed')
                                             <button
                                                 onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'processing')"
@@ -331,27 +311,28 @@
                                                 </svg>
                                                 Mark Processing
                                             </button>
+                                        @endif
+                                        @if($order->status->value === 'processing')
                                             <button
-                                                onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
-                                                data-order-id="{{ $order->id }}">
+                                                onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                                 </svg>
-                                                Release
-                                            </button>
-                                        @elseif($order->status->value === 'processing')
-                                            <button
-                                                onclick="ajaxAction('{{ route('orders.status', $order) }}', this, 'status', {{ $order->id }}, 'delivered')"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-all border border-emerald-500/20"
-                                                data-order-id="{{ $order->id }}">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                </svg>
-                                                Mark Delivered
+                                                Upload
                                             </button>
                                         @endif
+                                        <button
+                                            onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
+                                            data-order-id="{{ $order->id }}">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                            </svg>
+                                            Release
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -947,7 +928,7 @@ function ajaxAction(url, btn, type, orderId, status = null) {
                 setTimeout(() => { if (window.lucide) lucide.createIcons(); window.location.reload(); }, 800);
             }
 
-            if (type === 'status') {
+            if (type === 'status' || type === 'processing') {
                 showToast(data.message, 'success');
                 setTimeout(() => { if (window.lucide) lucide.createIcons(); window.location.reload(); }, 600);
             }
