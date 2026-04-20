@@ -38,8 +38,12 @@ class CreateClientOrderService
         $fileCount = count($files);
         $orderId = null;
         $remainingCreditsAfterUpload = 0;
+        $slaMinutes = (int) config('services.portal.default_sla_minutes', 20);
+        if ($slaMinutes <= 0) {
+            $slaMinutes = 20;
+        }
 
-        DB::transaction(function () use ($client, $files, $source, $meta, $fileCount, &$orderId, &$remainingCreditsAfterUpload) {
+        DB::transaction(function () use ($client, $files, $source, $meta, $fileCount, $slaMinutes, &$orderId, &$remainingCreditsAfterUpload) {
             $client = Client::where('id', $client->id)->lockForUpdate()->first();
 
             if ($client->plan_expiry && $client->plan_expiry->isPast()) {
@@ -75,6 +79,7 @@ class CreateClientOrderService
                 'source'             => $source,
                 'client_link_id'     => $meta['client_link_id'] ?? null,
                 'created_by_user_id' => $meta['created_by_user_id'] ?? null,
+                'due_at'             => now()->addMinutes($slaMinutes),
             ]);
 
             $uploadedPaths = [];
