@@ -96,7 +96,7 @@
                             <div class="px-4 pt-4 pb-2 border-t border-gray-100 dark:border-white/[0.04]">
                                 <div class="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         @endif
-                        <div class="min-w-[240px] max-w-[240px] snap-start rounded-2xl border border-white/[0.06] bg-black/10 dark:bg-white/[0.02] p-3">
+                        <div class="order-card min-w-[240px] max-w-[240px] snap-start rounded-2xl border border-white/[0.06] bg-black/10 dark:bg-white/[0.02] p-3" data-order-id="{{ $order->id }}">
                             <div class="flex items-start justify-between gap-2">
                                 <div
                                     class="w-9 h-9 bg-indigo-600/10 rounded-xl flex items-center justify-center text-indigo-400 flex-shrink-0">
