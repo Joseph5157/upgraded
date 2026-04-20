@@ -99,8 +99,8 @@ class OrderWorkflowService
     {
         $this->assertVendorOrAdmin($order, $user, 'unclaim');
 
-        if ($order->status !== OrderStatus::Claimed) {
-            throw new Exception("Only reserved orders can be released back to the queue.");
+        if (!in_array($order->status, [OrderStatus::Claimed, OrderStatus::Processing])) {
+            throw new Exception("Only reserved or in-progress orders can be released back to the queue.");
         }
 
         DB::transaction(function () use ($order, $user) {
