@@ -23,7 +23,7 @@
                         </svg>
                     </div>
                     <div class="min-w-0 space-y-0.5">
-                        <p class="text-xs font-semibold text-slate-200 truncate dark:text-slate-200">
+                        <p class="text-xs font-semibold text-gray-900 truncate dark:text-slate-200">
                             {{ $order->files->first() ? basename($order->files->first()->file_path) : 'New Document' }}
                         </p>
                         <div class="flex flex-wrap items-center gap-1.5">
@@ -31,7 +31,7 @@
                                 <span class="text-[9px] text-gray-500 dark:text-slate-500 truncate">{{ $order->client->name }}</span>
                             @endif
                             <span class="text-[8px] font-bold px-1 rounded @if($order->source === 'account') bg-blue-500/10 text-blue-400 @else bg-purple-500/10 text-purple-400 @endif">{{ strtoupper($order->source) }}</span>
-                            <span class="text-[8px] font-bold text-gray-500 dark:text-slate-500 bg-gray-100 dark:bg-white/[0.05] px-1 rounded">{{ $order->files_count }} {{ Str::plural('file', $order->files_count) }}</span>
+                            <span class="text-[8px] font-bold text-gray-500 dark:text-slate-500 bg-gray-100 dark:bg-white/[0.05] px-1 rounded">{{ $order->files->count() }} {{ Str::plural('file', $order->files->count()) }}</span>
                         </div>
                     </div>
                 </div>

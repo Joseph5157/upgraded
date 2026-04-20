@@ -149,7 +149,13 @@ class DashboardController extends Controller
                 return response()->json(['success' => true, 'message' => 'Status updated.']);
             }
             return back()->with('success', 'Status updated.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            if ($request->expectsJson()) {
+                $status = $e instanceof \Illuminate\Auth\Access\AuthorizationException ? 403 : 422;
+                $message = $e->getMessage() ?: 'Unable to update status.';
+                return response()->json(['success' => false, 'message' => $message], $status);
+            }
+
             return back()->with('error', $e->getMessage());
         }
     }

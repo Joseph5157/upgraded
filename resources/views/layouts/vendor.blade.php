@@ -230,7 +230,7 @@
         })();
         // CSRF token refresh — silently renew every 30 minutes so long sessions never 419
         function refreshCsrfToken() {
-            fetch('/csrf-refresh', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            fetch(@json(route('csrf.refresh')), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
                     document.querySelectorAll('input[name="_token"]').forEach(function(el) {

@@ -214,6 +214,9 @@
          page-load orders and AJAX-injected orders with no duplicate IDs. --}}
 
     <script>
+        const DASHBOARD_URL = @json(route('dashboard'));
+        const CSRF_REFRESH_URL = @json(route('csrf.refresh'));
+
         const MAX_REPORT_SIZE = 100 * 1024 * 1024;
         let refreshInProgress = false;
 
@@ -222,7 +225,7 @@
 
             refreshInProgress = true;
 
-            fetch('/dashboard?queue_only=1&queue_refresh=' + Date.now(), {
+            fetch(DASHBOARD_URL + '?queue_only=1&queue_refresh=' + Date.now(), {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                 },
@@ -427,13 +430,13 @@
             // Lock the UI
             submitBtn.disabled = true;
             cancelBtn.disabled = true;
-            submitBtn.innerHTML = 'Uploading…';
+            submitBtn.innerHTML = 'Uploading...';
             readyStrip.classList.add('hidden');
             progressBar.classList.remove('hidden');
             progressBar.classList.add('flex');
 
             // Refresh CSRF token first to handle long-lived sessions
-            fetch('/csrf-refresh')
+            fetch(CSRF_REFRESH_URL)
                 .then(r => r.json())
                 .then(data => {
                     const tokenField = form.querySelector('input[name="_token"]');
@@ -460,16 +463,16 @@
                                     resetUploadUi(orderId);
                                     return;
                                 }
-                                // Success — stash the message for display after redirect
+                                // Success - stash the message for display after redirect
                                 try { if (data.success) sessionStorage.setItem('upload_success', data.success); } catch (_) {}
-                                window.location.href = data.redirect || '/dashboard';
+                                window.location.href = data.redirect || DASHBOARD_URL;
                                 return;
                             } catch (e) {
-                                // Not JSON — XHR followed a normal redirect, navigate to final URL
+                                // Not JSON - XHR followed a normal redirect, navigate to final URL
                             }
-                            window.location.href = '/dashboard';
+                            window.location.href = DASHBOARD_URL;
                         } else {
-                            // HTTP 4xx / 5xx — re-enable the form and show an inline error
+                            // HTTP 4xx / 5xx - re-enable the form and show an inline error
                             resetUploadUi(orderId);
 
                             let msg = 'Upload failed. Please try again.';
@@ -502,21 +505,14 @@
                 });
         }
 
-        if (window.lucide && lucide.createIcons) lucide.createIcons();
-        const uploadSuccess = sessionStorage.getItem('upload_success');
-        if (uploadSuccess) {
-            sessionStorage.removeItem('upload_success');
-            const banner = document.getElementById('flash-success');
-            if (banner) { banner.textContent = uploadSuccess; banner.classList.remove('hidden'); }
-        }
     </script>
 
     <script>
-const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const CSRF = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
 // Fade and remove every DOM element that belongs to a given order id.
 // Uses querySelectorAll so both the hidden mobile card and the visible
-// desktop <tr> are removed in one pass — querySelector only finds the first.
+// desktop <tr> are removed in one pass - querySelector only finds the first.
 function fadeRemoveOrder(orderId) {
     const seen = new Set();
     document.querySelectorAll('[data-order-id="' + orderId + '"]').forEach(function (el) {
@@ -567,7 +563,6 @@ function ajaxAction(url, btn, type, orderId, status = null) {
                 if (!isMobile && data.rowHtml) {
                     const table = document.querySelector('#workspace table');
                     const tbody = table?.querySelector('tbody') || table;
-                    console.log('tbody found:', tbody, 'rowHtml length:', data.rowHtml?.length);
                     if (tbody) {
                         const emptyRow = tbody.querySelector('td[colspan]')?.closest('tr');
                         if (emptyRow) emptyRow.remove();

@@ -9,7 +9,7 @@
                 </svg>
             </div>
             <div class="min-w-0">
-                <p class="text-xs font-semibold text-slate-200 truncate max-w-[180px] dark:text-slate-200">
+                <p class="text-xs font-semibold text-gray-900 truncate max-w-[180px] dark:text-slate-200">
                     {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
                 </p>
                 <div class="flex items-center gap-1.5 mt-0.5">
@@ -179,7 +179,7 @@
 
             <div id="upload-progress-{{ $order->id }}" class="hidden flex-col gap-1.5 px-3.5 py-2.5 bg-indigo-500/[0.06] border border-indigo-500/[0.12] rounded-xl">
                 <div class="flex items-center justify-between">
-                    <p class="text-[10px] text-indigo-400 font-semibold">Uploading reports…</p>
+                    <p class="text-[10px] text-indigo-400 font-semibold">Uploading reports...</p>
                     <span id="upload-progress-text-{{ $order->id }}" class="text-[10px] text-indigo-400 font-bold tabular-nums">0%</span>
                 </div>
                 <div class="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
