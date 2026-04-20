@@ -96,6 +96,7 @@ class DashboardController extends Controller
 
     public function unclaim(Request $request, Order $order)
     {
+        \Log::info('unclaim attempt', ['order' => $order->id, 'status' => $order->status, 'claimed_by' => $order->claimed_by, 'user' => auth()->id()]);
         $this->authorize('unclaim', $order);
 
         try {
@@ -107,6 +108,9 @@ class DashboardController extends Controller
             }
             return back()->with('success', 'Order returned to the available pool.');
         } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
             return back()->with('error', $e->getMessage());
         }
     }

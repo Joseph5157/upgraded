@@ -886,6 +886,26 @@
     <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
+// Fade and remove every DOM element that belongs to a given order id.
+// Uses querySelectorAll so both the hidden mobile card and the visible
+// desktop <tr> are removed in one pass — querySelector only finds the first.
+function fadeRemoveOrder(orderId) {
+    const seen = new Set();
+    document.querySelectorAll('[data-order-id="' + orderId + '"]').forEach(function (el) {
+        const row = el.closest('tr')
+            || (el.classList.contains('order-card') ? el : null)
+            || el.closest('.order-card')
+            || el.closest('div[class*="border"]')
+            || el.parentElement?.closest('div');
+        if (row && !seen.has(row)) {
+            seen.add(row);
+            row.style.transition = 'opacity 0.3s';
+            row.style.opacity = '0';
+            setTimeout(function () { row.remove(); }, 300);
+        }
+    });
+}
+
 function ajaxAction(url, btn, type, orderId, status = null) {
     btn.disabled = true;
     const original = btn.innerHTML;
@@ -903,55 +923,41 @@ function ajaxAction(url, btn, type, orderId, status = null) {
         },
         body: body,
     })
-    .then(r => r.json())
+    .then(r => {
+        if (type === 'unclaim') console.log('unclaim status:', r.status);
+        return r.json();
+    })
     .then(data => {
+        if (type === 'unclaim') console.log('unclaim response:', data);
         if (data.success) {
             if (type === 'claim') {
-                const btn = document.querySelector('[data-order-id="' + orderId + '"]');
-                const row = btn?.closest('tr') || btn?.closest('.order-card')
-                    || btn?.closest('div[class*="border"]') || btn?.parentElement?.closest('div');
-                if (row) {
-                    row.style.transition = 'opacity 0.3s';
-                    row.style.opacity = '0';
-                    setTimeout(() => row.remove(), 300);
-                }
+                // Fade the queue row out
+                fadeRemoveOrder(orderId);
                 showToast(data.message, 'success');
 
+                // Update counters instantly
                 const poolEl = document.querySelector('[data-stat="available_pool"]');
-                if (poolEl) {
-                    const current = parseInt(poolEl.textContent) || 0;
-                    if (current > 0) poolEl.textContent = current - 1;
-                }
-
+                if (poolEl) { const c = parseInt(poolEl.textContent) || 0; if (c > 0) poolEl.textContent = c - 1; }
                 const activeEl = document.querySelector('[data-stat="active_jobs"]');
-                if (activeEl) {
-                    const current = parseInt(activeEl.textContent) || 0;
-                    activeEl.textContent = current + 1;
-                }
+                if (activeEl) { const c = parseInt(activeEl.textContent) || 0; activeEl.textContent = c + 1; }
+
+                // Reload so the claimed order appears in workspace
+                setTimeout(() => window.location.reload(), 800);
             }
 
             if (type === 'unclaim') {
-                const btn = document.querySelector('[data-order-id="' + orderId + '"]');
-                const row = btn?.closest('tr') || btn?.closest('.order-card')
-                    || btn?.closest('div[class*="border"]') || btn?.parentElement?.closest('div');
-                if (row) {
-                    row.style.transition = 'opacity 0.3s';
-                    row.style.opacity = '0';
-                    setTimeout(() => row.remove(), 300);
-                }
+                // Remove ALL elements (mobile card + desktop tr) with this order id
+                fadeRemoveOrder(orderId);
                 showToast(data.message, 'success');
 
+                // Update counters instantly
                 const activeEl = document.querySelector('[data-stat="active_jobs"]');
-                if (activeEl) {
-                    const current = parseInt(activeEl.textContent) || 0;
-                    if (current > 0) activeEl.textContent = current - 1;
-                }
-
+                if (activeEl) { const c = parseInt(activeEl.textContent) || 0; if (c > 0) activeEl.textContent = c - 1; }
                 const poolEl = document.querySelector('[data-stat="available_pool"]');
-                if (poolEl) {
-                    const current = parseInt(poolEl.textContent) || 0;
-                    poolEl.textContent = current + 1;
-                }
+                if (poolEl) { const c = parseInt(poolEl.textContent) || 0; poolEl.textContent = c + 1; }
+
+                // Refresh the available queue so released order appears immediately
+                setTimeout(() => refreshAvailableQueue(), 400);
             }
 
             if (type === 'status') {
