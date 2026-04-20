@@ -45,7 +45,7 @@ class AutoReleaseOrdersCommand extends Command
 
         // Release orders where vendor has held the claim for more than 30 minutes
         // regardless of whether the client deadline has passed or not.
-        $exceededClaimWindow = Order::whereIn('status', [OrderStatus::Pending, OrderStatus::Processing])
+        $exceededClaimWindow = Order::whereIn('status', [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing])
             ->whereNotNull('claimed_by')
             ->where('claimed_at', '<', now()->subMinutes(30))
             ->whereNotIn('id', $processingOrders->pluck('id'))

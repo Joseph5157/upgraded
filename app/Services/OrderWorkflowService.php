@@ -17,6 +17,7 @@ class OrderWorkflowService
 {
     public function __construct(
         protected AuditLogger $auditLogger,
+        protected \App\Services\NotificationService $notificationService,
     ) {
     }
 
@@ -162,6 +163,16 @@ class OrderWorkflowService
                 'new_status' => OrderStatus::Processing->value,
             ], $user->id);
         });
+
+        try {
+            $this->notificationService->notifyOrderStatusChange(
+                $order->fresh(),
+                'pending',
+                'processing'
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /**
@@ -235,6 +246,7 @@ class OrderWorkflowService
             // Permanently record this delivery on the vendor's profile.
             // This count is NEVER decremented — even if client deletes the order later.
             $user->increment('delivered_orders_count');
+            $user->increment('daily_delivered_count');
 
             $this->logActivity($lockedOrder, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
         });
@@ -248,6 +260,16 @@ class OrderWorkflowService
             /** @var \App\Services\PortalTelegramAlertService $telegramAlerts */
             $telegramAlerts = app(\App\Services\PortalTelegramAlertService::class);
             $telegramAlerts->notifyOrderCompleted(Order::findOrFail($order->id));
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        try {
+            $this->notificationService->notifyOrderStatusChange(
+                Order::findOrFail($order->id),
+                'processing',
+                'delivered'
+            );
         } catch (\Throwable $e) {
             report($e);
         }

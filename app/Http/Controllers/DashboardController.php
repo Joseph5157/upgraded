@@ -54,7 +54,7 @@ class DashboardController extends Controller
         // Eager load relationships + consistent ordering
         $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
             ->where('claimed_by', $user->id)
-            ->whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
+            ->whereIn('status', [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing])
             ->latest()
             ->get();
 
