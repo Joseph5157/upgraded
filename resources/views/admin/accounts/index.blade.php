@@ -90,7 +90,7 @@
                                         </div>
                                         <div>
                                             <p class="text-xs font-bold text-gray-900 dark:text-white">{{ $vendor->name }}</p>
-                                            <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500">{{ $vendor->email }}</p>
+                                            <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500">ID: {{ $vendor->portal_number }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -168,21 +168,21 @@
                                                 @endcan
                                                 @can('delete', $vendor)
                                                 <div class="border-t border-[#E8ECF0] dark:border-white/5 my-1"></div>
-                                                <button type="button" onclick="setDeleteTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}', '{{ addslashes($vendor->email) }}')"
+                                                <button type="button" onclick="setDeleteTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}', '{{ $vendor->portal_number }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Account
                                                 </button>
                                                 @endcan
                                             @else
                                                 @can('freeze', $vendor)
-                                                <button type="button" onclick="setFreezeTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}', '{{ addslashes($vendor->email) }}')"
+                                                <button type="button" onclick="setFreezeTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}', '{{ $vendor->portal_number }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all">
                                                     <i data-lucide="lock" class="w-3.5 h-3.5"></i> Freeze Account
                                                 </button>
                                                 @endcan
                                                 @can('delete', $vendor)
                                                 <div class="border-t border-[#E8ECF0] dark:border-white/5 my-1"></div>
-                                                <button type="button" onclick="setDeleteTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}', '{{ addslashes($vendor->email) }}')"
+                                                <button type="button" onclick="setDeleteTarget({{ $vendor->id }}, '{{ addslashes($vendor->name) }}', '{{ $vendor->portal_number }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Account
                                                 </button>
@@ -229,7 +229,7 @@
                                         </div>
                                         <div>
                                             <p class="text-xs font-bold text-gray-900 dark:text-white">{{ $client->name }}</p>
-                                            <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500">{{ $client->email }}</p>
+                                            <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500">ID: {{ $client->portal_number }}</p>
                                         </div>
                                     </div>
                                 </td>
@@ -307,21 +307,21 @@
                                                 @endcan
                                                 @can('delete', $client)
                                                 <div class="border-t border-[#E8ECF0] dark:border-white/5 my-1"></div>
-                                                <button type="button" onclick="setDeleteTarget({{ $client->id }}, '{{ addslashes($client->name) }}', '{{ addslashes($client->email) }}')"
+                                                <button type="button" onclick="setDeleteTarget({{ $client->id }}, '{{ addslashes($client->name) }}', '{{ $client->portal_number }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Account
                                                 </button>
                                                 @endcan
                                             @else
                                                 @can('freeze', $client)
-                                                <button type="button" onclick="setFreezeTarget({{ $client->id }}, '{{ addslashes($client->name) }}', '{{ addslashes($client->email) }}')"
+                                                <button type="button" onclick="setFreezeTarget({{ $client->id }}, '{{ addslashes($client->name) }}', '{{ $client->portal_number }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all">
                                                     <i data-lucide="lock" class="w-3.5 h-3.5"></i> Freeze Account
                                                 </button>
                                                 @endcan
                                                 @can('delete', $client)
                                                 <div class="border-t border-[#E8ECF0] dark:border-white/5 my-1"></div>
-                                                <button type="button" onclick="setDeleteTarget({{ $client->id }}, '{{ addslashes($client->name) }}', '{{ addslashes($client->email) }}')"
+                                                <button type="button" onclick="setDeleteTarget({{ $client->id }}, '{{ addslashes($client->name) }}', '{{ $client->portal_number }}')"
                                                     class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
                                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete Account
                                                 </button>
@@ -401,7 +401,7 @@
 
             <div class="p-3 rounded-xl bg-[#F0F2F5] dark:bg-white/5 border border-[#E2E6EA] dark:border-white/5">
                 <p class="text-xs font-bold text-gray-900 dark:text-white" id="freeze-user-name"></p>
-                <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500" id="freeze-user-email"></p>
+                <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500" id="freeze-user-email">Portal ID: </p>
             </div>
 
             <p class="text-xs text-amber-600 dark:text-amber-400 font-medium">
@@ -460,7 +460,7 @@
 
             <div class="p-3 rounded-xl bg-[#F0F2F5] dark:bg-white/5 border border-[#E2E6EA] dark:border-white/5">
                 <p class="text-xs font-bold text-gray-900 dark:text-white" id="delete-user-name"></p>
-                <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500" id="delete-user-email"></p>
+                <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500" id="delete-user-email">Portal ID: </p>
             </div>
 
             <form id="delete-form" method="POST" action="#" class="space-y-4">
@@ -543,7 +543,7 @@
         function setFreezeTarget(userId, userName, userEmail) {
             document.getElementById('freeze-form').action = '/admin/accounts/' + userId + '/freeze';
             document.getElementById('freeze-user-name').textContent = userName;
-            document.getElementById('freeze-user-email').textContent = userEmail;
+            document.getElementById('freeze-user-email').textContent = 'Portal ID: ' + userEmail;
             closeAllDropdowns();
             document.getElementById('freeze-modal').classList.remove('hidden');
         }
@@ -551,7 +551,7 @@
         function setDeleteTarget(userId, userName, userEmail) {
             document.getElementById('delete-form').action = '/admin/accounts/' + userId;
             document.getElementById('delete-user-name').textContent = userName;
-            document.getElementById('delete-user-email').textContent = userEmail;
+            document.getElementById('delete-user-email').textContent = 'Portal ID: ' + userEmail;
             closeAllDropdowns();
             document.getElementById('delete-modal').classList.remove('hidden');
         }

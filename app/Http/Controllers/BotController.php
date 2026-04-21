@@ -109,20 +109,40 @@ class BotController extends Controller
             ];
 
             if ($invite->role === 'client') {
+                $portalNumber = User::where('role', 'client')
+                    ->whereNotNull('portal_number')
+                    ->max('portal_number');
+                $portalNumber = $portalNumber ? $portalNumber + 1 : 1000;
+
                 $client = Client::create([
                     'name'   => $invite->name,
                     'slots'  => $invite->slots ?? 0,
                     'status' => 'active',
                 ]);
                 $userData['client_id'] = $client->id;
+            } elseif ($invite->role === 'vendor') {
+                $portalNumber = User::where('role', 'vendor')
+                    ->whereNotNull('portal_number')
+                    ->max('portal_number');
+                $portalNumber = $portalNumber ? $portalNumber + 1 : 5000;
+            } elseif ($invite->role === 'admin') {
+                $portalNumber = User::where('role', 'admin')
+                    ->whereNotNull('portal_number')
+                    ->max('portal_number');
+                $portalNumber = $portalNumber ? $portalNumber + 1 : 9000;
             }
+
+            $userData['portal_number'] = $portalNumber;
 
             $user = User::create($userData);
 
             $invite->delete();
 
             $telegramService->sendMessage($chatId,
-                "Welcome {$user->name}! Your account is activated.\n\nSend /login anytime to access the portal.");
+                "Welcome {$user->name}! Your account is activated.\n" .
+                "Your Portal ID is: {$portalNumber}\n\n" .
+                "Visit " . config('app.url') . "/login to access the portal.\n" .
+                "Enter your Portal ID and we'll send you a login code.");
 
             return response()->json(['ok' => true]);
         }

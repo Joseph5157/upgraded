@@ -95,7 +95,7 @@
                     </div>
                     <div class="text-right">
                         <p class="text-xs font-semibold text-gray-800 dark:text-slate-200">{{ auth()->user()->name }}</p>
-                        <p class="text-[10px] text-gray-400">{{ auth()->user()->email }}</p>
+                        <p class="text-[10px] text-gray-400">ID: {{ auth()->user()->portal_number }}</p>
                     </div>
                 </div>
             </div>
@@ -131,12 +131,6 @@
                     Profile updated successfully.
                 </div>
             @endif
-            @if(session('status') === 'password-updated')
-                <div class="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/20 rounded-2xl text-green-600 text-sm font-semibold dark:text-green-400">
-                    <i data-lucide="check-circle" class="w-5 h-5"></i>
-                    Password updated successfully.
-                </div>
-            @endif
 
             {{-- Two-column cards --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -149,7 +143,7 @@
                         </div>
                         <div>
                             <h2 class="text-sm font-bold text-gray-900 dark:text-white">Profile Information</h2>
-                            <p class="text-[11px] text-gray-400">Update your name and email address.</p>
+                            <p class="text-[11px] text-gray-400">Update your display name.</p>
                         </div>
                     </div>
 
@@ -174,21 +168,12 @@
                             @enderror
                         </div>
 
-                        {{-- Email --}}
+                        {{-- Portal ID --}}
                         <div>
-                            <label for="email" class="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1.5">Email Address</label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                value="{{ old('email', $user->email) }}"
-                                required
-                                autocomplete="username"
-                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-[#1e2030] dark:text-slate-200 dark:focus:border-indigo-500"
-                            >
-                            @error('email')
-                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
+                            <label class="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1.5">Portal ID</label>
+                            <input type="text" value="{{ $user->portal_number }}" disabled
+                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-[#F5F6F8] text-sm text-gray-400 dark:bg-white/5 dark:border-white/5">
+                            <p class="text-[10px] text-gray-400 mt-1">Your Portal ID is used to login. Keep it safe.</p>
                         </div>
 
                         <div class="pt-2">
@@ -200,74 +185,29 @@
                     </form>
                 </div>
 
-                {{-- CARD 2: Change Password --}}
+                {{-- CARD 2: Telegram Login --}}
                 <div class="premium-card rounded-2xl p-8 dark:bg-[#0a0a0c] dark:border-[#1e2030]">
                     <div class="flex items-center gap-3 mb-6">
-                        <div class="w-9 h-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500">
-                            <i data-lucide="lock-keyhole" class="w-4 h-4"></i>
+                        <div class="w-9 h-9 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                            <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/>
+                            </svg>
                         </div>
                         <div>
-                            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Change Password</h2>
-                            <p class="text-[11px] text-gray-400">Use a strong password of at least 8 characters.</p>
+                            <h2 class="text-sm font-bold text-gray-900 dark:text-white">Telegram Login</h2>
+                            <p class="text-[11px] text-gray-400">Your account is secured via Telegram OTP.</p>
                         </div>
                     </div>
-
-                    <form method="POST" action="{{ route('password.update') }}" class="space-y-5">
-                        @csrf
-                        @method('put')
-
-                        {{-- Current Password --}}
-                        <div>
-                            <label for="current_password" class="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1.5">Current Password</label>
-                            <input
-                                id="current_password"
-                                name="current_password"
-                                type="password"
-                                autocomplete="current-password"
-                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-[#1e2030] dark:text-slate-200 dark:focus:border-indigo-500"
-                            >
-                            @error('current_password', 'updatePassword')
-                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                            <span class="text-xs font-semibold text-green-600 dark:text-green-400">Telegram Connected</span>
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
                         </div>
-
-                        {{-- New Password --}}
-                        <div>
-                            <label for="password" class="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1.5">New Password</label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                autocomplete="new-password"
-                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-[#1e2030] dark:text-slate-200 dark:focus:border-indigo-500"
-                            >
-                            @error('password', 'updatePassword')
-                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        {{-- Confirm Password --}}
-                        <div>
-                            <label for="password_confirmation" class="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1.5">Confirm New Password</label>
-                            <input
-                                id="password_confirmation"
-                                name="password_confirmation"
-                                type="password"
-                                autocomplete="new-password"
-                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-[#1e2030] dark:text-slate-200 dark:focus:border-indigo-500"
-                            >
-                            @error('password_confirmation', 'updatePassword')
-                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div class="pt-2">
-                            <button type="submit"
-                                class="w-full bg-[#4F6EF7] hover:bg-[#3B5BDB] text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors">
-                                Update Password
-                            </button>
-                        </div>
-                    </form>
+                        <p class="text-xs text-gray-500 dark:text-slate-400">
+                            You log in using a one-time code sent to your Telegram account.
+                            No password is required or stored.
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -345,40 +285,17 @@
             </div>
 
             <p class="text-xs text-gray-500 dark:text-slate-400">
-                Please enter your password to confirm you want to permanently delete your account and all associated data.
+                To delete your account, contact your admin directly.
             </p>
 
-            <form method="POST" action="{{ route('profile.destroy') }}" class="space-y-4">
-                @csrf
-                @method('delete')
-
-                <div>
-                    <label for="delete_password" class="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1.5">Your Password</label>
-                    <input
-                        id="delete_password"
-                        name="password"
-                        type="password"
-                        placeholder="Enter your current password"
-                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-400 transition-all dark:bg-[#111827] dark:border-[#1e2030] dark:text-slate-200"
-                    >
-                    @error('password', 'userDeletion')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="flex items-center gap-3 pt-2">
-                    <button
-                        type="button"
-                        onclick="document.getElementById('delete-account-modal').classList.add('hidden')"
-                        class="flex-1 py-2.5 rounded-xl border border-[#E2E6EA] text-xs font-semibold text-gray-600 hover:bg-[#F0F2F5] transition-colors dark:border-[#1e2030] dark:text-slate-400 dark:hover:bg-white/5">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-colors">
-                        Yes, Delete My Account
-                    </button>
-                </div>
-            </form>
+            <div class="pt-2">
+                <button
+                    type="button"
+                    onclick="document.getElementById('delete-account-modal').classList.add('hidden')"
+                    class="w-full py-2.5 rounded-xl border border-[#E2E6EA] text-xs font-semibold text-gray-600 hover:bg-[#F0F2F5] transition-colors dark:border-[#1e2030] dark:text-slate-400 dark:hover:bg-white/5">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
 

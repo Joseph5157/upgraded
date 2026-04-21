@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\InviteController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Auth\TelegramLoginController;
+use App\Http\Controllers\Auth\OtpLoginController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BotController;
@@ -43,13 +43,13 @@ Route::post('/telegram/webhook/{secret}', [BotController::class, 'webhook'])
     ->middleware('throttle:60,1')
     ->name('telegram.webhook');
 
-// Telegram login — token link works from any context (Telegram in-app browser, etc.)
-Route::get('/auth/telegram/{token}', [TelegramLoginController::class, 'authenticate'])
-    ->middleware('throttle:10,1')
-    ->name('auth.telegram');
-
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [TelegramLoginController::class, 'showLogin'])->name('login');
+    Route::get('/login', [OtpLoginController::class, 'showLogin'])
+        ->name('login');
+    Route::post('/login/send-otp', [OtpLoginController::class, 'sendOtp'])
+        ->name('login.send-otp');
+    Route::post('/login/verify-otp', [OtpLoginController::class, 'verifyOtp'])
+        ->name('login.verify-otp');
 });
 
 // Client Public Routes — throttled to prevent abuse

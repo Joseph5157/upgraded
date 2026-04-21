@@ -46,6 +46,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'login_token',
         'login_token_expires_at',
         'activated_at',
+        'portal_number',
+        'otp',
+        'otp_expires_at',
     ];
 
     /**
@@ -76,6 +79,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'session_expires_at'      => 'datetime',
             'login_token_expires_at'  => 'datetime',
             'activated_at'            => 'datetime',
+            'otp_expires_at'          => 'datetime',
         ];
     }
 

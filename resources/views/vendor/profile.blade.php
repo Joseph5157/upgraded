@@ -9,14 +9,6 @@
             Profile updated successfully.
         </div>
     @endif
-    @if(session('status') === 'password-updated')
-        <div class="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-emerald-400 text-sm font-semibold">
-            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Password updated successfully.
-        </div>
-    @endif
 
     {{-- Two-column grid --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -34,7 +26,7 @@
                     </div>
                     <div>
                         <h2 class="text-sm font-semibold text-[#1A1D23] dark:text-white">Update Profile</h2>
-                        <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-0.5 dark:text-slate-500">Name &amp; email address</p>
+                        <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-0.5 dark:text-slate-500">Display name &amp; Portal ID</p>
                     </div>
                 </div>
 
@@ -42,7 +34,7 @@
                     @csrf
                     @method('patch')
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-4">
                         <div>
                             <label for="name" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Full Name</label>
                             <input
@@ -57,16 +49,10 @@
                         </div>
 
                         <div>
-                            <label for="email" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Email Address</label>
-                            <input
-                                id="email" name="email" type="email"
-                                value="{{ old('email', $user->email) }}"
-                                required autocomplete="username"
-                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all dark:bg-[#0f1117] dark:border-white/[0.08] dark:text-slate-200 dark:focus:border-indigo-500"
-                            >
-                            @error('email')
-                                <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
-                            @enderror
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Portal ID</label>
+                            <input type="text" value="{{ $user->portal_number }}" disabled
+                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-[#F5F6F8] text-sm text-gray-400 dark:bg-white/5 dark:border-white/5">
+                            <p class="text-[10px] text-slate-500 mt-1">Your Portal ID cannot be changed.</p>
                         </div>
                     </div>
 
@@ -82,80 +68,31 @@
                 </form>
             </div>
 
-            {{-- CARD 2: Change Password --}}
+            {{-- CARD 2: Telegram Login --}}
             <div class="bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-6 dark:bg-[#13151c] dark:border-white/[0.06]">
                 <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[#E2E6EA] dark:border-white/[0.06]">
-                    <div class="w-8 h-8 bg-indigo-500/10 rounded-xl flex items-center justify-center">
-                        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    <div class="w-8 h-8 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/>
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-sm font-semibold text-[#1A1D23] dark:text-white">Change Password</h2>
-                        <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-0.5 dark:text-slate-500">Minimum 8 characters</p>
+                        <h2 class="text-sm font-semibold text-[#1A1D23] dark:text-white">Telegram Login</h2>
+                        <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-0.5 dark:text-slate-500">Your account is secured via Telegram OTP</p>
                     </div>
                 </div>
-
-                <form method="POST" action="{{ route('password.update') }}" class="space-y-4">
-                    @csrf
-                    @method('put')
-
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                            <label for="current_password" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Current Password</label>
-                            <input
-                                id="current_password" name="current_password" type="password"
-                                autocomplete="current-password"
-                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all dark:bg-[#0f1117] dark:border-white/[0.08] dark:text-slate-200 dark:focus:border-indigo-500"
-                            >
-                            @error('current_password', 'updatePassword')
-                                <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="vendor_new_password" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">New Password</label>
-                            <input
-                                id="vendor_new_password" name="password" type="password"
-                                autocomplete="new-password"
-                                oninput="vendorStrength(this.value)"
-                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all dark:bg-[#0f1117] dark:border-white/[0.08] dark:text-slate-200 dark:focus:border-indigo-500"
-                            >
-                            {{-- Strength bar --}}
-                            <div class="mt-2 space-y-1">
-                                <div class="w-full h-1 rounded-full bg-white/10 overflow-hidden">
-                                    <div id="vendor-strength-bar" class="h-full rounded-full transition-all duration-300 w-0"></div>
-                                </div>
-                                <p id="vendor-strength-label" class="text-[10px] font-bold uppercase tracking-widest text-slate-600"></p>
-                            </div>
-                            @error('password', 'updatePassword')
-                                <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="password_confirmation" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Confirm Password</label>
-                            <input
-                                id="password_confirmation" name="password_confirmation" type="password"
-                                autocomplete="new-password"
-                                class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 transition-all dark:bg-[#0f1117] dark:border-white/[0.08] dark:text-slate-200 dark:focus:border-indigo-500"
-                            >
-                            @error('password_confirmation', 'updatePassword')
-                                <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                        <span class="text-xs font-semibold text-green-600 dark:text-green-400">Telegram Connected</span>
+                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
                     </div>
-
-                    <div class="pt-2">
-                        <button type="submit"
-                            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            Update Password
-                        </button>
-                    </div>
-                </form>
+                    <p class="text-xs text-[#6B7280] dark:text-slate-500">
+                        You log in using a one-time code sent to your Telegram account.
+                        No password is required or stored.
+                    </p>
+                </div>
             </div>
 
         </div>{{-- /left column --}}
@@ -174,7 +111,7 @@
                     {{-- Name & email --}}
                     <div class="space-y-1">
                         <h3 class="text-base font-bold text-[#1A1D23] dark:text-white">{{ $user->name }}</h3>
-                        <p class="text-xs font-mono text-[#6B7280] dark:text-slate-400">{{ $user->email }}</p>
+                        <p class="text-xs font-mono text-[#6B7280] dark:text-slate-400">ID: {{ $user->portal_number }}</p>
                     </div>
 
                     {{-- Role badge --}}
@@ -214,7 +151,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
                             </svg>
                         </div>
-                        <p class="text-xs text-[#6B7280] dark:text-slate-400">Use a strong, unique password not shared with other services.</p>
+                        <p class="text-xs text-[#6B7280] dark:text-slate-400">Your account is secured by Telegram OTP. No password is stored.</p>
                     </li>
                     <li class="flex items-start gap-3">
                         <div class="w-5 h-5 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -222,7 +159,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
                             </svg>
                         </div>
-                        <p class="text-xs text-[#6B7280] dark:text-slate-400">Never share your login credentials with anyone.</p>
+                        <p class="text-xs text-[#6B7280] dark:text-slate-400">Never share your login OTP code with anyone.</p>
                     </li>
                     <li class="flex items-start gap-3">
                         <div class="w-5 h-5 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -230,7 +167,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
                             </svg>
                         </div>
-                        <p class="text-xs text-[#6B7280] dark:text-slate-400">Always sign out after each session when using shared or public devices.</p>
+                        <p class="text-xs text-[#6B7280] dark:text-slate-400">If you lose access to Telegram, contact your admin for a re-invite.</p>
                     </li>
                 </ul>
             </div>
@@ -272,71 +209,19 @@
             </div>
 
             <p class="text-xs text-slate-400">
-                Enter your password to permanently delete your agent account and all associated data.
+                To delete your account, contact your admin directly.
             </p>
 
-            <form method="POST" action="{{ route('profile.destroy') }}" class="space-y-4">
-                @csrf
-                @method('delete')
-
-                <div>
-                    <label for="vendor_delete_password" class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Your Password</label>
-                    <input
-                        id="vendor_delete_password" name="password" type="password"
-                        placeholder="Enter your current password"
-                        class="w-full px-4 py-2.5 rounded-xl border border-white/[0.08] bg-[#0f1117] text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-400 transition-all"
-                    >
-                    @error('password', 'userDeletion')
-                        <p class="mt-1 text-xs text-red-400">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="flex items-center gap-3 pt-2">
-                    <button
-                        type="button"
-                        onclick="document.getElementById('vendor-delete-modal').classList.add('hidden')"
-                        class="flex-1 py-2.5 rounded-xl border border-white/[0.08] text-xs font-semibold text-slate-400 hover:bg-white/[0.04] transition-colors">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold uppercase tracking-widest transition-colors">
-                        Confirm Delete
-                    </button>
-                </div>
-            </form>
+            <div class="pt-2">
+                <button
+                    type="button"
+                    onclick="document.getElementById('vendor-delete-modal').classList.add('hidden')"
+                    class="w-full py-2.5 rounded-xl border border-white/[0.08] text-xs font-semibold text-slate-400 hover:bg-white/[0.04] transition-colors">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
 
-    <script>
-        function vendorStrength(value) {
-            const bar   = document.getElementById('vendor-strength-bar');
-            const label = document.getElementById('vendor-strength-label');
-            const len   = value.length;
-
-            if (len === 0) {
-                bar.style.width   = '0%';
-                bar.className     = 'h-full rounded-full transition-all duration-300';
-                label.textContent = '';
-                return;
-            }
-
-            if (len < 8) {
-                bar.style.width   = '33%';
-                bar.className     = 'h-full rounded-full transition-all duration-300 bg-red-500';
-                label.textContent = 'Weak';
-                label.className   = 'text-[10px] font-bold uppercase tracking-widest text-red-400';
-            } else if (len <= 12) {
-                bar.style.width   = '66%';
-                bar.className     = 'h-full rounded-full transition-all duration-300 bg-amber-400';
-                label.textContent = 'Medium';
-                label.className   = 'text-[10px] font-bold uppercase tracking-widest text-amber-400';
-            } else {
-                bar.style.width   = '100%';
-                bar.className     = 'h-full rounded-full transition-all duration-300 bg-emerald-400';
-                label.textContent = 'Strong';
-                label.className   = 'text-[10px] font-bold uppercase tracking-widest text-emerald-400';
-            }
-        }
-    </script>
 
 </x-vendor-layout>

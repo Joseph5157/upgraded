@@ -16,11 +16,6 @@
             <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i> Profile updated successfully.
         </div>
     @endif
-    @if(session('status') === 'password-updated')
-        <div class="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/20 rounded-2xl text-green-400 text-sm font-semibold">
-            <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i> Password updated successfully.
-        </div>
-    @endif
 
     {{-- Three-column card row --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -32,7 +27,7 @@
             </div>
             <div class="space-y-1">
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ $user->name }}</h2>
-                <p class="text-sm text-gray-400 font-mono">{{ $user->email }}</p>
+                <p class="text-sm text-gray-400 font-mono">Portal ID: {{ $user->portal_number }}</p>
             </div>
             <span class="bg-red-500/10 text-red-500 border border-red-500/20 text-[9px] font-bold uppercase tracking-widest rounded-full px-3 py-1">
                 SYSTEM_ROOT
@@ -49,120 +44,62 @@
             </div>
         </div>
 
-        {{-- CARD 2: Update Profile --}}
+        {{-- CARD 2: Update Name --}}
         <div class="bg-[#F0F2F5] border border-[#E2E6EA] rounded-2xl p-8 dark:bg-[#0a0a0c] dark:border-white/5">
             <div class="flex items-center gap-3 mb-6">
                 <div class="w-8 h-8 bg-[#4F6EF7]/10 rounded-xl flex items-center justify-center text-[#4F6EF7]">
                     <i data-lucide="user-pen" class="w-4 h-4"></i>
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Update Profile</h3>
-                    <p class="text-[11px] text-gray-400">Change your name or email address.</p>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Update Name</h3>
+                    <p class="text-[11px] text-gray-400">Change your display name.</p>
                 </div>
             </div>
-
             <form method="POST" action="{{ route('profile.update') }}" class="space-y-5">
                 @csrf
                 @method('patch')
-
                 <div>
-                    <label for="name" class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 dark:text-slate-500">Full Name</label>
-                    <input
-                        id="name" name="name" type="text"
-                        value="{{ old('name', $user->name) }}"
-                        required autocomplete="name"
-                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-white/5 dark:text-slate-200 dark:focus:border-[#4F6EF7]"
-                    >
-                    @error('name')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Full Name</label>
+                    <input name="name" type="text" value="{{ old('name', $user->name) }}" required
+                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-white/5 dark:text-slate-200">
+                    @error('name')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
                 </div>
-
                 <div>
-                    <label for="email" class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 dark:text-slate-500">Email Address</label>
-                    <input
-                        id="email" name="email" type="email"
-                        value="{{ old('email', $user->email) }}"
-                        required autocomplete="username"
-                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-white/5 dark:text-slate-200 dark:focus:border-[#4F6EF7]"
-                    >
-                    @error('email')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Portal ID</label>
+                    <input type="text" value="{{ $user->portal_number }}" disabled
+                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-[#F5F6F8] text-sm text-gray-400 dark:bg-white/5 dark:border-white/5">
+                    <p class="text-[10px] text-gray-400 mt-1">Your Portal ID cannot be changed.</p>
                 </div>
-
                 <button type="submit"
-                    class="w-full bg-[#4F6EF7] hover:bg-[#3B5BDB] text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl transition-colors mt-2">
-                    Save Changes
+                    class="w-full bg-[#4F6EF7] hover:bg-[#3B5BDB] text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl transition-colors">
+                    Save Name
                 </button>
             </form>
         </div>
 
-        {{-- CARD 3: Change Password --}}
+        {{-- CARD 3: Telegram Login --}}
         <div class="bg-[#F0F2F5] border border-[#E2E6EA] rounded-2xl p-8 dark:bg-[#0a0a0c] dark:border-white/5">
             <div class="flex items-center gap-3 mb-6">
-                <div class="w-8 h-8 bg-[#4F6EF7]/10 rounded-xl flex items-center justify-center text-[#4F6EF7]">
-                    <i data-lucide="lock-keyhole" class="w-4 h-4"></i>
+                <div class="w-8 h-8 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                    <svg class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/>
+                    </svg>
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Change Password</h3>
-                    <p class="text-[11px] text-gray-400">Use a strong password of at least 8 characters.</p>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Telegram Login</h3>
+                    <p class="text-[11px] text-gray-400">Your account is secured via Telegram OTP.</p>
                 </div>
             </div>
-
-            <form method="POST" action="{{ route('password.update') }}" class="space-y-5">
-                @csrf
-                @method('put')
-
-                <div>
-                    <label for="current_password" class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 dark:text-slate-500">Current Password</label>
-                    <input
-                        id="current_password" name="current_password" type="password"
-                        autocomplete="current-password"
-                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-white/5 dark:text-slate-200 dark:focus:border-[#4F6EF7]"
-                    >
-                    @error('current_password', 'updatePassword')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
+            <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                    <span class="text-xs font-semibold text-green-600 dark:text-green-400">Telegram Connected</span>
+                    <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
                 </div>
-
-                <div>
-                    <label for="password" class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 dark:text-slate-500">New Password</label>
-                    <input
-                        id="admin_new_password" name="password" type="password"
-                        autocomplete="new-password"
-                        oninput="updateStrength(this.value)"
-                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-white/5 dark:text-slate-200 dark:focus:border-[#4F6EF7]"
-                    >
-                    {{-- Password strength indicator --}}
-                    <div class="mt-2 space-y-1">
-                        <div class="w-full h-1 rounded-full bg-[#E2E6EA] dark:bg-white/10 overflow-hidden">
-                            <div id="strength-bar" class="h-full rounded-full transition-all duration-300 w-0"></div>
-                        </div>
-                        <p id="strength-label" class="text-[10px] font-bold uppercase tracking-widest text-gray-400"></p>
-                    </div>
-                    @error('password', 'updatePassword')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="password_confirmation" class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 dark:text-slate-500">Confirm New Password</label>
-                    <input
-                        id="password_confirmation" name="password_confirmation" type="password"
-                        autocomplete="new-password"
-                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#4F6EF7]/30 focus:border-[#4F6EF7] transition-all dark:bg-[#111827] dark:border-white/5 dark:text-slate-200 dark:focus:border-[#4F6EF7]"
-                    >
-                    @error('password_confirmation', 'updatePassword')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <button type="submit"
-                    class="w-full bg-[#4F6EF7] hover:bg-[#3B5BDB] text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl transition-colors mt-2">
-                    Update Password
-                </button>
-            </form>
+                <p class="text-xs text-gray-400 dark:text-slate-500">
+                    You log in using a one-time code sent to your Telegram account.
+                    No password is required or stored.
+                </p>
+            </div>
         </div>
     </div>
 
@@ -197,72 +134,21 @@
                 </div>
             </div>
 
-            <p class="text-xs text-gray-500 dark:text-slate-400">
-                Enter your password to permanently delete this operator account and all associated data.
+            <p class="text-xs text-red-400 dark:text-red-300">
+                Contact another admin to delete your account.
+                Admin accounts cannot be self-deleted for security reasons.
             </p>
 
-            <form method="POST" action="{{ route('profile.destroy') }}" class="space-y-4">
-                @csrf
-                @method('delete')
-
-                <div>
-                    <label for="admin_delete_password" class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 dark:text-slate-500">Your Password</label>
-                    <input
-                        id="admin_delete_password" name="password" type="password"
-                        placeholder="Enter your current password"
-                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-400 transition-all dark:bg-[#111827] dark:border-white/5 dark:text-slate-200"
-                    >
-                    @error('password', 'userDeletion')
-                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div class="flex items-center gap-3 pt-2">
-                    <button
-                        type="button"
-                        onclick="document.getElementById('admin-delete-modal').classList.add('hidden')"
-                        class="flex-1 py-2.5 rounded-xl border border-[#E2E6EA] dark:border-white/5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-[#F0F2F5] dark:hover:bg-white/5 transition-colors">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold uppercase tracking-widest transition-colors">
-                        Confirm Delete
-                    </button>
-                </div>
-            </form>
+            <div class="pt-2">
+                <button
+                    type="button"
+                    onclick="document.getElementById('admin-delete-modal').classList.add('hidden')"
+                    class="w-full py-2.5 rounded-xl border border-[#E2E6EA] dark:border-white/5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-[#F0F2F5] dark:hover:bg-white/5 transition-colors">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
 
-    <script>
-        function updateStrength(value) {
-            const bar   = document.getElementById('strength-bar');
-            const label = document.getElementById('strength-label');
-            const len   = value.length;
-
-            if (len === 0) {
-                bar.style.width = '0%';
-                bar.className   = 'h-full rounded-full transition-all duration-300 w-0';
-                label.textContent = '';
-                return;
-            }
-
-            if (len < 8) {
-                bar.style.width   = '33%';
-                bar.className     = 'h-full rounded-full transition-all duration-300 bg-red-500';
-                label.textContent = 'Weak';
-                label.className   = 'text-[10px] font-bold uppercase tracking-widest text-red-500';
-            } else if (len <= 12) {
-                bar.style.width   = '66%';
-                bar.className     = 'h-full rounded-full transition-all duration-300 bg-amber-400';
-                label.textContent = 'Medium';
-                label.className   = 'text-[10px] font-bold uppercase tracking-widest text-amber-400';
-            } else {
-                bar.style.width   = '100%';
-                bar.className     = 'h-full rounded-full transition-all duration-300 bg-green-500';
-                label.textContent = 'Strong';
-                label.className   = 'text-[10px] font-bold uppercase tracking-widest text-green-500';
-            }
-        }
-    </script>
 
 </x-admin-layout>
