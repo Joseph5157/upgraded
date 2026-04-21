@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use App\Models\PendingInvite;
 use App\Models\User;
 use App\Services\TelegramService;
@@ -94,7 +95,7 @@ class BotController extends Controller
                 return response()->json(['ok' => true]);
             }
 
-            $user = User::create([
+            $userData = [
                 'name'              => $invite->name,
                 'role'              => $invite->role,
                 'slots'             => $invite->slots,
@@ -105,7 +106,18 @@ class BotController extends Controller
                 'email_verified_at' => now(),
                 'email'             => null,
                 'password'          => null,
-            ]);
+            ];
+
+            if ($invite->role === 'client') {
+                $client = Client::create([
+                    'name'   => $invite->name,
+                    'slots'  => $invite->slots ?? 0,
+                    'status' => 'active',
+                ]);
+                $userData['client_id'] = $client->id;
+            }
+
+            $user = User::create($userData);
 
             $invite->delete();
 

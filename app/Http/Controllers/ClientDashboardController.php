@@ -51,7 +51,7 @@ class ClientDashboardController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             return redirect()->route('login')->withErrors([
-                'email' => 'Your account is not fully configured. Please contact support.',
+                'link' => 'Your account is not fully configured. Please contact support.',
             ]);
         }
 
@@ -92,7 +92,7 @@ class ClientDashboardController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             return redirect()->route('login')->withErrors([
-                'email' => 'Your account is not fully configured. Please contact support.',
+                'link' => 'Your account is not fully configured. Please contact support.',
             ]);
         }
 
@@ -112,7 +112,7 @@ class ClientDashboardController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
             return redirect()->route('login')->withErrors([
-                'email' => 'Your account is not fully configured. Please contact support.',
+                'link' => 'Your account is not fully configured. Please contact support.',
             ]);
         }
 
