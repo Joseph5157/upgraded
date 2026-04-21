@@ -28,14 +28,14 @@ class DatabaseSeeder extends Seeder
             'role'              => 'admin',
             'email'             => null,
             'password'          => null,
-            'telegram_chat_id'  => '570525995',
+            'telegram_chat_id'  => '8421545440',
             'activated_at'      => now(),
             'is_super_admin'    => true,
             'status'            => 'active',
             'email_verified_at' => now(),
         ]);
 
-        $this->command->info('Admin seeded (telegram_chat_id: 570525995).');
+        $this->command->info('Admin seeded (telegram_chat_id: 8421545440).');
 
         // ── Default client + upload link (dev convenience) ───────────────────
         $client = Client::firstOrCreate(
