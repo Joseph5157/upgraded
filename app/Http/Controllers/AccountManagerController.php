@@ -10,7 +10,6 @@ use App\Support\LogContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
@@ -106,18 +105,6 @@ class AccountManagerController extends Controller
     {
         $this->authorize('delete', $user);
 
-        if (! Hash::check($request->password, auth()->user()->password)) {
-            $context = LogContext::forTargetUser($user, LogContext::forUser($request->user(), LogContext::currentRequest()));
-            Log::warning('account.delete_denied', array_merge($context, [
-                'reason' => 'password_confirmation_failed',
-            ]));
-            $this->auditLogger->record('account.delete_denied', $user, [
-                'reason' => 'password_confirmation_failed',
-            ], (int) $request->user()?->id);
-
-            return back()->withErrors(['password' => 'Incorrect password.']);
-        }
-
         $creditsRestored = 0;
 
         if ($user->role === 'client' && $user->client) {
@@ -200,22 +187,6 @@ class AccountManagerController extends Controller
      */
     public function forceDelete(Request $request, int $id): RedirectResponse
     {
-        if (! Hash::check($request->password, auth()->user()->password)) {
-            $context = array_merge(LogContext::currentRequest(), [
-                'subject_type' => User::class,
-                'subject_id' => $id,
-                'reason' => 'password_confirmation_failed',
-            ]);
-            Log::warning('account.force_delete_denied', $context);
-            $this->auditLogger->record('account.force_delete_denied', null, [
-                'subject_type' => User::class,
-                'subject_id' => $id,
-                'reason' => 'password_confirmation_failed',
-            ], (int) $request->user()?->id);
-
-            return back()->withErrors(['password' => 'Incorrect password.']);
-        }
-
         $user = User::withTrashed()->findOrFail($id);
         $this->authorize('forceDelete', $user);
 

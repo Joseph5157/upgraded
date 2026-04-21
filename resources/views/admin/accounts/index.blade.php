@@ -466,16 +466,6 @@
             <form id="delete-form" method="POST" action="#" class="space-y-4">
                 @csrf
                 @method('DELETE')
-                <div>
-                    <label class="block text-[10px] font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-1.5">Admin Password Confirmation</label>
-                    <input
-                        type="password"
-                        name="password"
-                        required
-                        placeholder="Enter your admin password to confirm"
-                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-400 transition-all dark:bg-[#111827] dark:border-white/5 dark:text-slate-200"
-                    >
-                </div>
                 <div class="flex gap-3 pt-1">
                     <button type="button" onclick="closeModal('delete-modal')"
                         class="flex-1 py-2.5 rounded-xl border border-[#E2E6EA] dark:border-white/5 text-xs font-semibold text-gray-500 hover:bg-[#F0F2F5] dark:text-slate-400 dark:hover:bg-white/5 transition-colors">
@@ -512,16 +502,6 @@
             <form id="force-delete-form" method="POST" action="#" class="space-y-4">
                 @csrf
                 @method('DELETE')
-                <div>
-                    <label class="block text-[10px] font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mb-1.5">Admin Password Confirmation</label>
-                    <input
-                        type="password"
-                        name="password"
-                        required
-                        placeholder="Enter your admin password to confirm"
-                        class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-400 transition-all dark:bg-[#111827] dark:border-white/5 dark:text-slate-200"
-                    >
-                </div>
                 <div class="flex gap-3 pt-1">
                     <button type="button" onclick="closeModal('force-delete-modal')"
                         class="flex-1 py-2.5 rounded-xl border border-[#E2E6EA] dark:border-white/5 text-xs font-semibold text-gray-500 hover:bg-[#F0F2F5] dark:text-slate-400 dark:hover:bg-white/5 transition-colors">
