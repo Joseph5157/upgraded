@@ -26,7 +26,7 @@ class CheckAccountStatus
 
             $redirect = $this->redirector->route('login');
             if (method_exists($redirect, 'withErrors')) {
-                return $redirect->withErrors(['email' => 'Your account has been frozen. Contact support.']);
+                return $redirect->withErrors(['telegram' => 'Your account has been frozen. Contact your admin.']);
             }
             return $redirect;
         }

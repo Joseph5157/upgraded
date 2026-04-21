@@ -2,77 +2,63 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Client;
 use App\Models\ClientLink;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        $this->command->info('🌱 Starting database seeding...');
+        $this->command->info('Starting database seeding...');
 
-        // Create Admin User
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin User',
-                'role' => 'admin',
-                'password' => 'password',
-                'email_verified_at' => now(),
-                'status' => 'active',
-            ]
-        );
-        $this->command->info("✅ Admin created: {$admin->email} (password: password)");
+        // ── Wipe users ───────────────────────────────────────────────────────
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        User::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        // Create Vendor User
-        $vendor = User::updateOrCreate(
-            ['email' => 'vendor@example.com'],
-            [
-                'name' => 'Vendor User',
-                'role' => 'vendor',
-                'password' => 'password',
-                'email_verified_at' => now(),
-                'status' => 'active',
-            ]
-        );
-        $this->command->info("✅ Vendor created: {$vendor->email} (password: password)");
+        // ── Admin ────────────────────────────────────────────────────────────
+        User::create([
+            'name'              => 'Admin',
+            'role'              => 'admin',
+            'email'             => null,
+            'password'          => null,
+            'telegram_chat_id'  => '570525995',
+            'activated_at'      => now(),
+            'is_super_admin'    => true,
+            'status'            => 'active',
+            'email_verified_at' => now(),
+        ]);
 
-        // Create Client and Link
+        $this->command->info('Admin seeded (telegram_chat_id: 570525995).');
+
+        // ── Default client + upload link (dev convenience) ───────────────────
         $client = Client::firstOrCreate(
             ['name' => 'Default Client'],
             ['name' => 'Default Client']
         );
-        $this->command->info("✅ Client created: {$client->name}");
 
-        $link = ClientLink::firstOrCreate(
+        ClientLink::firstOrCreate(
             ['token' => 'test-token'],
             [
                 'client_id' => $client->id,
-                'token' => 'test-token',
-                'is_active' => 1
+                'token'     => 'test-token',
+                'is_active' => true,
             ]
         );
-        $this->command->info("✅ Client link created with token: {$link->token}");
 
-        // Promote admin to super admin
+        $this->command->info('Default client + upload link ready (token: test-token).');
+
+        // ── Promote super admin ──────────────────────────────────────────────
         $this->call([
             SuperAdminSeeder::class,
         ]);
 
-        $this->command->info('🎉 Database seeding completed successfully!');
-        $this->command->newLine();
-        $this->command->warn('📧 Login credentials:');
-        $this->command->line("   Email: admin@example.com");
-        $this->command->line("   Password: password");
-        $this->command->newLine();
+        $this->command->info('Seeding complete.');
     }
 }

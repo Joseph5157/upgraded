@@ -48,9 +48,5 @@ return [
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET', env('TELEGRAM_BOT_SECRET')),
     ],
 
-    'turnstile' => [
-        'site_key' => env('TURNSTILE_SITE_KEY'),
-        'secret'   => env('TURNSTILE_SECRET_KEY'),
-    ],
 
 ];

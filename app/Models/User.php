@@ -42,6 +42,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'last_login_ip',
         'session_expires_at',
         'payout_rate',
+        'slots',
+        'login_token',
+        'login_token_expires_at',
+        'activated_at',
     ];
 
     /**
@@ -69,7 +73,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'admin_token_expires_at' => 'datetime',
             'last_login_at'          => 'datetime',
             'telegram_connected_at'  => 'datetime',
-            'session_expires_at'     => 'datetime',
+            'session_expires_at'      => 'datetime',
+            'login_token_expires_at'  => 'datetime',
+            'activated_at'            => 'datetime',
         ];
     }
 

@@ -1,140 +1,84 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-6" :status="session('status')" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ config('app.name') }} — Sign In</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4 py-12">
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+    <div class="w-full max-w-sm">
 
-        @php
-            $emailErrors = $errors->get('email');
-            $isFrozenError = collect($emailErrors)->contains(fn($m) => str_contains(strtolower($m), 'frozen'));
-        @endphp
+        {{-- Card --}}
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-200 px-8 py-10 text-center">
 
-        <!-- Header -->
-        <div class="mb-6">
-            <h2 class="text-[2rem] sm:text-2xl font-bold leading-tight" style="color:#0f172a;">Welcome back</h2>
-            <p class="text-sm mt-1" style="color:#64748b;">Sign in to your account to continue</p>
-        </div>
-
-        <!-- Frozen account alert -->
-        @if($isFrozenError)
-            <div class="mb-6 rounded-xl p-4 flex items-start gap-3" style="background:#fffbeb; border:1px solid #fcd34d;">
-                <div class="flex-shrink-0 mt-0.5 w-8 h-8 rounded-full flex items-center justify-center" style="background:#fef3c7;">
-                    <svg class="w-4 h-4" style="color:#f59e0b;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="font-semibold text-sm" style="color:#fbbf24;">Account Frozen</p>
-                    @foreach($emailErrors as $message)
-                        <p class="text-sm mt-0.5" style="color:#92400e;">{{ $message }}</p>
-                    @endforeach
-                    <a href="mailto:support@plagexpert.in" class="inline-flex items-center gap-1 text-xs font-medium mt-2 transition-colors" style="color:#4f46e5;">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        Contact Support
-                    </a>
-                </div>
+            {{-- Logo --}}
+            <div class="flex justify-center mb-5">
+                <img src="{{ asset('images/logo.png.jpeg') }}"
+                     alt="{{ config('app.name') }}"
+                     class="h-12 w-auto rounded-lg shadow-sm">
             </div>
-        @endif
 
-        <!-- Email -->
-        <div class="mb-4 sm:mb-5">
-            <label for="email" class="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style="color:#64748b;">Email address</label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <svg class="w-4 h-4" style="color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            {{-- Heading --}}
+            <h1 class="text-2xl font-bold text-slate-900 mb-1">Welcome back</h1>
+            <p class="text-sm text-slate-500 mb-8">Sign in using your Telegram account</p>
+
+            {{-- Error (invalid / expired link) --}}
+            @if ($errors->has('link') || $errors->has('telegram'))
+                <div class="mb-6 rounded-xl px-4 py-3 flex items-center gap-2.5 text-left"
+                     style="background:#fef2f2; border:1px solid #fca5a5;">
+                    <svg class="w-4 h-4 flex-shrink-0" style="color:#ef4444;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                     </svg>
+                    <p class="text-sm font-medium text-red-700">
+                        {{ $errors->first('link') ?: $errors->first('telegram') }}
+                    </p>
                 </div>
-                <input
-                    id="email"
-                    type="email"
-                    name="email"
-                    value="{{ old('email') }}"
-                    required
-                    autofocus
-                    autocomplete="username"
-                    placeholder="you@example.com"
-                    class="input-field w-full pl-10 pr-4 py-2.5 sm:py-3 rounded-xl text-sm {{ $errors->has('email') && !$isFrozenError ? 'border-red-400' : '' }}"
-                />
-            </div>
-            @if(!$isFrozenError)
-                <x-input-error :messages="$errors->get('email')" class="mt-1.5" />
             @endif
-        </div>
 
-        <!-- Password -->
-        <div class="mb-4 sm:mb-5">
-            <div class="flex items-center justify-between mb-1.5">
-                <label for="password" class="block text-xs font-semibold uppercase tracking-wider" style="color:#64748b;">Password</label>
-                @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" class="text-xs font-medium transition-colors" style="color:#4f46e5;">
-                        Forgot password?
-                    </a>
-                @endif
+            {{-- Instruction --}}
+            <p class="text-sm text-slate-600 mb-2">Open Telegram and send</p>
+            <div class="inline-flex items-center gap-2 rounded-lg px-4 py-2 mb-6"
+                 style="background:#f0f4ff; border:1px solid #c7d2fe;">
+                <svg class="w-4 h-4 flex-shrink-0" style="color:#6366f1;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+                <span class="text-sm font-semibold" style="color:#4338ca;">
+                    /login to @{{ config('services.telegram.bot_username', 'YourBotUsername') }}
+                </span>
             </div>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <svg class="w-4 h-4" style="color:#94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
-                </div>
-                <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    required
-                    autocomplete="current-password"
-                    placeholder="••••••••"
-                    class="input-field w-full pl-10 pr-10 py-2.5 sm:py-3 rounded-xl text-sm {{ $errors->has('password') ? 'border-red-400' : '' }}"
-                />
-                <!-- Toggle password visibility -->
-                <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center transition-colors" style="color:#94a3b8;">
-                    <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                    </svg>
-                </button>
-            </div>
-            <x-input-error :messages="$errors->get('password')" class="mt-1.5" />
+
+            {{-- Deep-link button --}}
+            @php
+                $botUsername = config('services.telegram.bot_username', 'YourBotUsername');
+            @endphp
+            <a href="tg://resolve?domain={{ $botUsername }}&text=/login"
+               class="flex items-center justify-center gap-2.5 w-full py-3 px-4 rounded-xl text-white text-sm font-semibold transition-all"
+               style="background:linear-gradient(135deg,#229ED9,#0d7abf);">
+                {{-- Telegram paper-plane icon --}}
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.16 13.67l-2.965-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.993.889z"/>
+                </svg>
+                Open Telegram &amp; Send /login
+            </a>
+
+            {{-- Footer note --}}
+            <p class="mt-6 text-xs text-slate-400">
+                Don&rsquo;t have an account? Contact your admin.
+            </p>
+
         </div>
 
-        <!-- Remember Me -->
-        <div class="mb-4 sm:mb-5">
-            <label for="remember_me" class="inline-flex items-center gap-2.5 cursor-pointer select-none">
-                <input id="remember_me" type="checkbox" name="remember"
-                    class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0 transition" style="background:#ffffff;">
-                <span class="text-sm" style="color:#64748b;">Keep me signed in</span>
-            </label>
-        </div>
+    </div>
 
-        <!-- Cloudflare Turnstile -->
-        <div class="mb-5 sm:mb-6 overflow-hidden">
-            <div class="mobile-turnstile flex justify-center">
-                <div class="cf-turnstile" data-sitekey="{{ config('services.turnstile.site_key') }}"></div>
-            </div>
-            <x-input-error :messages="$errors->get('cf-turnstile-response')" class="mt-1.5" />
-        </div>
-
-        <!-- Submit -->
-        <button type="submit" class="login-btn w-full py-3 px-4 text-white font-semibold text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-            Sign in to Portal
-        </button>
-
-    </form>
-
-    <script>
-        function togglePassword() {
-            const input = document.getElementById('password');
-            const icon = document.getElementById('eye-icon');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>`;
-            } else {
-                input.type = 'password';
-                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
-            }
-        }
-    </script>
-</x-guest-layout>
+</body>
+</html>

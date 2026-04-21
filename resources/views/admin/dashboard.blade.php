@@ -428,135 +428,149 @@
                 </button>
             </div>
 
-            <form action="{{ route('admin.accounts.store') }}" method="POST" class="space-y-4">
-                @csrf
+            {{-- ── FORM SECTION ────────────────────────────── --}}
+            <div id="invite-form-section">
+                <form action="{{ route('admin.accounts.invite') }}" method="POST" class="space-y-4" id="invite-form">
+                    @csrf
 
-                <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Account type</label>
-                    <select name="role" id="modal-role" onchange="toggleRoleFields()" required
-                        class="w-full rounded-xl px-4 py-3 text-sm appearance-none focus:outline-none transition-all"
-                        style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
-                        @can('create-admin')
-                            <option value="admin" {{ old('role')==='admin'?'selected':'' }}>System Admin</option>
-                        @endcan
-                        <option value="vendor" {{ old('role')==='vendor'?'selected':'' }}>Vendor</option>
-                        <option value="client" {{ old('role')==='client'?'selected':'' }}>Client</option>
-                    </select>
-                </div>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Account type</label>
+                        <select name="role" id="modal-role" onchange="toggleInviteRoleFields()" required
+                            class="w-full rounded-xl px-4 py-3 text-sm appearance-none focus:outline-none transition-all"
+                            style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
+                            @can('create-admin')
+                                <option value="admin">System Admin</option>
+                            @endcan
+                            <option value="vendor">Vendor</option>
+                            <option value="client">Client</option>
+                        </select>
+                    </div>
 
-                <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Full name</label>
-                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="Jane Smith"
-                        class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
-                        style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
-                </div>
-
-                <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Email</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required placeholder="jane@example.com"
-                        class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
-                        style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
-                </div>
-
-                <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Temporary password</label>
-                    <input type="password" name="password" required placeholder="Min. 8 characters"
-                        class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
-                        style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
-                </div>
-
-                <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Confirm password</label>
-                    <input type="password" name="password_confirmation" required placeholder="Repeat temporary password"
-                        class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
-                        style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
-                </div>
-
-                @can('create-admin')
-                    <div id="admin-fields" class="hidden">
-                        <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">SYSTEM_ROOT password</label>
-                        <input type="password" name="super_password" value="{{ old('super_password') }}" placeholder="Required for admin accounts"
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Full name</label>
+                        <input type="text" name="name" required placeholder="Jane Smith"
                             class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
                             style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
                     </div>
-                @endcan
 
-                <div id="vendor-fields" class="hidden space-y-4">
-                    <div>
+                    {{-- Vendor: payout rate --}}
+                    <div id="invite-vendor-fields" class="hidden">
                         <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Custom Payout Rate (₹/order)</label>
-                        <input type="number" name="payout_rate" value="{{ old('payout_rate') }}" min="1" step="0.01"
+                        <input type="number" name="payout_rate" min="1" step="0.01"
                             placeholder="Default: {{ config('services.portal.vendor_payout_per_order') }}"
                             class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
                             style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
                         <p class="text-[10px] mt-1" style="color:#9CA3AF;">Leave blank to use the system default (₹{{ config('services.portal.vendor_payout_per_order') }}/order).</p>
                     </div>
-                </div>
 
-                <div id="client-fields" class="hidden space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Organisation name</label>
-                        <input type="text" name="client_name" value="{{ old('client_name') }}" placeholder="Acme Corp"
-                            class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
-                            style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
-                    </div>
-                    <div>
+                    {{-- Client: slots --}}
+                    <div id="invite-client-fields" class="hidden">
                         <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Initial slots</label>
-                        <input type="number" name="slots" value="{{ old('slots', 10) }}" min="1"
+                        <input type="number" name="slots" value="10" min="1"
                             class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
                             style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Price per file</label>
-                        <input type="number" name="price_per_file" value="{{ old('price_per_file', config('services.portal.default_client_price')) }}" min="0" step="0.01"
-                            class="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
+
+                    @if($errors->any())
+                        <div class="rounded-xl px-4 py-3" style="background:#FEE2E2;border:1px solid #DC2626;">
+                            @foreach($errors->all() as $error)
+                                <p class="text-xs" style="color:#7F1D1D;">{{ $error }}</p>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <button type="submit" id="invite-submit-btn" class="btn-primary w-full justify-center py-3">
+                        <i id="invite-submit-icon" data-lucide="link" class="w-3.5 h-3.5"></i>
+                        <svg id="invite-submit-spinner" class="hidden w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
+                        <span id="invite-submit-label">Generate Invite Link</span>
+                    </button>
+                </form>
+            </div>
+
+            {{-- ── RESULT SECTION (shown after invite is generated) ── --}}
+            <div id="invite-result-section" class="hidden space-y-4">
+                <div class="rounded-xl p-4" style="background:#F0FDF4;border:1px solid #86EFAC;">
+                    <p class="text-xs font-bold mb-1" style="color:#166534;">Invite link generated</p>
+                    <p class="text-[11px]" style="color:#15803D;">
+                        Valid for <strong>7 days</strong>. Send this link to
+                        <strong id="invite-result-name"></strong> — they'll activate their account via Telegram.
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-widest mb-2" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Invite link</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="invite-link-box" readonly
+                            class="flex-1 rounded-xl px-4 py-3 text-xs font-mono focus:outline-none select-all"
                             style="background:#F5F3FF;border:1px solid #DDD6FE;color:#1E1B4B;">
-                        <p class="text-[10px] mt-1" style="color:#9CA3AF;">Default: {{ config('services.portal.default_client_price') }}. Sets the per-file rate used in billing and revenue reports.</p>
+                        <button type="button" onclick="copyInviteLink()" id="copy-invite-btn"
+                            class="flex-shrink-0 px-4 py-3 rounded-xl text-xs font-bold transition-all"
+                            style="background:#EDE9FE;border:1px solid #DDD6FE;color:#6D28D9;">
+                            Copy
+                        </button>
                     </div>
                 </div>
 
-                @if($errors->any())
-                    <div class="rounded-xl px-4 py-3" style="background:#FEE2E2;border:1px solid #DC2626;">
-                        @foreach($errors->all() as $error)
-                            <p class="text-xs" style="color:#7F1D1D;">{{ $error }}</p>
-                        @endforeach
-                    </div>
-                @endif
-
-                <button type="submit" id="provision-submit-btn" class="btn-primary w-full justify-center py-3">
-                    <i id="provision-submit-icon" data-lucide="user-plus" class="w-3.5 h-3.5"></i>
-                    <svg id="provision-submit-spinner" class="hidden w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                    </svg>
-                    <span id="provision-submit-label">Execute Provisioning</span>
+                <button type="button" onclick="showInviteForm()"
+                    class="w-full py-2.5 rounded-xl text-xs font-semibold transition-colors"
+                    style="background:#F5F3FF;border:1px solid #DDD6FE;color:#6D28D9;">
+                    Generate Another Invite
                 </button>
-            </form>
+            </div>
 
             <script>
-                function toggleRoleFields() {
+                function toggleInviteRoleFields() {
                     const role = document.getElementById('modal-role').value;
-                    document.getElementById('client-fields').classList.toggle('hidden', role !== 'client');
-                    document.getElementById('vendor-fields').classList.toggle('hidden', role !== 'vendor');
-                    document.getElementById('admin-fields')?.classList.toggle('hidden', role !== 'admin');
+                    document.getElementById('invite-client-fields').classList.toggle('hidden', role !== 'client');
+                    document.getElementById('invite-vendor-fields').classList.toggle('hidden', role !== 'vendor');
                 }
 
-                toggleRoleFields();
+                toggleInviteRoleFields();
 
-                const createAccountForm = document.querySelector('#create-account-modal form');
-                const provisionSubmitBtn = document.getElementById('provision-submit-btn');
-                const provisionSubmitIcon = document.getElementById('provision-submit-icon');
-                const provisionSubmitSpinner = document.getElementById('provision-submit-spinner');
-                const provisionSubmitLabel = document.getElementById('provision-submit-label');
-
-                createAccountForm?.addEventListener('submit', () => {
-                    if (provisionSubmitBtn) {
-                        provisionSubmitBtn.disabled = true;
-                        provisionSubmitBtn.classList.add('opacity-80', 'cursor-wait');
-                    }
-                    provisionSubmitIcon?.classList.add('hidden');
-                    provisionSubmitSpinner?.classList.remove('hidden');
-                    if (provisionSubmitLabel) provisionSubmitLabel.textContent = 'Provisioning...';
+                document.getElementById('invite-form')?.addEventListener('submit', function () {
+                    const btn = document.getElementById('invite-submit-btn');
+                    const icon = document.getElementById('invite-submit-icon');
+                    const spinner = document.getElementById('invite-submit-spinner');
+                    const label = document.getElementById('invite-submit-label');
+                    if (btn) { btn.disabled = true; btn.classList.add('opacity-80', 'cursor-wait'); }
+                    icon?.classList.add('hidden');
+                    spinner?.classList.remove('hidden');
+                    if (label) label.textContent = 'Generating...';
                 });
+
+                function showInviteForm() {
+                    document.getElementById('invite-form-section').classList.remove('hidden');
+                    document.getElementById('invite-result-section').classList.add('hidden');
+                }
+
+                function copyInviteLink() {
+                    const input = document.getElementById('invite-link-box');
+                    navigator.clipboard.writeText(input.value).then(() => {
+                        const btn = document.getElementById('copy-invite-btn');
+                        const original = btn.textContent;
+                        btn.textContent = 'Copied!';
+                        btn.style.background = '#D1FAE5';
+                        btn.style.borderColor = '#6EE7B7';
+                        btn.style.color = '#065F46';
+                        setTimeout(() => {
+                            btn.textContent = original;
+                            btn.style.background = '#EDE9FE';
+                            btn.style.borderColor = '#DDD6FE';
+                            btn.style.color = '#6D28D9';
+                        }, 2000);
+                    });
+                }
+
+                @if(session('invite_link'))
+                    document.getElementById('invite-link-box').value = @json(session('invite_link'));
+                    document.getElementById('invite-result-name').textContent = @json(session('invite_name', ''));
+                    document.getElementById('invite-form-section').classList.add('hidden');
+                    document.getElementById('invite-result-section').classList.remove('hidden');
+                    document.getElementById('create-account-modal').classList.remove('hidden');
+                @endif
             </script>
         </div>
     </div>
@@ -564,14 +578,14 @@
     @if($errors->any())
     <script>
         document.getElementById('create-account-modal').classList.remove('hidden');
-        const btn = document.getElementById('provision-submit-btn');
-        const icon = document.getElementById('provision-submit-icon');
-        const spinner = document.getElementById('provision-submit-spinner');
-        const label = document.getElementById('provision-submit-label');
-        if (btn) { btn.disabled = false; btn.classList.remove('opacity-80', 'cursor-wait'); }
-        if (icon) icon.classList.remove('hidden');
-        if (spinner) spinner.classList.add('hidden');
-        if (label) label.textContent = 'Execute Provisioning';
+        const inviteBtn = document.getElementById('invite-submit-btn');
+        const inviteIcon = document.getElementById('invite-submit-icon');
+        const inviteSpinner = document.getElementById('invite-submit-spinner');
+        const inviteLabel = document.getElementById('invite-submit-label');
+        if (inviteBtn) { inviteBtn.disabled = false; inviteBtn.classList.remove('opacity-80', 'cursor-wait'); }
+        if (inviteIcon) inviteIcon.classList.remove('hidden');
+        if (inviteSpinner) inviteSpinner.classList.add('hidden');
+        if (inviteLabel) inviteLabel.textContent = 'Generate Invite Link';
     </script>
     @endif
 

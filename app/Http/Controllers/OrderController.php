@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\ClientLink;
 use App\Models\Order;
 use App\Enums\OrderStatus;
-use App\Rules\ValidTurnstile;
 use App\Services\CreateClientOrderService;
 use App\Services\DeleteClientOrderService;
 use App\Support\LogContext;
@@ -102,7 +101,6 @@ class OrderController extends Controller
         $request->validate([
             'files.*'               => 'required|file|mimes:pdf,doc,docx,zip|max:102400',
             'files'                 => 'required|array|min:1|max:20',
-            'cf-turnstile-response' => ['required', 'string', new ValidTurnstile],
         ]);
 
         try {

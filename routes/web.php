@@ -4,7 +4,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AccountManagerController;
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Admin\InviteController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Auth\TelegramLoginController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BotController;
@@ -41,6 +43,15 @@ Route::post('/telegram/webhook/{secret}', [BotController::class, 'webhook'])
     ->middleware('throttle:60,1')
     ->name('telegram.webhook');
 
+// Telegram login — token link works from any context (Telegram in-app browser, etc.)
+Route::get('/auth/telegram/{token}', [TelegramLoginController::class, 'authenticate'])
+    ->middleware('throttle:10,1')
+    ->name('auth.telegram');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [TelegramLoginController::class, 'showLogin'])->name('login');
+});
+
 // Client Public Routes — throttled to prevent abuse
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/u/{token}', [OrderController::class, 'showUpload'])->name('client.upload');
@@ -57,7 +68,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
     })->name('csrf.refresh');
 
     // Vendor/Admin Dashboard Routes
-    Route::middleware(['verified', 'role:vendor,admin', 'account.status'])->group(function () {
+    Route::middleware(['role:vendor,admin', 'account.status'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/orders/{order}/claim', [DashboardController::class, 'claim'])->name('orders.claim');
         Route::post('/orders/{order}/unclaim', [DashboardController::class, 'unclaim'])->name('orders.unclaim');
@@ -91,6 +102,7 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::post('/accounts/store', [AdminController::class, 'storeAccount'])->name('accounts.store');
+        Route::post('/accounts/invite', [InviteController::class, 'store'])->name('accounts.invite');
         Route::resource('/matrix', ClientMatrixController::class)->only(['index', 'update']);
         Route::post('/matrix/{client}/refill', [ClientMatrixController::class, 'refill'])->name('matrix.refill');
         Route::get('/topup', [TopupRequestController::class, 'index'])->name('topup.index');

@@ -17,15 +17,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
         $middleware->alias([
-            'role'            => \App\Http\Middleware\RoleMiddleware::class,
-            'account.status'  => \App\Http\Middleware\CheckAccountStatus::class,
-            'nocache'         => \App\Http\Middleware\NoCacheHeaders::class,
-            'session.timeout' => \App\Http\Middleware\EnforceSessionTimeout::class,
+            'role'           => \App\Http\Middleware\RoleMiddleware::class,
+            'account.status' => \App\Http\Middleware\CheckAccountStatus::class,
+            'nocache'        => \App\Http\Middleware\NoCacheHeaders::class,
         ]);
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\RequestCorrelation::class,
             \App\Http\Middleware\CheckAccountStatus::class,
-            \App\Http\Middleware\EnforceSessionTimeout::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             'telegram/webhook/*',
