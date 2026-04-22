@@ -729,19 +729,22 @@
                 <div class="p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl space-y-3">
                     <p class="text-[9px] font-black uppercase tracking-widest text-slate-600">Payment Instructions</p>
                     @if($paymentSetting)
-                        <div class="flex items-start gap-3">
-                            @if($paymentSetting->qr_code_path)
-                                <img src="{{ asset('storage/' . $paymentSetting->qr_code_path) }}"
-                                     alt="QR Code"
-                                     class="w-20 h-20 rounded-xl border border-white/[0.08] object-contain bg-white p-1 flex-shrink-0">
-                            @else
-                                <div class="w-8 h-8 bg-emerald-500/[0.1] rounded-lg flex items-center justify-center text-emerald-500 flex-shrink-0">
-                                    <i data-lucide="smartphone" class="w-4 h-4"></i>
-                                </div>
-                            @endif
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 bg-emerald-500/[0.1] rounded-lg flex items-center justify-center text-emerald-500 flex-shrink-0">
+                                <i data-lucide="smartphone" class="w-4 h-4"></i>
+                            </div>
                             <div>
-                                <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">{{ $paymentSetting->upi_name }}</p>
-                                <p class="text-sm font-bold text-white font-mono mt-0.5">{{ $paymentSetting->upi_id }}</p>
+                                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">UPI Holder's Name</p>
+                                <p class="text-[13px] font-semibold text-white mt-0.5">{{ $paymentSetting->upi_name }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 bg-indigo-500/[0.1] rounded-lg flex items-center justify-center text-indigo-400 flex-shrink-0">
+                                <i data-lucide="at-sign" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">UPI ID</p>
+                                <p class="text-sm font-mono font-bold text-white mt-0.5">{{ $paymentSetting->upi_id }}</p>
                             </div>
                         </div>
                     @else
