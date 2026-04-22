@@ -104,7 +104,7 @@ class PortalTelegramAlertService
 
         $admins = User::where('role', 'admin')
             ->whereNotNull('telegram_chat_id')
-            ->where('status', 'active')
+            ->whereNull('deleted_at')
             ->get();
 
         if ($admins->isEmpty()) {
