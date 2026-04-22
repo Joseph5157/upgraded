@@ -59,6 +59,25 @@ class BotController extends Controller
             return response()->json(['ok' => true]);
         }
 
+        // ── /myid ─────────────────────────────────────────────────────────────
+        if ($text === '/myid') {
+            $user = User::where('telegram_chat_id', $chatId)
+                ->whereNotNull('portal_number')
+                ->first();
+
+            if (! $user) {
+                $telegramService->sendMessage($chatId,
+                    'No portal account is linked to this Telegram. Contact your admin.');
+                return response()->json(['ok' => true]);
+            }
+
+            $telegramService->sendMessage($chatId,
+                "Your Portal ID is: {$user->portal_number}\n\n" .
+                'Use it to log in at ' . rtrim(config('app.url'), '/') . '/login');
+
+            return response()->json(['ok' => true]);
+        }
+
         // ── /start ────────────────────────────────────────────────────────────
         if (! str_starts_with($text, '/start')) {
             return response()->json(['ok' => true]);
