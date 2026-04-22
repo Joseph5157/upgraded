@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrderStatus;
 use App\Models\Client;
 use App\Models\Order;
+use App\Models\OrderReport;
 use App\Models\User;
 use App\Services\UploadVendorReportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Mockery\MockInterface;
 use Tests\TestCase;
 
@@ -63,6 +66,40 @@ class VendorReportUploadTest extends TestCase
             ->assertJson([
                 'error' => 'Report upload failed while saving files to storage. Please try again. If the issue continues, contact admin.',
             ]);
+    }
+
+    public function test_upload_report_allows_skipping_ai_report_when_reason_is_provided(): void
+    {
+        [$vendor, $order] = $this->createVendorOrder();
+
+        config(['filesystems.default' => 'local']);
+        Storage::fake('local');
+
+        $response = $this->actingAs($vendor)->post(route('orders.report', $order), [
+            'ai_skipped' => '1',
+            'ai_skip_reason' => 'AI tool failed for this document',
+            'plag_report' => UploadedFile::fake()->create('plag-report.pdf', 20, 'application/pdf'),
+        ], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJson([
+                'success' => 'Both reports uploaded. Order delivered successfully.',
+            ]);
+
+        $order->refresh();
+        $report = OrderReport::where('order_id', $order->id)->first();
+
+        $this->assertNotNull($report);
+        $this->assertNull($report->ai_report_path);
+        $this->assertSame('AI tool failed for this document', $report->ai_skip_reason);
+        $this->assertNotEmpty($report->plag_report_path);
+        $this->assertSame(OrderStatus::Delivered, $order->status);
+
+        Storage::disk('local')->assertExists($report->plag_report_path);
     }
 
     /**
