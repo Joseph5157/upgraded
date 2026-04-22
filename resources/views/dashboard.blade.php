@@ -212,6 +212,9 @@
     {{-- Upload modals live inside workspace-row.blade.php (desktop) and
          workspace-card.blade.php (mobile) so they exist for both initial
          page-load orders and AJAX-injected orders with no duplicate IDs. --}}
+    @foreach($myWorkspace as $order)
+        @include('partials.workspace-upload-modal', ['order' => $order])
+    @endforeach
 
     <script>
         const DASHBOARD_URL = @json(route('dashboard'));
@@ -254,10 +257,12 @@
 
         function getUploadModalFromEl(orderId, el) {
             if (el && typeof el.closest === 'function') {
-                const modal = el.closest('#upload-modal-' + orderId);
+                const modal = el.closest('[data-upload-modal="' + orderId + '"]');
                 if (modal) return modal;
             }
-            return document.getElementById('upload-modal-' + orderId);
+            return document.querySelector('[data-upload-modal="' + orderId + '"]:not(.hidden)')
+                || document.querySelector('[data-upload-modal="' + orderId + '"]')
+                || document.getElementById('upload-modal-' + orderId);
         }
 
         function openUploadModal(orderId, el = null) {
@@ -500,6 +505,25 @@
                 .catch(() => { /* proceed with existing token on fetch failure */ })
                 .finally(() => {
                     const xhr = new XMLHttpRequest();
+                    const formData = new FormData(form);
+                    const aiInput = modal.querySelector('#ai-label-' + orderId + ' input[type="file"]');
+                    const plagInput = modal.querySelector('#plag-label-' + orderId + ' input[type="file"]');
+
+                    if (aiInput && aiInput.files && aiInput.files.length > 0 && !formData.has('ai_report')) {
+                        formData.delete('ai_report');
+                        formData.append('ai_report', aiInput.files[0], aiInput.files[0].name);
+                    }
+
+                    if (plagInput && plagInput.files && plagInput.files.length > 0 && !formData.has('plag_report')) {
+                        formData.delete('plag_report');
+                        formData.append('plag_report', plagInput.files[0], plagInput.files[0].name);
+                    }
+
+                    if (!formData.has('plag_report')) {
+                        resetUploadUi(orderId, el);
+                        setUploadError(orderId, 'Please re-select the plagiarism report PDF and try again.', el);
+                        return;
+                    }
 
                     xhr.upload.onprogress = function (e) {
                         if (!e.lengthComputable) return;
@@ -567,7 +591,7 @@
                     // FormData body (_token field updated above) so Laravel's CSRF
                     // middleware can match it via either path.
                     xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
-                    xhr.send(new FormData(form));
+                    xhr.send(formData);
                 });
         }
 
