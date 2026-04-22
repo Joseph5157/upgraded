@@ -152,7 +152,9 @@ class OrderWorkflowService
 
         DB::transaction(function () use ($order, $user) {
             $oldStatus = $order->status->value;
-            $order->update(['status' => OrderStatus::Processing]);
+            // Reset claimed_at to now so the auto-release 2-hour window starts
+            // from when work actually began, not from when the order was claimed.
+            $order->update(['status' => OrderStatus::Processing, 'claimed_at' => now()]);
             $this->logActivity($order, $user, 'start_processing', 'Order processing started', $oldStatus, OrderStatus::Processing->value);
 
             $context = LogContext::forOrder($order, LogContext::forUser($user, LogContext::currentRequest()));

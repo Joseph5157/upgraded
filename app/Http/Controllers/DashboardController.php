@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Services\OrderWorkflowService;
 use App\Services\UploadVendorReportService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
@@ -85,6 +86,7 @@ class DashboardController extends Controller
 
         try {
             $this->workflowService->claim($order, auth()->user());
+            Cache::forget('vendor_stats_' . auth()->id());
 
             if ($request->expectsJson()) {
                 $claimedOrder = Order::with(['client', 'files', 'report', 'vendor'])->find($order->id);
@@ -116,6 +118,7 @@ class DashboardController extends Controller
             // Delegate to the service so the order update and audit log are
             // always written atomically inside a single DB transaction.
             $this->workflowService->unclaim($order, auth()->user());
+            Cache::forget('vendor_stats_' . auth()->id());
             if ($request->expectsJson()) {
                 return response()->json(['success' => true, 'message' => 'Order returned to pool.']);
             }
@@ -165,14 +168,21 @@ class DashboardController extends Controller
         // When the auto-release command has reclaimed an order (claimed_by is null),
         // the policy would return a generic 403. Surface a specific, helpful message instead.
         if (is_null($order->claimed_by) && auth()->user()->role !== 'admin') {
-            $message = 'This order was released back to the available pool because the deadline passed. You can re-claim it from the Available Queue.';
+            $message = 'This order was released back to the available pool because the claim window expired. You can re-claim it from the Available Queue.';
             if ($request->ajax()) {
                 return response()->json(['error' => $message], 403);
             }
             return redirect()->route('dashboard')->with('error', $message);
         }
 
-        $this->authorize('uploadReport', $order);
+        try {
+            $this->authorize('uploadReport', $order);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'You are not authorized to upload reports for this order.'], 403);
+            }
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to upload reports for this order.');
+        }
 
         $request->validate([
             'ai_skipped'     => 'sometimes|boolean',
@@ -202,17 +212,22 @@ class DashboardController extends Controller
                 $request->input('ai_skipped') ? $request->input('ai_skip_reason') : null,
             );
         } catch (\Throwable $e) {
-            $message = $e->getMessage();
-            if ($message === '' || str_contains(strtolower($message), 's3') || str_contains(strtolower($message), 'flysystem') || str_contains(strtolower($message), 'unable to write')) {
+            $message = trim($e->getMessage());
+            $status = 422;
+
+            if ($this->isStorageUploadException($e)) {
                 $message = 'Report upload failed while saving files to storage. Please try again. If the issue continues, contact admin.';
+                $status = 500;
             }
 
             if ($request->ajax()) {
-                return response()->json(['error' => $message], 500);
+                return response()->json(['error' => $message], $status);
             }
 
             return redirect()->route('dashboard')->with('error', $message);
         }
+
+        Cache::forget('vendor_stats_' . auth()->id());
 
         if ($request->ajax()) {
             return response()->json([
@@ -257,5 +272,26 @@ class DashboardController extends Controller
         $downloadName = $file->original_name ?? basename($file->file_path);
 
         return Storage::disk($disk)->download($file->file_path, $downloadName);
+    }
+
+    protected function isStorageUploadException(\Throwable $e): bool
+    {
+        if ($e instanceof ValidationException) {
+            return false;
+        }
+
+        $message = strtolower(trim($e->getMessage()));
+
+        if ($message === '') {
+            return true;
+        }
+
+        foreach (['s3', 'r2', 'flysystem', 'unable to write', 'putobject', 'storage'] as $needle) {
+            if (str_contains($message, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

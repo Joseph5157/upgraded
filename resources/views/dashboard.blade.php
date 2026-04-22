@@ -191,7 +191,7 @@
                                         {{ $history->files->first() ? basename($history->files->first()->file_path) : 'Document' }}
                                     </p>
                                     <p class="text-[9px] text-gray-400 dark:text-slate-500 mt-0.5 font-mono">
-                                        {{ $history->updated_at->diffForHumans() }}</p>
+                                        {{ $history->delivered_at->diffForHumans() }}</p>
                                 </div>
                             </div>
                             <span
@@ -503,13 +503,16 @@
                             resetUploadUi(orderId);
 
                             let msg = 'Upload failed. Please try again.';
+                            let payload = null;
+
+                            try {
+                                payload = JSON.parse(xhr.responseText);
+                            } catch (e) {}
+
                             if (xhr.status === 419) {
                                 msg = 'Session expired — please refresh the page and try again.';
-                            } else if (xhr.status === 422) {
-                                try {
-                                    const d = JSON.parse(xhr.responseText);
-                                    msg = d.error || d.message || (d.errors && Object.values(d.errors)[0]?.[0]) || msg;
-                                } catch (e) {}
+                            } else if (payload) {
+                                msg = payload.error || payload.message || (payload.errors && Object.values(payload.errors)[0]?.[0]) || msg;
                             } else if (xhr.status === 403) {
                                 msg = 'You are not authorized to upload for this order.';
                             } else if (xhr.status === 413) {
@@ -528,6 +531,7 @@
 
                     xhr.open('POST', form.action);
                     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    xhr.setRequestHeader('Accept', 'application/json');
                     // Send the token both as a header (most reliable) and in the
                     // FormData body (_token field updated above) so Laravel's CSRF
                     // middleware can match it via either path.
@@ -578,7 +582,15 @@ function ajaxAction(url, btn, type, orderId, status = null) {
         },
         body: body,
     })
-    .then(r => r.json())
+    .then(r => {
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            // Middleware returned a redirect (session expired, role mismatch) — HTML, not JSON.
+            const isAuth = r.url && r.url.includes('/login');
+            throw Object.assign(new Error('non_json'), { isAuth });
+        }
+        return r.json();
+    })
     .then(data => {
         if (data.success) {
             if (type === 'claim') {
@@ -645,10 +657,13 @@ function ajaxAction(url, btn, type, orderId, status = null) {
             showToast(data.message || 'Something went wrong.', 'error');
         }
     })
-    .catch(() => {
+    .catch((err) => {
         btn.disabled = false;
         btn.innerHTML = original;
-        showToast('Network error. Please try again.', 'error');
+        const msg = (err && err.isAuth)
+            ? 'Your session expired. Please refresh the page and log in again.'
+            : 'Network error. Please try again.';
+        showToast(msg, 'error');
     });
 }
 
