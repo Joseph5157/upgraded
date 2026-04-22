@@ -252,27 +252,48 @@
         setInterval(refreshAvailableQueue, 30000);
 
 
-        function setUploadError(orderId, message) {
-            const errStrip = document.getElementById('error-strip-' + orderId);
-            const errMsg   = document.getElementById('error-msg-' + orderId);
+        function getUploadModalFromEl(orderId, el) {
+            if (el && typeof el.closest === 'function') {
+                const modal = el.closest('#upload-modal-' + orderId);
+                if (modal) return modal;
+            }
+            return document.getElementById('upload-modal-' + orderId);
+        }
+
+        function openUploadModal(orderId, el = null) {
+            const modal = getUploadModalFromEl(orderId, el);
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeUploadModal(orderId, el = null) {
+            const modal = getUploadModalFromEl(orderId, el);
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function setUploadError(orderId, message, el = null) {
+            const modal = getUploadModalFromEl(orderId, el);
+            const errStrip = modal ? modal.querySelector('#error-strip-' + orderId) : document.getElementById('error-strip-' + orderId);
+            const errMsg   = modal ? modal.querySelector('#error-msg-' + orderId) : document.getElementById('error-msg-' + orderId);
             if (!errStrip || !errMsg) return;
             errMsg.textContent = message;
             errStrip.classList.remove('hidden');
             errStrip.classList.add('flex');
         }
 
-        function clearUploadError(orderId) {
-            const errStrip = document.getElementById('error-strip-' + orderId);
+        function clearUploadError(orderId, el = null) {
+            const modal = getUploadModalFromEl(orderId, el);
+            const errStrip = modal ? modal.querySelector('#error-strip-' + orderId) : document.getElementById('error-strip-' + orderId);
             if (!errStrip) return;
             errStrip.classList.add('hidden');
             errStrip.classList.remove('flex');
         }
 
-        function resetUploadUi(orderId) {
-            const submitBtn   = document.getElementById('submit-btn-' + orderId);
-            const cancelBtn   = document.getElementById('cancel-btn-' + orderId);
-            const readyStrip  = document.getElementById('progress-' + orderId);
-            const progressBar = document.getElementById('upload-progress-' + orderId);
+        function resetUploadUi(orderId, el = null) {
+            const modal = getUploadModalFromEl(orderId, el);
+            const submitBtn   = modal ? modal.querySelector('#submit-btn-' + orderId) : document.getElementById('submit-btn-' + orderId);
+            const cancelBtn   = modal ? modal.querySelector('#cancel-btn-' + orderId) : document.getElementById('cancel-btn-' + orderId);
+            const readyStrip  = modal ? modal.querySelector('#progress-' + orderId) : document.getElementById('progress-' + orderId);
+            const progressBar = modal ? modal.querySelector('#upload-progress-' + orderId) : document.getElementById('upload-progress-' + orderId);
 
             if (submitBtn) {
                 submitBtn.disabled = false;
@@ -294,23 +315,26 @@
             const file = input.files[0];
             if (!file) return;
 
-            clearUploadError(orderId);
+            clearUploadError(orderId, input);
 
             const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
             if (!isPdf) {
                 input.value = '';
-                setUploadError(orderId, 'Only PDF files can be uploaded for vendor reports.');
+                setUploadError(orderId, 'Only PDF files can be uploaded for vendor reports.', input);
+                checkUploadReady(orderId, input);
                 return;
             }
 
             if (file.size > MAX_REPORT_SIZE) {
                 input.value = '';
-                setUploadError(orderId, 'Each report must be 100MB or smaller.');
+                setUploadError(orderId, 'Each report must be 100MB or smaller.', input);
+                checkUploadReady(orderId, input);
                 return;
             }
 
-            const preview = document.getElementById(previewId);
-            const label   = document.getElementById(labelId);
+            const modal = getUploadModalFromEl(orderId, input);
+            const preview = modal ? modal.querySelector('#' + previewId) : document.getElementById(previewId);
+            const label   = modal ? modal.querySelector('#' + labelId) : document.getElementById(labelId);
             const name    = file.name.length > 24 ? file.name.slice(0, 21) + '...' : file.name;
 
             const colorMap = {
@@ -341,21 +365,22 @@
             label.classList.remove('border-dashed', 'border-white/[0.08]', 'bg-white/[0.03]');
             label.classList.add(c.labelBorder, c.labelBg);
 
-            checkUploadReady(orderId);
+            checkUploadReady(orderId, input);
         }
 
-        function toggleAiBypass(orderId, isSkipped) {
-            const uploadContainer = document.getElementById('ai-upload-container-' + orderId);
-            const reasonContainer = document.getElementById('ai-skip-reason-container-' + orderId);
-            const aiInput = document.querySelector('#ai-label-' + orderId + ' input[type="file"]');
+        function toggleAiBypass(orderId, isSkipped, el = null) {
+            const modal = getUploadModalFromEl(orderId, el);
+            const uploadContainer = modal ? modal.querySelector('#ai-upload-container-' + orderId) : document.getElementById('ai-upload-container-' + orderId);
+            const reasonContainer = modal ? modal.querySelector('#ai-skip-reason-container-' + orderId) : document.getElementById('ai-skip-reason-container-' + orderId);
+            const aiInput = modal ? modal.querySelector('#ai-label-' + orderId + ' input[type="file"]') : document.querySelector('#ai-label-' + orderId + ' input[type="file"]');
             
             if (isSkipped) {
                 uploadContainer.classList.add('hidden');
                 reasonContainer.classList.remove('hidden');
                 if (aiInput) aiInput.value = '';
                 
-                const preview = document.getElementById('ai-preview-' + orderId);
-                const label = document.getElementById('ai-label-' + orderId);
+                const preview = modal ? modal.querySelector('#ai-preview-' + orderId) : document.getElementById('ai-preview-' + orderId);
+                const label = modal ? modal.querySelector('#ai-label-' + orderId) : document.getElementById('ai-label-' + orderId);
                 if (preview) {
                     preview.innerHTML = `
                         <div class="w-12 h-12 bg-red-500/[0.08] rounded-2xl flex items-center justify-center border border-red-500/[0.15] group-hover:scale-105 transition-all">
@@ -373,18 +398,20 @@
             } else {
                 uploadContainer.classList.remove('hidden');
                 reasonContainer.classList.add('hidden');
-                document.getElementById('ai-skip-reason-input-' + orderId).value = '';
+                const reasonInput = modal ? modal.querySelector('#ai-skip-reason-input-' + orderId) : document.getElementById('ai-skip-reason-input-' + orderId);
+                if (reasonInput) reasonInput.value = '';
             }
-            checkUploadReady(orderId);
+            checkUploadReady(orderId, el);
         }
 
-        function checkUploadReady(orderId) {
-            const aiInput      = document.querySelector('#ai-label-' + orderId + ' input[type="file"]');
-            const plagInput    = document.querySelector('#plag-label-' + orderId + ' input[type="file"]');
-            const skipCheckbox = document.getElementById('ai-skipped-' + orderId);
-            const reasonInput  = document.getElementById('ai-skip-reason-input-' + orderId);
-            const bar          = document.getElementById('progress-' + orderId);
-            const btn          = document.getElementById('submit-btn-' + orderId);
+        function checkUploadReady(orderId, el = null) {
+            const modal = getUploadModalFromEl(orderId, el);
+            const aiInput      = modal ? modal.querySelector('#ai-label-' + orderId + ' input[type="file"]') : document.querySelector('#ai-label-' + orderId + ' input[type="file"]');
+            const plagInput    = modal ? modal.querySelector('#plag-label-' + orderId + ' input[type="file"]') : document.querySelector('#plag-label-' + orderId + ' input[type="file"]');
+            const skipCheckbox = modal ? modal.querySelector('#ai-skipped-' + orderId) : document.getElementById('ai-skipped-' + orderId);
+            const reasonInput  = modal ? modal.querySelector('#ai-skip-reason-input-' + orderId) : document.getElementById('ai-skip-reason-input-' + orderId);
+            const bar          = modal ? modal.querySelector('#progress-' + orderId) : document.getElementById('progress-' + orderId);
+            const btn          = modal ? modal.querySelector('#submit-btn-' + orderId) : document.getElementById('submit-btn-' + orderId);
             
             let aiReady   = false;
             let plagReady = false;
@@ -432,19 +459,20 @@
         }
         document.addEventListener('DOMContentLoaded', hoistUploadModals);
 
-        function submitUploadForm(orderId) {
-            const modal       = document.getElementById('upload-modal-' + orderId);
+        function submitUploadForm(orderId, el = null) {
+            const modal       = getUploadModalFromEl(orderId, el);
+            if (!modal) return;
             const form        = modal.querySelector('form');
-            const submitBtn   = document.getElementById('submit-btn-' + orderId);
-            const cancelBtn   = document.getElementById('cancel-btn-' + orderId);
-            const readyStrip  = document.getElementById('progress-' + orderId);
-            const progressBar = document.getElementById('upload-progress-' + orderId);
-            const fill        = document.getElementById('upload-progress-fill-' + orderId);
-            const pctText     = document.getElementById('upload-progress-text-' + orderId);
+            const submitBtn   = modal.querySelector('#submit-btn-' + orderId);
+            const cancelBtn   = modal.querySelector('#cancel-btn-' + orderId);
+            const readyStrip  = modal.querySelector('#progress-' + orderId);
+            const progressBar = modal.querySelector('#upload-progress-' + orderId);
+            const fill        = modal.querySelector('#upload-progress-fill-' + orderId);
+            const pctText     = modal.querySelector('#upload-progress-text-' + orderId);
 
             if (submitBtn.disabled) return;
 
-            clearUploadError(orderId);
+            clearUploadError(orderId, el);
 
             // Lock the UI
             submitBtn.disabled = true;
@@ -486,8 +514,8 @@
                             try {
                                 const data = JSON.parse(xhr.responseText);
                                 if (data.error) {
-                                    setUploadError(orderId, data.error);
-                                    resetUploadUi(orderId);
+                                    setUploadError(orderId, data.error, el);
+                                    resetUploadUi(orderId, el);
                                     return;
                                 }
                                 // Success - stash the message for display after redirect
@@ -500,7 +528,7 @@
                             window.location.href = DASHBOARD_URL;
                         } else {
                             // HTTP 4xx / 5xx - re-enable the form and show an inline error
-                            resetUploadUi(orderId);
+                            resetUploadUi(orderId, el);
 
                             let msg = 'Upload failed. Please try again.';
                             let payload = null;
@@ -523,13 +551,13 @@
                             } else if (xhr.status >= 500) {
                                 msg = 'Server error while saving reports. Please try again in a moment.';
                             }
-                            setUploadError(orderId, msg);
+                            setUploadError(orderId, msg, el);
                         }
                     };
 
                     xhr.onerror = function () {
-                        resetUploadUi(orderId);
-                        setUploadError(orderId, 'Network or storage connection error. Please try again.');
+                        resetUploadUi(orderId, el);
+                        setUploadError(orderId, 'Network or storage connection error. Please try again.', el);
                     };
 
                     xhr.open('POST', form.action);

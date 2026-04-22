@@ -61,7 +61,7 @@
             @endforeach
             @if($order->status->value === 'processing' || $order->status->value === 'claimed')
                 <button
-                    onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.remove('hidden')"
+                    onclick="openUploadModal({{ $order->id }}, this)"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-all shadow-lg shadow-indigo-600/10">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -105,7 +105,7 @@
                     </p>
                 </div>
             </div>
-            <button onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.add('hidden')"
+            <button onclick="closeUploadModal({{ $order->id }}, this)"
                 class="w-8 h-8 bg-white/[0.04] hover:bg-white/[0.08] text-slate-500 hover:text-white rounded-lg flex items-center justify-center transition-all border border-white/[0.06]">
                 <i data-lucide="x" class="w-4 h-4"></i>
             </button>
@@ -123,11 +123,11 @@
                     <p class="text-[10px] font-semibold text-amber-100">AI report unavailable?</p>
                 </div>
                 <label class="flex items-center gap-2 text-[10px] font-semibold text-slate-200 cursor-pointer w-fit">
-                    <input type="checkbox" id="ai-skipped-{{ $order->id }}" name="ai_skipped" value="1" class="rounded bg-white/[0.04] border-white/[0.1] text-indigo-500 focus:ring-indigo-500/30" onchange="toggleAiBypass({{ $order->id }}, this.checked)">
+                    <input type="checkbox" id="ai-skipped-{{ $order->id }}" name="ai_skipped" value="1" class="rounded bg-white/[0.04] border-white/[0.1] text-indigo-500 focus:ring-indigo-500/30" onchange="toggleAiBypass({{ $order->id }}, this.checked, this)">
                     AI report could not be generated
                 </label>
                 <div id="ai-skip-reason-container-{{ $order->id }}" class="hidden">
-                    <input type="text" name="ai_skip_reason" id="ai-skip-reason-input-{{ $order->id }}" placeholder="Brief reason (e.g. file too short for AI check)" class="w-full bg-black/20 border border-amber-500/[0.18] rounded-lg px-3 py-2 text-[10px] text-white placeholder-amber-100/30 focus:outline-none focus:border-amber-400/50" oninput="checkUploadReady({{ $order->id }})">
+                    <input type="text" name="ai_skip_reason" id="ai-skip-reason-input-{{ $order->id }}" placeholder="Brief reason (e.g. file too short for AI check)" class="w-full bg-black/20 border border-amber-500/[0.18] rounded-lg px-3 py-2 text-[10px] text-white placeholder-amber-100/30 focus:outline-none focus:border-amber-400/50" oninput="checkUploadReady({{ $order->id }}, this)">
                 </div>
             </div>
 
@@ -194,12 +194,12 @@
 
             <div class="flex gap-3 pt-1" style="padding-bottom: max(env(safe-area-inset-bottom), 12px);">
                 <button type="button" id="cancel-btn-{{ $order->id }}"
-                    onclick="document.getElementById('upload-modal-{{ $order->id }}').classList.add('hidden')"
+                    onclick="closeUploadModal({{ $order->id }}, this)"
                     class="px-5 py-2.5 text-[11px] font-semibold text-slate-500 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-xl transition-all border border-white/[0.06]">
                     Cancel
                 </button>
                 <button type="button" id="submit-btn-{{ $order->id }}"
-                    onclick="submitUploadForm({{ $order->id }})"
+                    onclick="submitUploadForm({{ $order->id }}, this)"
                     disabled
                     class="flex-1 py-2.5 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>
