@@ -37,14 +37,33 @@
                 <div class="bg-white dark:bg-[#0d0d10] border border-[#E8ECF0] dark:border-white/[0.05] rounded-2xl overflow-hidden">
 
                     {{-- Client header --}}
-                    <div class="flex items-center gap-3 px-6 py-4 border-b border-[#E8ECF0] dark:border-white/[0.05]">
-                        <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[11px] font-bold flex-shrink-0">
-                            {{ strtoupper(substr($client->name, 0, 2)) }}
+                    <div class="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#E8ECF0] dark:border-white/[0.05]">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[11px] font-bold flex-shrink-0">
+                                {{ strtoupper(substr($client->name, 0, 2)) }}
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $client->name }}</p>
+                                    @if(!$client->user)
+                                        <span class="px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 text-[8px] font-bold uppercase tracking-widest rounded border border-indigo-500/20">Link Only</span>
+                                    @endif
+                                </div>
+                                <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500">{{ $client->links->count() }} link{{ $client->links->count() !== 1 ? 's' : '' }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $client->name }}</p>
-                            <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500">{{ $client->links->count() }} link{{ $client->links->count() !== 1 ? 's' : '' }}</p>
-                        </div>
+                        {{-- Delete client (only for link-only clients with no portal account) --}}
+                        @if(!$client->user)
+                            <form method="POST" action="{{ route('admin.client-links.clients.destroy', $client) }}"
+                                onsubmit="return confirm('Delete {{ addslashes($client->name) }} and all their links permanently?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-red-500/20 transition-all">
+                                    <i data-lucide="trash-2" class="w-3 h-3"></i> Delete Client
+                                </button>
+                            </form>
+                        @endif
                     </div>
 
                     <div class="overflow-x-auto">
@@ -147,35 +166,6 @@
             </div>
         @endforelse
 
-        {{-- Clients with no links yet --}}
-        @php $clientsWithoutLinks = $clients->filter(fn($c) => $c->links->isEmpty()); @endphp
-        @if($clientsWithoutLinks->isNotEmpty())
-            <div class="bg-white dark:bg-[#0d0d10] border border-[#E8ECF0] dark:border-white/[0.05] rounded-2xl overflow-hidden">
-                <div class="px-6 pt-5 pb-4 border-b border-[#E8ECF0] dark:border-white/[0.05]">
-                    <p class="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.3em]">Clients Without Links</p>
-                </div>
-                <div class="divide-y divide-gray-100 dark:divide-white/[0.04]">
-                    @foreach($clientsWithoutLinks as $client)
-                        <div class="flex items-center justify-between px-6 py-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                                    {{ strtoupper(substr($client->name, 0, 2)) }}
-                                </div>
-                                <p class="text-sm font-semibold text-gray-700 dark:text-slate-300">{{ $client->name }}</p>
-                            </div>
-                            <form method="POST" action="{{ route('admin.client-links.store') }}">
-                                @csrf
-                                <input type="hidden" name="client_id" value="{{ $client->id }}">
-                                <button type="submit"
-                                    class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-indigo-500/20 transition-all">
-                                    <i data-lucide="plus" class="w-3 h-3"></i> Generate Link
-                                </button>
-                            </form>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
     </div>
 
     {{-- ── New Link Client Modal ───────────────────────────────────────────── --}}

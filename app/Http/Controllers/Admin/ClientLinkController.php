@@ -15,9 +15,9 @@ class ClientLinkController extends Controller
 {
     public function index(): View
     {
-        $clients = Client::with(['links' => function ($q) {
+        $clients = Client::with(['user', 'links' => function ($q) {
             $q->latest();
-        }])->orderBy('name')->get();
+        }])->has('links')->orderBy('name')->get();
 
         return view('admin.client-links.index', compact('clients'));
     }
@@ -74,6 +74,31 @@ class ClientLinkController extends Controller
         $order->delete();
 
         return back()->with('success', 'Order deleted successfully.');
+    }
+
+    public function destroyClient(Client $client): RedirectResponse
+    {
+        // Block deletion if this client has a portal account
+        abort_if($client->user !== null, 403, 'Cannot delete a client with a portal account from here.');
+
+        // Delete all links and their orders/files
+        foreach ($client->links as $link) {
+            foreach ($link->orders as $order) {
+                foreach ($order->files as $file) {
+                    \Storage::disk($file->disk ?: 'r2')->delete($file->file_path);
+                    $file->delete();
+                }
+                $order->report?->delete();
+                $order->delete();
+            }
+            $link->delete();
+        }
+
+        $name = $client->name;
+        $client->delete();
+
+        return redirect()->route('admin.client-links.index')
+            ->with('success', "Client \"{$name}\" and all their links have been deleted.");
     }
 
     public function storeClient(Request $request): RedirectResponse
