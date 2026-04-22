@@ -125,6 +125,13 @@
                                                     </button>
                                                 </form>
 
+                                                {{-- Copy Link --}}
+                                                <button
+                                                    onclick="copyLink('{{ url('/u/' . $link->token) }}', this)"
+                                                    class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-indigo-500/20 transition-all">
+                                                    <i data-lucide="copy" class="w-3 h-3"></i> Copy
+                                                </button>
+
                                                 {{-- View Orders --}}
                                                 <a href="{{ route('admin.client-links.orders', $link) }}"
                                                     class="px-3 py-1.5 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-slate-500/20 transition-all">
@@ -134,7 +141,7 @@
                                                 {{-- Open in new tab --}}
                                                 @if($link->is_active)
                                                     <a href="{{ url('/u/' . $link->token) }}" target="_blank"
-                                                        class="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-indigo-500/20 transition-all">
+                                                        class="px-3 py-1.5 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-slate-500/20 transition-all">
                                                         Open
                                                     </a>
                                                 @endif
@@ -269,6 +276,19 @@
                 const toast = document.getElementById('copy-toast');
                 toast.classList.remove('hidden');
                 setTimeout(() => toast.classList.add('hidden'), 2000);
+
+                // Visual feedback on button
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Copied!';
+                btn.classList.add('text-green-400', 'border-green-500/20', 'bg-green-500/10');
+                btn.classList.remove('text-indigo-400', 'border-indigo-500/20', 'bg-indigo-500/10');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = original;
+                    btn.classList.remove('text-green-400', 'border-green-500/20', 'bg-green-500/10');
+                    btn.classList.add('text-indigo-400', 'border-indigo-500/20', 'bg-indigo-500/10');
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }, 2000);
             });
         }
     </script>
