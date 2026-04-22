@@ -133,6 +133,7 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
         Route::prefix('client-links')->name('client-links.')->group(function () {
             Route::get('/', [ClientLinkController::class, 'index'])->name('index');
             Route::post('/', [ClientLinkController::class, 'store'])->name('store');
+            Route::post('/clients', [ClientLinkController::class, 'storeClient'])->name('clients.store');
             Route::post('/{clientLink}/toggle', [ClientLinkController::class, 'toggle'])->name('toggle');
             Route::delete('/{clientLink}', [ClientLinkController::class, 'destroy'])->name('destroy');
             Route::get('/{clientLink}/orders', [ClientLinkController::class, 'showOrders'])->name('orders');

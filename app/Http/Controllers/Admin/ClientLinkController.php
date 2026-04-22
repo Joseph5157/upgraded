@@ -75,4 +75,27 @@ class ClientLinkController extends Controller
 
         return back()->with('success', 'Order deleted successfully.');
     }
+
+    public function storeClient(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'name'  => ['required', 'string', 'max:255'],
+            'slots' => ['required', 'integer', 'min:1', 'max:10000'],
+        ]);
+
+        $client = \App\Models\Client::create([
+            'name'           => $request->name,
+            'slots'          => $request->slots,
+            'slots_consumed' => 0,
+            'status'         => 'active',
+        ]);
+
+        ClientLink::create([
+            'client_id' => $client->id,
+            'token'     => Str::random(40),
+            'is_active' => true,
+        ]);
+
+        return back()->with('success', "Link client \"{$client->name}\" created with {$client->slots} slots.");
+    }
 }

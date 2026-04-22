@@ -6,10 +6,16 @@
             <h1 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Client Upload Links</h1>
             <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">Generate and manage shareable upload links per client</p>
         </div>
-        <button onclick="document.getElementById('create-link-modal').classList.remove('hidden')"
-            class="flex items-center gap-2 px-4 py-2 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-indigo-600/20 transition-all">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Link
-        </button>
+        <div class="flex items-center gap-2">
+            <button onclick="document.getElementById('new-link-client-modal').classList.remove('hidden')"
+                class="flex items-center gap-2 px-4 py-2 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-indigo-600/20 transition-all">
+                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> New Link Client
+            </button>
+            <button onclick="document.getElementById('create-link-modal').classList.remove('hidden')"
+                class="flex items-center gap-2 px-4 py-2 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-slate-500/20 transition-all">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i> Link for Existing
+            </button>
+        </div>
     </div>
 
     {{-- Flash messages --}}
@@ -170,6 +176,51 @@
                 </div>
             </div>
         @endif
+    </div>
+
+    {{-- ── New Link Client Modal ───────────────────────────────────────────── --}}
+    <div id="new-link-client-modal"
+        class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        onclick="if(event.target===this)this.classList.add('hidden')">
+        <div class="bg-white dark:bg-[#0d0d10] border border-[#E8ECF0] dark:border-white/[0.08] rounded-2xl w-full max-w-sm p-8 shadow-2xl" onclick="event.stopPropagation()">
+
+            <div class="flex justify-between items-center mb-7">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-900 dark:text-white font-bold">New Link Client</h3>
+                        <p class="text-[10px] text-gray-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">No portal login needed</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('new-link-client-modal').classList.add('hidden')"
+                    class="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('admin.client-links.clients.store') }}" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-600 dark:text-slate-400 uppercase tracking-widest mb-2">Client Name</label>
+                    <input type="text" name="name" required placeholder="e.g. John Doe"
+                        class="w-full bg-[#F5F7FA] dark:bg-white/[0.04] border border-[#E8ECF0] dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-600 dark:text-slate-400 uppercase tracking-widest mb-2">Upload Slots</label>
+                    <input type="number" name="slots" required min="1" max="10000" placeholder="e.g. 10"
+                        class="w-full bg-[#F5F7FA] dark:bg-white/[0.04] border border-[#E8ECF0] dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
+                    <p class="text-[9px] text-gray-400 dark:text-slate-600 mt-1.5">Number of files this client can upload in total</p>
+                </div>
+                <div class="pt-4 border-t border-gray-100 dark:border-white/[0.05]">
+                    <button type="submit"
+                        class="w-full py-3 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-indigo-600/20 transition-all flex justify-center items-center gap-2">
+                        <i data-lucide="link" class="w-4 h-4"></i> Create Client &amp; Generate Link
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     {{-- ── Create Link Modal ────────────────────────────────────────────────── --}}

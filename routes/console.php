@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\AutoReleaseOrdersCommand;
+use App\Console\Commands\CleanupLinkOrdersCommand;
 use App\Console\Commands\CloseDayCommand;
 use App\Console\Commands\PurgeOrderFilesCommand;
 use Illuminate\Foundation\Inspiring;
@@ -20,6 +21,9 @@ Schedule::command(CloseDayCommand::class)->dailyAt('23:59');
 
 // Purge all order files from disk every night at 2:00 AM
 Schedule::command(PurgeOrderFilesCommand::class)->dailyAt('02:00');
+
+// Clean up link-based orders older than 24 hours — runs every hour
+Schedule::command(CleanupLinkOrdersCommand::class)->hourly();
 
 // Prune expired sessions from the database nightly at 3:00 AM
 Schedule::call(function () {
