@@ -191,7 +191,7 @@
                                         {{ $history->files->first() ? basename($history->files->first()->file_path) : 'Document' }}
                                     </p>
                                     <p class="text-[9px] text-gray-400 dark:text-slate-500 mt-0.5 font-mono">
-                                        {{ $history->updated_at->diffForHumans() }}</p>
+                                        {{ $history->delivered_at->diffForHumans() }}</p>
                                 </div>
                             </div>
                             <span
@@ -582,7 +582,15 @@ function ajaxAction(url, btn, type, orderId, status = null) {
         },
         body: body,
     })
-    .then(r => r.json())
+    .then(r => {
+        const ct = r.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            // Middleware returned a redirect (session expired, role mismatch) — HTML, not JSON.
+            const isAuth = r.url && r.url.includes('/login');
+            throw Object.assign(new Error('non_json'), { isAuth });
+        }
+        return r.json();
+    })
     .then(data => {
         if (data.success) {
             if (type === 'claim') {
@@ -649,10 +657,13 @@ function ajaxAction(url, btn, type, orderId, status = null) {
             showToast(data.message || 'Something went wrong.', 'error');
         }
     })
-    .catch(() => {
+    .catch((err) => {
         btn.disabled = false;
         btn.innerHTML = original;
-        showToast('Network error. Please try again.', 'error');
+        const msg = (err && err.isAuth)
+            ? 'Your session expired. Please refresh the page and log in again.'
+            : 'Network error. Please try again.';
+        showToast(msg, 'error');
     });
 }
 

@@ -14,6 +14,8 @@ class AutoReleaseOrdersCommand extends Command
     public function handle(): int
     {
         // --- Processing orders: vendor started work but has held for over 2 hours ---
+        // claimed_at is refreshed when work begins (startProcessing), so this 2-hour
+        // window starts from when the vendor actually downloaded the file.
         $processingOrders = Order::where('status', OrderStatus::Processing)
             ->whereNotNull('claimed_by')
             ->where('claimed_at', '<', now()->subHours(2))
@@ -28,31 +30,15 @@ class AutoReleaseOrdersCommand extends Command
             ]);
         }
 
-        // --- Stuck pending orders: claimed but never moved to processing after 1 hour ---
-        $stuckPendingOrders = Order::whereIn('status', [OrderStatus::Pending, OrderStatus::Claimed])
-            ->whereNotNull('claimed_by')
-            ->where('claimed_at', '<', now()->subHour())
-            ->whereNotIn('id', $processingOrders->pluck('id'))
-            ->get();
-
-        foreach ($stuckPendingOrders as $order) {
-            $order->update([
-                'claimed_by' => null,
-                'claimed_at' => null,
-                'status'     => OrderStatus::Pending,
-            ]);
-        }
-
-        // Release orders where vendor has held the claim for more than 30 minutes
-        // regardless of whether the client deadline has passed or not.
-        $exceededClaimWindow = Order::whereIn('status', [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing])
+        // --- Stuck pending/claimed orders: claimed but never started processing after 30 minutes ---
+        // Processing orders are intentionally excluded — they are handled by the 2-hour window above.
+        $stuckOrders = Order::whereIn('status', [OrderStatus::Pending, OrderStatus::Claimed])
             ->whereNotNull('claimed_by')
             ->where('claimed_at', '<', now()->subMinutes(30))
             ->whereNotIn('id', $processingOrders->pluck('id'))
-            ->whereNotIn('id', $stuckPendingOrders->pluck('id'))
             ->get();
 
-        foreach ($exceededClaimWindow as $order) {
+        foreach ($stuckOrders as $order) {
             $order->update([
                 'claimed_by'    => null,
                 'claimed_at'    => null,
@@ -61,13 +47,13 @@ class AutoReleaseOrdersCommand extends Command
             ]);
         }
 
-        $released = $processingOrders->count() + $stuckPendingOrders->count() + $exceededClaimWindow->count();
+        $released = $processingOrders->count() + $stuckOrders->count();
 
-        if ($processingOrders->count() > 0 || $stuckPendingOrders->count() > 0) {
-            $this->info("Released {$released} overdue order(s) past client deadline back to pool.");
+        if ($processingOrders->count() > 0) {
+            $this->info("Released {$processingOrders->count()} processing order(s) that exceeded the 2-hour work window.");
         }
-        if ($exceededClaimWindow->count() > 0) {
-            $this->info("Released {$exceededClaimWindow->count()} order(s) that exceeded the 30-minute vendor claim window.");
+        if ($stuckOrders->count() > 0) {
+            $this->info("Released {$stuckOrders->count()} stuck order(s) that were claimed but never started within 30 minutes.");
         }
         if ($released === 0) {
             $this->info('No orders to release.');

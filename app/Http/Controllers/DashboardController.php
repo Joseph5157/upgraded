@@ -86,6 +86,7 @@ class DashboardController extends Controller
 
         try {
             $this->workflowService->claim($order, auth()->user());
+            Cache::forget('vendor_stats_' . auth()->id());
 
             if ($request->expectsJson()) {
                 $claimedOrder = Order::with(['client', 'files', 'report', 'vendor'])->find($order->id);
@@ -117,6 +118,7 @@ class DashboardController extends Controller
             // Delegate to the service so the order update and audit log are
             // always written atomically inside a single DB transaction.
             $this->workflowService->unclaim($order, auth()->user());
+            Cache::forget('vendor_stats_' . auth()->id());
             if ($request->expectsJson()) {
                 return response()->json(['success' => true, 'message' => 'Order returned to pool.']);
             }
@@ -166,7 +168,7 @@ class DashboardController extends Controller
         // When the auto-release command has reclaimed an order (claimed_by is null),
         // the policy would return a generic 403. Surface a specific, helpful message instead.
         if (is_null($order->claimed_by) && auth()->user()->role !== 'admin') {
-            $message = 'This order was released back to the available pool because the deadline passed. You can re-claim it from the Available Queue.';
+            $message = 'This order was released back to the available pool because the claim window expired. You can re-claim it from the Available Queue.';
             if ($request->ajax()) {
                 return response()->json(['error' => $message], 403);
             }
@@ -224,6 +226,8 @@ class DashboardController extends Controller
 
             return redirect()->route('dashboard')->with('error', $message);
         }
+
+        Cache::forget('vendor_stats_' . auth()->id());
 
         if ($request->ajax()) {
             return response()->json([

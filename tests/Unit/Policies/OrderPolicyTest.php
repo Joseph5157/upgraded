@@ -110,12 +110,12 @@ class OrderPolicyTest extends TestCase
         $this->assertFalse($this->policy->unclaim($vendor, $order));
     }
 
-    public function test_owner_cannot_unclaim_processing_order(): void
+    public function test_owner_can_unclaim_processing_order(): void
     {
         $vendor = $this->user(['id' => 5]);
         $order  = $this->order(['status' => OrderStatus::Processing, 'claimed_by' => 5]);
 
-        $this->assertFalse($this->policy->unclaim($vendor, $order));
+        $this->assertTrue($this->policy->unclaim($vendor, $order));
     }
 
     // ─── process ──────────────────────────────────────────────────────────────
