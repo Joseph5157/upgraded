@@ -531,6 +531,7 @@
 
                     xhr.open('POST', form.action);
                     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    xhr.setRequestHeader('Accept', 'application/json');
                     // Send the token both as a header (most reliable) and in the
                     // FormData body (_token field updated above) so Laravel's CSRF
                     // middleware can match it via either path.
