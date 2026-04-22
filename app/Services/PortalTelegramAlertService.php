@@ -102,16 +102,6 @@ class PortalTelegramAlertService
     {
         $topupRequest->loadMissing('client');
 
-        $admins = User::where('role', 'admin')
-            ->whereNotNull('telegram_chat_id')
-            ->whereNull('deleted_at')
-            ->get();
-
-        if ($admins->isEmpty()) {
-            Log::info('Topup submitted Telegram alert skipped: no admin has a linked Telegram.');
-            return;
-        }
-
         $message = implode("\n", [
             '💰 New Top-Up Request',
             '',
@@ -121,6 +111,23 @@ class PortalTelegramAlertService
             '',
             'Review it in the admin panel.',
         ]);
+
+        // Primary: env-configured admin chat ID
+        $envAdminChatId = trim((string) config('services.telegram.admin_chat_id'));
+        if ($envAdminChatId !== '') {
+            $this->telegramService->sendMessage($envAdminChatId, $message);
+            return;
+        }
+
+        // Fallback: any admin with telegram_chat_id stored in DB
+        $admins = User::where('role', 'admin')
+            ->whereNotNull('telegram_chat_id')
+            ->get();
+
+        if ($admins->isEmpty()) {
+            Log::warning('Topup submitted Telegram alert skipped: ADMIN_TELEGRAM_CHAT_ID not set and no admin has a linked Telegram in DB.');
+            return;
+        }
 
         foreach ($admins as $admin) {
             $this->telegramService->sendMessage((string) $admin->telegram_chat_id, $message);
