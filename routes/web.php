@@ -135,6 +135,8 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
             Route::post('/', [ClientLinkController::class, 'store'])->name('store');
             Route::post('/{clientLink}/toggle', [ClientLinkController::class, 'toggle'])->name('toggle');
             Route::delete('/{clientLink}', [ClientLinkController::class, 'destroy'])->name('destroy');
+            Route::get('/{clientLink}/orders', [ClientLinkController::class, 'showOrders'])->name('orders');
+            Route::delete('/{clientLink}/orders/{order}', [ClientLinkController::class, 'destroyOrder'])->name('orders.destroy');
         });
         Route::prefix('pricing')->name('pricing.')->group(function () {
             Route::get('/', [PricingController::class, 'index'])->name('index');

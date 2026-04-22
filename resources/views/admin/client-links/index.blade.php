@@ -100,6 +100,12 @@
                                                     </button>
                                                 </form>
 
+                                                {{-- View Orders --}}
+                                                <a href="{{ route('admin.client-links.orders', $link) }}"
+                                                    class="px-3 py-1.5 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-slate-500/20 transition-all">
+                                                    Orders
+                                                </a>
+
                                                 {{-- Open in new tab --}}
                                                 @if($link->is_active)
                                                     <a href="{{ url('/u/' . $link->token) }}" target="_blank"

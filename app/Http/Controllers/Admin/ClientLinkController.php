@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\ClientLink;
+use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -50,5 +51,28 @@ class ClientLinkController extends Controller
         $clientLink->delete();
 
         return back()->with('success', 'Link deleted successfully.');
+    }
+
+    public function showOrders(ClientLink $clientLink): View
+    {
+        $clientLink->load(['client', 'orders' => function ($q) {
+            $q->with(['files'])->latest();
+        }]);
+
+        return view('admin.client-links.orders', compact('clientLink'));
+    }
+
+    public function destroyOrder(ClientLink $clientLink, Order $order): RedirectResponse
+    {
+        abort_if($order->client_link_id !== $clientLink->id, 403);
+
+        $order->files()->each(function ($file) {
+            \Storage::disk('public')->delete($file->path);
+            $file->delete();
+        });
+
+        $order->delete();
+
+        return back()->with('success', 'Order deleted successfully.');
     }
 }
