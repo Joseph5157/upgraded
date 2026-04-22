@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Services\OrderWorkflowService;
 use App\Services\UploadVendorReportService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
@@ -202,13 +203,16 @@ class DashboardController extends Controller
                 $request->input('ai_skipped') ? $request->input('ai_skip_reason') : null,
             );
         } catch (\Throwable $e) {
-            $message = $e->getMessage();
-            if ($message === '' || str_contains(strtolower($message), 's3') || str_contains(strtolower($message), 'flysystem') || str_contains(strtolower($message), 'unable to write')) {
+            $message = trim($e->getMessage());
+            $status = 422;
+
+            if ($this->isStorageUploadException($e)) {
                 $message = 'Report upload failed while saving files to storage. Please try again. If the issue continues, contact admin.';
+                $status = 500;
             }
 
             if ($request->ajax()) {
-                return response()->json(['error' => $message], 500);
+                return response()->json(['error' => $message], $status);
             }
 
             return redirect()->route('dashboard')->with('error', $message);
@@ -257,5 +261,26 @@ class DashboardController extends Controller
         $downloadName = $file->original_name ?? basename($file->file_path);
 
         return Storage::disk($disk)->download($file->file_path, $downloadName);
+    }
+
+    protected function isStorageUploadException(\Throwable $e): bool
+    {
+        if ($e instanceof ValidationException) {
+            return false;
+        }
+
+        $message = strtolower(trim($e->getMessage()));
+
+        if ($message === '') {
+            return true;
+        }
+
+        foreach (['s3', 'r2', 'flysystem', 'unable to write', 'putobject', 'storage'] as $needle) {
+            if (str_contains($message, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

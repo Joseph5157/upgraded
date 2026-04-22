@@ -503,13 +503,16 @@
                             resetUploadUi(orderId);
 
                             let msg = 'Upload failed. Please try again.';
+                            let payload = null;
+
+                            try {
+                                payload = JSON.parse(xhr.responseText);
+                            } catch (e) {}
+
                             if (xhr.status === 419) {
                                 msg = 'Session expired — please refresh the page and try again.';
-                            } else if (xhr.status === 422) {
-                                try {
-                                    const d = JSON.parse(xhr.responseText);
-                                    msg = d.error || d.message || (d.errors && Object.values(d.errors)[0]?.[0]) || msg;
-                                } catch (e) {}
+                            } else if (payload) {
+                                msg = payload.error || payload.message || (payload.errors && Object.values(payload.errors)[0]?.[0]) || msg;
                             } else if (xhr.status === 403) {
                                 msg = 'You are not authorized to upload for this order.';
                             } else if (xhr.status === 413) {
