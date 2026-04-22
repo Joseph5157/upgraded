@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\TopupRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
@@ -95,6 +96,61 @@ class PortalTelegramAlertService
     protected function escapeMarkdown(string $text): string
     {
         return str_replace(['_', '*', '[', '`'], ['\_', '\*', '\[', '\`'], $text);
+    }
+
+    public function notifyTopupSubmitted(TopupRequest $topupRequest): void
+    {
+        $topupRequest->loadMissing('client');
+
+        $admins = User::where('role', 'admin')
+            ->whereNotNull('telegram_chat_id')
+            ->where('status', 'active')
+            ->get();
+
+        if ($admins->isEmpty()) {
+            Log::info('Topup submitted Telegram alert skipped: no admin has a linked Telegram.');
+            return;
+        }
+
+        $message = implode("\n", [
+            '💰 New Top-Up Request',
+            '',
+            'Client: ' . ($topupRequest->client->name ?? 'Unknown'),
+            'Slots requested: ' . $topupRequest->amount_requested,
+            'UTR / Txn ID: ' . $topupRequest->transaction_id,
+            '',
+            'Review it in the admin panel.',
+        ]);
+
+        foreach ($admins as $admin) {
+            $this->telegramService->sendMessage((string) $admin->telegram_chat_id, $message);
+        }
+    }
+
+    public function notifyTopupApproved(TopupRequest $topupRequest): void
+    {
+        $topupRequest->loadMissing('client.user');
+
+        $clientUser = $topupRequest->client?->user;
+
+        if (! $clientUser?->telegram_chat_id) {
+            Log::info("Topup approved Telegram alert skipped for request #{$topupRequest->id}: client not connected.");
+            return;
+        }
+
+        $newBalance = $topupRequest->client->fresh()->slots
+                    - $topupRequest->client->fresh()->slots_consumed;
+
+        $message = implode("\n", [
+            '✅ Top-Up Approved',
+            '',
+            "Your top-up of {$topupRequest->amount_requested} slots has been approved.",
+            "New credit balance: {$newBalance} slots",
+            '',
+            'You can now upload documents from your dashboard.',
+        ]);
+
+        $this->telegramService->sendMessage((string) $clientUser->telegram_chat_id, $message);
     }
 
     protected function resolveClientRecipient(Order $order): ?User

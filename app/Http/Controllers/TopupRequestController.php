@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\TopupRequest;
+use App\Services\PortalTelegramAlertService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -52,12 +53,14 @@ class TopupRequestController extends Controller
             return back()->with('error', 'You already have a pending top-up request. Please wait for Admin approval.');
         }
 
-        TopupRequest::create([
+        $topupRequest = TopupRequest::create([
             'client_id'        => $client->id,
             'amount_requested' => $request->amount_requested,
             'transaction_id'   => $request->transaction_id,
             'status'           => 'pending',
         ]);
+
+        app(PortalTelegramAlertService::class)->notifyTopupSubmitted($topupRequest);
 
         return back()->with('success', 'Top-up request submitted! The admin will review it shortly.');
     }
@@ -95,6 +98,8 @@ class TopupRequestController extends Controller
 
         // Bust the sidebar badge so the pending count drops to the correct value.
         Cache::forget('admin_nav_pending_topups');
+
+        app(PortalTelegramAlertService::class)->notifyTopupApproved($topupRequest);
 
         return back()->with('success', "Approved! Added {$topupRequest->amount_requested} slots to {$topupRequest->client->name}.");
     }
