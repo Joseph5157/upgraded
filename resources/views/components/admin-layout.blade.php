@@ -170,6 +170,11 @@
                             <span class="nav-badge" style="background:#FEF3C7;color:#92400E;">{{ $pendingRefunds }}</span>
                         @endif
                     </a>
+                    <a href="{{ route('admin.payment-settings.index') }}"
+                       class="nav-link {{ request()->routeIs('admin.payment-settings.*') ? 'active' : '' }}">
+                        <i data-lucide="wallet" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Payment Settings
+                    </a>
                 </div>
             </div>
 

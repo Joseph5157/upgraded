@@ -20,6 +20,7 @@ use App\Http\Controllers\VendorPayoutController;
 use App\Http\Controllers\ClientSubscriptionController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\VendorEarningsController;
+use App\Http\Controllers\Admin\PaymentSettingsController;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -127,6 +128,13 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
         Route::delete('/accounts/{user}', [AccountManagerController::class, 'destroy'])->name('accounts.destroy');
         Route::post('/accounts/{id}/restore', [AccountManagerController::class, 'restore'])->name('accounts.restore');
         Route::delete('/accounts/{id}/force', [AccountManagerController::class, 'forceDelete'])->name('accounts.forceDelete');
+        Route::prefix('payment-settings')->name('payment-settings.')->group(function () {
+            Route::get('/', [PaymentSettingsController::class, 'index'])->name('index');
+            Route::post('/', [PaymentSettingsController::class, 'store'])->name('store');
+            Route::post('/{paymentSetting}/activate', [PaymentSettingsController::class, 'setActive'])->name('activate');
+            Route::post('/{paymentSetting}/update', [PaymentSettingsController::class, 'update'])->name('update');
+            Route::delete('/{paymentSetting}', [PaymentSettingsController::class, 'destroy'])->name('destroy');
+        });
     });
 
 Route::middleware(['auth', 'nocache'])->group(function () {
