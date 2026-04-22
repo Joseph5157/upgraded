@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
+use App\Exceptions\VendorReportStorageException;
+use App\Exceptions\WorkflowException;
+use App\Http\Requests\UploadVendorReportRequest;
 use App\Models\Order;
 use App\Services\OrderWorkflowService;
 use App\Services\UploadVendorReportService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
@@ -86,7 +88,7 @@ class DashboardController extends Controller
 
         try {
             $this->workflowService->claim($order, auth()->user());
-            Cache::forget('vendor_stats_' . auth()->id());
+            $this->forgetVendorStatsCache(auth()->id());
 
             if ($request->expectsJson()) {
                 $claimedOrder = Order::with(['client', 'files', 'report', 'vendor'])->find($order->id);
@@ -113,12 +115,13 @@ class DashboardController extends Controller
     public function unclaim(Request $request, Order $order)
     {
         $this->authorize('unclaim', $order);
+        $claimedBy = $order->claimed_by;
 
         try {
             // Delegate to the service so the order update and audit log are
             // always written atomically inside a single DB transaction.
             $this->workflowService->unclaim($order, auth()->user());
-            Cache::forget('vendor_stats_' . auth()->id());
+            $this->forgetVendorStatsCache(auth()->id(), $claimedBy);
             if ($request->expectsJson()) {
                 return response()->json(['success' => true, 'message' => 'Order returned to pool.']);
             }
@@ -146,7 +149,7 @@ class DashboardController extends Controller
                 $this->workflowService->deliver($order, auth()->user());
             }
 
-            Cache::forget('vendor_stats_' . auth()->id());
+            $this->forgetVendorStatsCache(auth()->id(), $order->claimed_by);
 
             if ($request->expectsJson()) {
                 return response()->json(['success' => true, 'message' => 'Status updated.']);
@@ -163,13 +166,13 @@ class DashboardController extends Controller
         }
     }
 
-    public function uploadReport(Request $request, Order $order)
+    public function uploadReport(UploadVendorReportRequest $request, Order $order)
     {
         // When the auto-release command has reclaimed an order (claimed_by is null),
         // the policy would return a generic 403. Surface a specific, helpful message instead.
         if (is_null($order->claimed_by) && auth()->user()->role !== 'admin') {
             $message = 'This order was released back to the available pool because the claim window expired. You can re-claim it from the Available Queue.';
-            if ($request->ajax()) {
+            if ($request->expectsJson()) {
                 return response()->json(['error' => $message], 403);
             }
             return redirect()->route('dashboard')->with('error', $message);
@@ -178,30 +181,11 @@ class DashboardController extends Controller
         try {
             $this->authorize('uploadReport', $order);
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
-            if ($request->ajax()) {
+            if ($request->expectsJson()) {
                 return response()->json(['error' => 'You are not authorized to upload reports for this order.'], 403);
             }
             return redirect()->route('dashboard')->with('error', 'You are not authorized to upload reports for this order.');
         }
-
-        $request->validate([
-            'ai_skipped'     => 'sometimes|boolean',
-            'ai_skip_reason' => 'nullable|required_if:ai_skipped,1|string|max:255',
-            'ai_report'      => 'required_unless:ai_skipped,1|file|mimes:pdf|max:102400',
-            'plag_report'    => 'required|file|mimes:pdf|max:102400',
-        ], [
-            'ai_report.required_unless' => 'Please select the AI detection report PDF or provide a reason for skipping it.',
-            'ai_skip_reason.required_if' => 'Please explain why the AI report was unable to be generated.',
-            'ai_report.file'       => 'AI report must be a valid file.',
-            'ai_report.uploaded'   => 'AI report failed to upload. Keep each report under 100MB and try again.',
-            'ai_report.mimes'      => 'AI report must be a PDF file.',
-            'ai_report.max'        => 'AI report must be 100MB or smaller.',
-            'plag_report.required' => 'Please select the plagiarism report PDF.',
-            'plag_report.file'     => 'Plagiarism report must be a valid file.',
-            'plag_report.uploaded' => 'Plagiarism report failed to upload. Keep each report under 100MB and try again.',
-            'plag_report.mimes'    => 'Plagiarism report must be a PDF file.',
-            'plag_report.max'      => 'Plagiarism report must be 100MB or smaller.',
-        ]);
 
         try {
             $this->uploadReportService->execute(
@@ -209,34 +193,45 @@ class DashboardController extends Controller
                 auth()->user(),
                 $request->file('ai_report'),
                 $request->file('plag_report'),
-                $request->input('ai_skipped') ? $request->input('ai_skip_reason') : null,
+                $request->boolean('ai_skipped') ? $request->input('ai_skip_reason') : null,
             );
-        } catch (\Throwable $e) {
-            $message = trim($e->getMessage());
-            $status = 422;
+        } catch (VendorReportStorageException $e) {
+            $message = 'Report upload failed while saving files to storage. Please try again. If the issue continues, contact admin.';
 
-            if ($this->isStorageUploadException($e)) {
-                $message = 'Report upload failed while saving files to storage. Please try again. If the issue continues, contact admin.';
-                $status = 500;
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $message], 500);
             }
 
-            if ($request->ajax()) {
-                return response()->json(['error' => $message], $status);
+            return redirect()->route('dashboard')->with('error', $message);
+        } catch (WorkflowException $e) {
+            $message = trim($e->getMessage()) ?: 'Unable to submit reports for this order.';
+
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $message], 409);
+            }
+
+            return redirect()->route('dashboard')->with('error', $message);
+        } catch (\Throwable $e) {
+            $message = 'Unexpected server error while saving reports. Please try again in a moment.';
+
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $message], 500);
             }
 
             return redirect()->route('dashboard')->with('error', $message);
         }
 
-        Cache::forget('vendor_stats_' . auth()->id());
+        $this->forgetVendorStatsCache(auth()->id(), $order->claimed_by);
+        $successMessage = 'Reports uploaded. Order delivered successfully.';
 
-        if ($request->ajax()) {
+        if ($request->expectsJson()) {
             return response()->json([
                 'redirect' => route('dashboard'),
-                'success'  => 'Both reports uploaded. Order delivered successfully.',
+                'success'  => $successMessage,
             ]);
         }
 
-        return redirect()->route('dashboard')->with('success', 'Both reports uploaded. Order delivered successfully.');
+        return redirect()->route('dashboard')->with('success', $successMessage);
     }
 
     public function downloadFile(Order $order, \App\Models\OrderFile $file)
@@ -274,24 +269,10 @@ class DashboardController extends Controller
         return Storage::disk($disk)->download($file->file_path, $downloadName);
     }
 
-    protected function isStorageUploadException(\Throwable $e): bool
+    protected function forgetVendorStatsCache(?int ...$userIds): void
     {
-        if ($e instanceof ValidationException) {
-            return false;
+        foreach (array_unique(array_filter($userIds)) as $userId) {
+            Cache::forget('vendor_stats_' . $userId);
         }
-
-        $message = strtolower(trim($e->getMessage()));
-
-        if ($message === '') {
-            return true;
-        }
-
-        foreach (['s3', 'r2', 'flysystem', 'unable to write', 'putobject', 'storage'] as $needle) {
-            if (str_contains($message, $needle)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

@@ -3,11 +3,15 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Exceptions\VendorReportStorageException;
+use App\Exceptions\WorkflowException;
 use App\Models\Order;
 use App\Models\User;
+use App\Support\LogContext;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UploadVendorReportService
 {
@@ -17,7 +21,7 @@ class UploadVendorReportService
         protected OrderWorkflowService $workflowService,
         string $storageDisk = '',
     ) {
-        $this->storageDisk = $storageDisk ?: config('filesystems.default', 'r2');
+        $this->storageDisk = $storageDisk;
     }
 
     /**
@@ -27,32 +31,24 @@ class UploadVendorReportService
      */
     public function execute(Order $order, User $user, ?UploadedFile $aiReport, UploadedFile $plagReport, ?string $aiSkipReason = null): void
     {
-        $disk            = $this->storageDisk;
+        $disk            = $this->storageDisk ?: config('filesystems.default', 'r2');
         $aiPath          = null;
         $plagPath        = null;
         $reportPersisted = false;
+        $aiSkipped       = ! empty($aiSkipReason);
 
         try {
             if ($aiReport) {
-                $aiName = $this->sanitizeFilename($aiReport->getClientOriginalName());
-                $aiPath = $aiReport->storeAs('reports/' . $order->id . '/ai', $aiName, $disk);
+                $aiPath = $this->storeReportOrFail($aiReport, 'reports/' . $order->id . '/ai', $disk, 'AI');
             }
 
-            try {
-                $plagName = $this->sanitizeFilename($plagReport->getClientOriginalName());
-                $plagPath = $plagReport->storeAs('reports/' . $order->id . '/plag', $plagName, $disk);
-            } catch (\Throwable $e) {
-                if ($aiPath) {
-                    Storage::disk($disk)->delete($aiPath);
-                }
-                throw $e;
-            }
+            $plagPath = $this->storeReportOrFail($plagReport, 'reports/' . $order->id . '/plag', $disk, 'plagiarism');
 
-            if (empty($aiPath) && empty($aiSkipReason)) {
-                throw new \Exception('Failed to process AI report file. Please try again or contact support.');
+            if (empty($aiPath) && ! $aiSkipped) {
+                throw new WorkflowException('Failed to process the AI report. Please retry with the PDF or provide a skip reason.');
             }
             if (!$plagPath) {
-                throw new \Exception('Failed to save the Plagiarism report file to storage. Please try again or contact support.');
+                throw new VendorReportStorageException('Failed to save the plagiarism report file to storage.');
             }
 
             $this->workflowService->uploadReport($order, $user, [
@@ -78,13 +74,16 @@ class UploadVendorReportService
                 $this->cleanupFile($disk, $plagPath, 'plagiarism', $order->id);
             }
 
-            Log::error('Vendor report upload failed.', [
-                'order_id'  => $order->id,
-                'user_id'   => $user->id,
-                'disk'      => $disk,
-                'message'   => $e->getMessage(),
-                'exception' => get_class($e),
-            ]);
+            Log::error('Vendor report upload failed.', LogContext::forOrder($order, LogContext::forUser($user, array_merge(LogContext::currentRequest(), [
+                'disk' => $disk,
+                'ai_skipped' => $aiSkipped,
+                'report_persisted' => $reportPersisted,
+                'ai_report_path' => $aiPath,
+                'plag_report_path' => $plagPath,
+                'exception_class' => get_class($e),
+                'exception_message' => $e->getMessage(),
+                'exception' => $e,
+            ]))));
 
             throw $e;
         }
@@ -92,14 +91,11 @@ class UploadVendorReportService
 
     private function sanitizeFilename(string $name): string
     {
-        // Strip non-ASCII, replace whitespace and dangerous chars with underscores,
-        // then collapse repeated underscores and trim.
         $name = preg_replace('/[^\x00-\x7F]+/', '_', $name);
         $name = preg_replace('/[\s\/\\\\:*?"<>|]+/', '_', $name);
         $name = preg_replace('/_+/', '_', $name);
         $name = trim($name, '_');
 
-        // Fall back to a timestamp name if nothing usable remains.
         if ($name === '' || $name === '.pdf') {
             $name = 'report_' . now()->timestamp . '.pdf';
         }
@@ -107,9 +103,26 @@ class UploadVendorReportService
         return $name;
     }
 
+    private function storeReportOrFail(UploadedFile $file, string $directory, string $disk, string $label): string
+    {
+        $storedName = Str::uuid()->toString() . '_' . $this->sanitizeFilename($file->getClientOriginalName());
+
+        try {
+            $path = $file->storeAs($directory, $storedName, $disk);
+        } catch (\Throwable $e) {
+            throw VendorReportStorageException::fromThrowable($e, "Failed to store the {$label} report.");
+        }
+
+        if (! is_string($path) || $path === '') {
+            throw new VendorReportStorageException("Failed to store the {$label} report.");
+        }
+
+        return $path;
+    }
+
     private function cleanupFile(string $disk, ?string $path, string $label, int $orderId): void
     {
-        if (!$path) {
+        if (! $path) {
             return;
         }
 

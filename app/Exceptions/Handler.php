@@ -2,9 +2,12 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -51,7 +54,11 @@ class Handler extends ExceptionHandler
 
         // 500 Internal Server Error in production - show friendly page
         if (app()->environment('production') &&
-            ($e->getCode() === 500 || $e instanceof \Exception)) {
+            ! $request->expectsJson() &&
+            ! $this->isHttpException($e) &&
+            ! $e instanceof ValidationException &&
+            ! $e instanceof AuthenticationException &&
+            ! $e instanceof AuthorizationException) {
 
             // Log the real error so you can check it later
             Log::error('500 Error: ' . $e->getMessage(), [

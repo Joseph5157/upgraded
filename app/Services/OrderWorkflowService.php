@@ -3,12 +3,12 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Exceptions\WorkflowException;
 use App\Models\Order;
 use App\Models\OrderLog;
 use App\Models\OrderReport;
 use App\Models\User;
 use App\Support\LogContext;
-use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -37,15 +37,15 @@ class OrderWorkflowService
             $locked = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
 
             if ($locked->status === OrderStatus::Cancelled) {
-                throw new Exception("This order has been cancelled by the client and is no longer available.");
+                throw new WorkflowException("This order has been cancelled by the client and is no longer available.");
             }
 
             if ($locked->status !== OrderStatus::Pending) {
-                throw new Exception("Only pending orders can be claimed. This order is '{$locked->status->value}'.");
+                throw new WorkflowException("Only pending orders can be claimed. This order is '{$locked->status->value}'.");
             }
 
             if ($locked->claimed_by !== null) {
-                throw new Exception("This order has already been claimed and is not available.");
+                throw new WorkflowException("This order has already been claimed and is not available.");
             }
 
             // Enforce a per-vendor cap so no single vendor monopolises the queue.
@@ -54,7 +54,7 @@ class OrderWorkflowService
                 ->count();
 
             if ($activeJobs >= 5) {
-                throw new Exception("You already have {$activeJobs} active job(s). Complete or release one before claiming another.");
+                throw new WorkflowException("You already have {$activeJobs} active job(s). Complete or release one before claiming another.");
             }
 
             $oldStatus = $locked->status->value;
@@ -100,7 +100,7 @@ class OrderWorkflowService
         $this->assertVendorOrAdmin($order, $user, 'unclaim');
 
         if (!in_array($order->status, [OrderStatus::Claimed, OrderStatus::Processing])) {
-            throw new Exception("Only reserved or in-progress orders can be released back to the queue.");
+            throw new WorkflowException("Only reserved or in-progress orders can be released back to the queue.");
         }
 
         DB::transaction(function () use ($order, $user) {
@@ -139,15 +139,15 @@ class OrderWorkflowService
         $this->assertVendorOrAdmin($order, $user, 'start processing');
 
         if ($order->status === OrderStatus::Cancelled) {
-            throw new Exception("This order has been cancelled by the client.");
+            throw new WorkflowException("This order has been cancelled by the client.");
         }
 
         if ($order->status === OrderStatus::Delivered) {
-            throw new Exception("Cannot change a delivered order back to processing.");
+            throw new WorkflowException("Cannot change a delivered order back to processing.");
         }
 
         if ($order->status !== OrderStatus::Claimed) {
-            throw new Exception("Order must be in 'claimed' status to start processing. Current status: '{$order->status->value}'.");
+            throw new WorkflowException("Order must be in 'claimed' status to start processing. Current status: '{$order->status->value}'.");
         }
 
         DB::transaction(function () use ($order, $user) {
@@ -185,19 +185,19 @@ class OrderWorkflowService
         $this->assertVendorOrAdmin($order, $user, 'upload a report for');
 
         if ($order->status === OrderStatus::Cancelled) {
-            throw new Exception("Cannot upload a report for a cancelled order.");
+            throw new WorkflowException("Cannot upload a report for a cancelled order.");
         }
 
         if ($order->status === OrderStatus::Delivered) {
-            throw new Exception("Cannot upload a report for an order that has already been delivered.");
+            throw new WorkflowException("Cannot upload a report for an order that has already been delivered.");
         }
 
         if (empty($data['ai_report_path']) && empty($data['ai_skip_reason'])) {
-            throw new Exception("The AI report PDF file is required, unless a valid reason for skipping is provided.");
+            throw new WorkflowException("The AI report PDF file is required, unless a valid reason for skipping is provided.");
         }
 
         if (empty($data['plag_report_path'])) {
-            throw new Exception("The Plagiarism report PDF file is required.");
+            throw new WorkflowException("The Plagiarism report PDF file is required.");
         }
 
         DB::transaction(function () use ($order, $user, $data) {
@@ -227,16 +227,16 @@ class OrderWorkflowService
             $lockedOrder = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
 
             if ($lockedOrder->status === OrderStatus::Delivered) {
-                throw new Exception("This order has already been delivered and cannot be re-delivered.");
+                throw new WorkflowException("This order has already been delivered and cannot be re-delivered.");
             }
 
             if ($lockedOrder->status !== OrderStatus::Processing) {
-                throw new Exception("Order must be in 'processing' status before delivery. Current status: '{$lockedOrder->status->value}'.");
+                throw new WorkflowException("Order must be in 'processing' status before delivery. Current status: '{$lockedOrder->status->value}'.");
             }
 
             $report = $lockedOrder->report()->first();
             if (!$report || (empty($report->ai_report_path) && empty($report->ai_skip_reason)) || empty($report->plag_report_path)) {
-                throw new Exception("Both the AI report and Plagiarism report PDFs must be uploaded before delivery (or an AI skip reason provided).");
+                throw new WorkflowException("Both the AI report and Plagiarism report PDFs must be uploaded before delivery (or an AI skip reason provided).");
             }
 
             $oldStatus = $lockedOrder->status->value;
@@ -247,8 +247,12 @@ class OrderWorkflowService
 
             // Permanently record this delivery on the vendor's profile.
             // This count is NEVER decremented — even if client deletes the order later.
-            $user->increment('delivered_orders_count');
-            $user->increment('daily_delivered_count');
+            $creditedVendor = $lockedOrder->claimed_by
+                ? User::query()->lockForUpdate()->find($lockedOrder->claimed_by)
+                : null;
+
+            ($creditedVendor ?: $user)->increment('delivered_orders_count');
+            ($creditedVendor ?: $user)->increment('daily_delivered_count');
 
             $this->logActivity($lockedOrder, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
         });
@@ -285,7 +289,7 @@ class OrderWorkflowService
         $isAdmin = $user->role === 'admin';
 
         if (!$isOwner && !$isAdmin) {
-            throw new Exception("You are not authorized to {$action} this order.");
+            throw new WorkflowException("You are not authorized to {$action} this order.");
         }
     }
 

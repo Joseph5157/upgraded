@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
+use App\Exceptions\VendorReportStorageException;
+use App\Exceptions\WorkflowException;
 use App\Models\Client;
 use App\Models\Order;
 use App\Models\OrderReport;
@@ -25,7 +27,7 @@ class VendorReportUploadTest extends TestCase
         $this->mock(UploadVendorReportService::class, function (MockInterface $mock): void {
             $mock->shouldReceive('execute')
                 ->once()
-                ->andThrow(new \RuntimeException("Order must be in 'processing' status before delivery."));
+                ->andThrow(new WorkflowException("Order must be in 'processing' status before delivery."));
         });
 
         $response = $this->actingAs($vendor)->post(route('orders.report', $order), [
@@ -37,7 +39,7 @@ class VendorReportUploadTest extends TestCase
         ]);
 
         $response
-            ->assertStatus(422)
+            ->assertStatus(409)
             ->assertJson([
                 'error' => "Order must be in 'processing' status before delivery.",
             ]);
@@ -50,7 +52,7 @@ class VendorReportUploadTest extends TestCase
         $this->mock(UploadVendorReportService::class, function (MockInterface $mock): void {
             $mock->shouldReceive('execute')
                 ->once()
-                ->andThrow(new \RuntimeException('Unable to write file at location: reports/1/ai/test.pdf'));
+                ->andThrow(new VendorReportStorageException('Unable to write file at location: reports/1/ai/test.pdf'));
         });
 
         $response = $this->actingAs($vendor)->post(route('orders.report', $order), [
@@ -87,7 +89,7 @@ class VendorReportUploadTest extends TestCase
         $response
             ->assertOk()
             ->assertJson([
-                'success' => 'Both reports uploaded. Order delivered successfully.',
+                'success' => 'Reports uploaded. Order delivered successfully.',
             ]);
 
         $order->refresh();
@@ -100,6 +102,62 @@ class VendorReportUploadTest extends TestCase
         $this->assertSame(OrderStatus::Delivered, $order->status);
 
         Storage::disk('local')->assertExists($report->plag_report_path);
+    }
+
+    public function test_upload_report_rejects_ai_file_when_skip_flag_is_enabled(): void
+    {
+        [$vendor, $order] = $this->createVendorOrder();
+
+        $response = $this->actingAs($vendor)->post(route('orders.report', $order), [
+            'ai_skipped' => '1',
+            'ai_skip_reason' => 'AI tool failed for this document',
+            'ai_report' => UploadedFile::fake()->create('ai-report.pdf', 20, 'application/pdf'),
+            'plag_report' => UploadedFile::fake()->create('plag-report.pdf', 20, 'application/pdf'),
+        ], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ]);
+
+        $response
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['ai_report']);
+    }
+
+    public function test_admin_upload_credits_claimed_vendor_not_admin(): void
+    {
+        [$vendor, $order] = $this->createVendorOrder();
+
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'status' => 'active',
+            'email_verified_at' => now(),
+            'delivered_orders_count' => 0,
+            'daily_delivered_count' => 0,
+        ]);
+
+        config(['filesystems.default' => 'local']);
+        Storage::fake('local');
+
+        $response = $this->actingAs($admin)->post(route('orders.report', $order), [
+            'ai_skipped' => '1',
+            'ai_skip_reason' => 'Admin submitted vendor result',
+            'plag_report' => UploadedFile::fake()->create('plag-report.pdf', 20, 'application/pdf'),
+        ], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ]);
+
+        $response->assertOk();
+
+        $vendor->refresh();
+        $admin->refresh();
+        $order->refresh();
+
+        $this->assertSame(OrderStatus::Delivered, $order->status);
+        $this->assertSame(1, $vendor->delivered_orders_count);
+        $this->assertSame(1, $vendor->daily_delivered_count);
+        $this->assertSame(0, $admin->delivered_orders_count);
+        $this->assertSame(0, $admin->daily_delivered_count);
     }
 
     /**
