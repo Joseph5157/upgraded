@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\Order;
+use App\Models\PaymentSetting;
 use App\Models\OrderFile;
 use App\Models\OrderReport;
 use App\Enums\OrderStatus;
@@ -78,8 +79,9 @@ class ClientDashboardController extends Controller
         $dashboardSignature = $this->buildDashboardSignature($user, $client);
         $consumed = (int) $client->fresh()->slots_consumed;
         $remaining = max(0, (int) $client->total_slots - $consumed);
+        $paymentSetting = PaymentSetting::active()->first();
 
-        return view('client.dashboard', compact('client', 'orders', 'dashboardSignature', 'telegramConnectUrl', 'consumed', 'remaining'));
+        return view('client.dashboard', compact('client', 'orders', 'dashboardSignature', 'telegramConnectUrl', 'consumed', 'remaining', 'paymentSetting'));
     }
 
     public function pulse(Request $request)

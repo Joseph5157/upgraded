@@ -728,15 +728,25 @@
 
                 <div class="p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl space-y-3">
                     <p class="text-[9px] font-black uppercase tracking-widest text-slate-600">Payment Instructions</p>
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-emerald-500/[0.1] rounded-lg flex items-center justify-center text-emerald-500 flex-shrink-0">
-                            <i data-lucide="smartphone" class="w-4 h-4"></i>
+                    @if($paymentSetting)
+                        <div class="flex items-start gap-3">
+                            @if($paymentSetting->qr_code_path)
+                                <img src="{{ asset('storage/' . $paymentSetting->qr_code_path) }}"
+                                     alt="QR Code"
+                                     class="w-20 h-20 rounded-xl border border-white/[0.08] object-contain bg-white p-1 flex-shrink-0">
+                            @else
+                                <div class="w-8 h-8 bg-emerald-500/[0.1] rounded-lg flex items-center justify-center text-emerald-500 flex-shrink-0">
+                                    <i data-lucide="smartphone" class="w-4 h-4"></i>
+                                </div>
+                            @endif
+                            <div>
+                                <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">{{ $paymentSetting->upi_name }}</p>
+                                <p class="text-sm font-bold text-white font-mono mt-0.5">{{ $paymentSetting->upi_id }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-[9px] text-slate-600 font-bold uppercase tracking-widest">UPI ID</p>
-                            <p class="text-sm font-bold text-white font-mono mt-0.5">your-upi@ybl</p>
-                        </div>
-                    </div>
+                    @else
+                        <p class="text-[11px] text-amber-400">Payment details not configured yet. Contact admin.</p>
+                    @endif
                     <p class="text-[10px] text-slate-400 leading-relaxed">Send the exact amount to the UPI ID, then paste your <span class="text-indigo-400 font-semibold">Transaction / UTR Reference Number</span> below.</p>
                 </div>
 
