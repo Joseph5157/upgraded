@@ -205,6 +205,11 @@
                         <i data-lucide="trending-up" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         Billing & Ledger
                     </a>
+                    <a href="{{ route('admin.pricing.index') }}"
+                       class="nav-link {{ request()->routeIs('admin.pricing.*') ? 'active' : '' }}">
+                        <i data-lucide="tag" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Pricing
+                    </a>
                 </div>
             </div>
 

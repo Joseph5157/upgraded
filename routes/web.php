@@ -21,6 +21,7 @@ use App\Http\Controllers\ClientSubscriptionController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\VendorEarningsController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
+use App\Http\Controllers\Admin\PricingController;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -128,6 +129,11 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
         Route::delete('/accounts/{user}', [AccountManagerController::class, 'destroy'])->name('accounts.destroy');
         Route::post('/accounts/{id}/restore', [AccountManagerController::class, 'restore'])->name('accounts.restore');
         Route::delete('/accounts/{id}/force', [AccountManagerController::class, 'forceDelete'])->name('accounts.forceDelete');
+        Route::prefix('pricing')->name('pricing.')->group(function () {
+            Route::get('/', [PricingController::class, 'index'])->name('index');
+            Route::post('/client/{client}', [PricingController::class, 'updateClient'])->name('update-client');
+            Route::post('/vendor/{user}', [PricingController::class, 'updateVendor'])->name('update-vendor');
+        });
         Route::prefix('payment-settings')->name('payment-settings.')->group(function () {
             Route::get('/', [PaymentSettingsController::class, 'index'])->name('index');
             Route::post('/', [PaymentSettingsController::class, 'store'])->name('store');
