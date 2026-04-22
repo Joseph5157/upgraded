@@ -173,7 +173,14 @@ class DashboardController extends Controller
             return redirect()->route('dashboard')->with('error', $message);
         }
 
-        $this->authorize('uploadReport', $order);
+        try {
+            $this->authorize('uploadReport', $order);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'You are not authorized to upload reports for this order.'], 403);
+            }
+            return redirect()->route('dashboard')->with('error', 'You are not authorized to upload reports for this order.');
+        }
 
         $request->validate([
             'ai_skipped'     => 'sometimes|boolean',
