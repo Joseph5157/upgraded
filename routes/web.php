@@ -21,6 +21,7 @@ use App\Http\Controllers\ClientSubscriptionController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\VendorEarningsController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
+use App\Http\Controllers\Admin\ClientLinkController;
 use App\Http\Controllers\Admin\PricingController;
 
 Route::get('/', function () {
@@ -129,6 +130,12 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
         Route::delete('/accounts/{user}', [AccountManagerController::class, 'destroy'])->name('accounts.destroy');
         Route::post('/accounts/{id}/restore', [AccountManagerController::class, 'restore'])->name('accounts.restore');
         Route::delete('/accounts/{id}/force', [AccountManagerController::class, 'forceDelete'])->name('accounts.forceDelete');
+        Route::prefix('client-links')->name('client-links.')->group(function () {
+            Route::get('/', [ClientLinkController::class, 'index'])->name('index');
+            Route::post('/', [ClientLinkController::class, 'store'])->name('store');
+            Route::post('/{clientLink}/toggle', [ClientLinkController::class, 'toggle'])->name('toggle');
+            Route::delete('/{clientLink}', [ClientLinkController::class, 'destroy'])->name('destroy');
+        });
         Route::prefix('pricing')->name('pricing.')->group(function () {
             Route::get('/', [PricingController::class, 'index'])->name('index');
             Route::post('/client/{client}', [PricingController::class, 'updateClient'])->name('update-client');
