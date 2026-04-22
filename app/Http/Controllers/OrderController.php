@@ -125,7 +125,9 @@ class OrderController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('client.track', $order->token_view);
+        return redirect()->route('client.upload', $token)
+            ->with('success', "Order #{$order->id} submitted successfully. Your files are being processed.");
+
     }
 
     public function destroyOrder(Request $request, $token, Order $order)
