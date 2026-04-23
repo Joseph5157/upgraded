@@ -59,6 +59,9 @@ class VendorReportUploadTest extends TestCase
             'order_id' => $order->id,
             'ai_skip_reason' => 'AI report unavailable for this document',
         ]);
+
+        $report = OrderReport::where('order_id', $order->id)->firstOrFail();
+        $this->assertSame('plag-report.pdf', $report->plag_report_original_name);
     }
 
     public function test_upload_flow_rejects_state_change_and_cleans_up_files(): void
@@ -140,6 +143,37 @@ class VendorReportUploadTest extends TestCase
         $this->assertNotSame($firstReport->plag_report_path, $secondReport->plag_report_path);
         $this->assertTrue(Storage::disk('local')->exists($firstReport->plag_report_path));
         $this->assertTrue(Storage::disk('local')->exists($secondReport->plag_report_path));
+        $this->assertSame('same-name.pdf', $firstReport->plag_report_original_name);
+        $this->assertSame('same-name.pdf', $secondReport->plag_report_original_name);
+    }
+
+    public function test_vendor_report_download_names_preserve_uploaded_filenames(): void
+    {
+        [$vendor, $order] = $this->createVendorOrder();
+
+        config(['filesystems.default' => 'local']);
+        Storage::fake('local');
+
+        $response = $this->actingAs($vendor)->post(route('orders.report', $order), [
+            'ai_report' => UploadedFile::fake()->create('AI Final Report.pdf', 20, 'application/pdf'),
+            'plag_report' => UploadedFile::fake()->create('Plagiarism Final Report.pdf', 20, 'application/pdf'),
+        ], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ]);
+
+        $response->assertOk();
+
+        $order->refresh();
+        $report = OrderReport::where('order_id', $order->id)->firstOrFail();
+
+        $this->assertSame('AI Final Report.pdf', $report->ai_report_original_name);
+        $this->assertSame('Plagiarism Final Report.pdf', $report->plag_report_original_name);
+
+        $download = $this->actingAs($vendor)->get(route('client.download', $order->token_view) . '?type=plag');
+
+        $download->assertOk();
+        $this->assertStringContainsString('Plagiarism Final Report.pdf', (string) $download->headers->get('Content-Disposition'));
     }
 
     public function test_failed_upload_does_not_leave_partial_database_state(): void

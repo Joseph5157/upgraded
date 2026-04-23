@@ -1,6 +1,14 @@
 <x-guest-layout>
     <x-auth-session-status class="mb-6" :status="session('status')" />
 
+    @if(session('error') || request()->boolean('expired'))
+        <div class="mb-5 p-4 rounded-xl bg-amber-50 border border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20">
+            <p class="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                {{ session('error') ?: 'Your session expired. Please sign in again.' }}
+            </p>
+        </div>
+    @endif
+
     {{-- Step 1: Enter Portal ID --}}
     @if(!session('otp_sent'))
 

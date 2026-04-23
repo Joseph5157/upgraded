@@ -24,7 +24,7 @@
 
     <div class="mt-3 min-w-0">
         <p class="text-xs font-semibold text-gray-900 truncate dark:text-slate-200">
-            {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
+                    {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'Document' }}
         </p>
         <div class="flex flex-wrap items-center gap-1.5 mt-1">
             @if($order->client)
@@ -50,7 +50,7 @@
                     <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    <span class="truncate">{{ basename($file->file_path) }}</span>
+                <span class="truncate">{{ $file->original_name ?? basename($file->file_path) }}</span>
                 </a>
             @endforeach
         </div>
@@ -111,7 +111,7 @@
                 <div>
                     <h3 class="text-[14px] font-bold text-white tracking-tight">Submit Results</h3>
                     <p class="text-[9px] text-slate-600 font-mono uppercase tracking-widest mt-0.5 truncate max-w-[220px]">
-                        {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Order #' . $order->id }}
+                {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'Order #' . $order->id }}
                     </p>
                 </div>
             </div>

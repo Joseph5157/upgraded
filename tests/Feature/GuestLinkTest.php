@@ -218,6 +218,7 @@ class GuestLinkTest extends TestCase
         $this->assertSame($link->id, (int) $order->client_link_id);
         $this->assertSame(1, (int) $order->files_count);
         $this->assertSame(OrderStatus::Pending, $order->status);
+        $this->assertSame('upload.pdf', $order->files->first()->original_name);
     }
 
     public function test_guest_upload_is_blocked_when_credits_are_zero(): void

@@ -3,6 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -10,8 +12,17 @@ class TelegramLoginTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
+
     public function test_telegram_token_login_can_be_completed(): void
     {
+        $now = CarbonImmutable::parse('2026-04-23 21:45:00', config('app.timezone'));
+        Carbon::setTestNow($now);
+
         $user = User::factory()->create([
             'role' => 'client',
             'portal_number' => 4004,
@@ -27,6 +38,12 @@ class TelegramLoginTest extends TestCase
         $response->assertRedirect(route('client.dashboard'));
         $this->assertNull($user->fresh()->login_token);
         $this->assertNull($user->fresh()->login_token_expires_at);
+        $this->assertSame(
+            $now->startOfDay()->addDay()->toDateTimeString(),
+            $user->fresh()->session_expires_at?->toDateTimeString()
+        );
+
+        Carbon::setTestNow();
     }
 
     public function test_telegram_token_login_cannot_be_reused(): void

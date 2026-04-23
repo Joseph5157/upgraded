@@ -86,19 +86,21 @@ class CreateClientOrderService
 
             try {
                 foreach ($files as $file) {
-                    $originalName = preg_replace('/[^\\x00-\\x7F]+/', '_', basename($file->getClientOriginalName()));
-                    $path = $file->storeAs('orders/' . $order->id, $originalName, $this->storageDisk);
+                    $clientOriginalName = basename($file->getClientOriginalName());
+                    $storedName = preg_replace('/[^\\x00-\\x7F]+/', '_', $clientOriginalName);
+                    $path = $file->storeAs('orders/' . $order->id, $storedName, $this->storageDisk);
 
                     if ($path === false) {
-                        throw new \Exception('Failed to upload file: ' . $originalName);
+                        throw new \Exception('Failed to upload file: ' . $clientOriginalName);
                     }
 
                     $uploadedPaths[] = ['disk' => $this->storageDisk, 'path' => $path];
 
                     OrderFile::create([
-                        'order_id'  => $order->id,
-                        'file_path' => $path,
-                        'disk'      => $this->storageDisk,
+                        'order_id'      => $order->id,
+                        'file_path'     => $path,
+                        'disk'          => $this->storageDisk,
+                        'original_name' => $clientOriginalName,
                     ]);
                 }
             } catch (\Exception $e) {

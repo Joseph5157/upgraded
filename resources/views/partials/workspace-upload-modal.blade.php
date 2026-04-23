@@ -14,7 +14,7 @@
                 <div>
                     <h3 class="text-[14px] font-bold text-white tracking-tight">Submit reports</h3>
                     <p class="text-[9px] text-slate-600 font-mono uppercase tracking-widest mt-0.5 truncate max-w-[220px]">
-                        {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Order #' . $order->id }}
+                        {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'Order #' . $order->id }}
                     </p>
                 </div>
             </div>

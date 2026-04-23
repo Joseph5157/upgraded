@@ -39,11 +39,17 @@
             'processing' => 'In progress',
             'delivered' => 'Delivered',
         ][$order->computed_status] ?? ucfirst($order->computed_status);
+
+        $firstFile = $order->files->first();
+        $firstFileName = $firstFile ? ($firstFile->original_name ?? basename($firstFile->file_path)) : null;
     @endphp
     <div class="max-w-2xl mx-auto space-y-8 mt-12">
         <div class="glass p-8 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
                 <h1 class="text-2xl font-bold">Order #{{ $order->id }}</h1>
+                @if($firstFileName)
+                    <p class="text-slate-500 text-sm mt-1 truncate">{{ $firstFileName }}</p>
+                @endif
                 <p class="text-slate-400">
                     Status:
                     <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $statusClass }}">

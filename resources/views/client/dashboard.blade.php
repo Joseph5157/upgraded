@@ -449,7 +449,7 @@
                                         <div class="min-w-0">
                                             <div class="min-w-0">
                                                 <h4 class="text-[12px] sm:text-[13px] font-bold text-white truncate leading-snug max-w-[170px] sm:max-w-none">
-                                                    {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
+                                        {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'Document' }}
                                                 </h4>
                                                 @if($order->files_count > 1)
                                                     <p class="text-[9px] text-indigo-300 font-bold uppercase tracking-widest mt-1">
@@ -540,7 +540,7 @@
                                                         <button type="submit"
                                                             class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/[0.08] hover:bg-red-500/[0.15] text-red-400 text-[10px] font-bold rounded-lg border border-red-500/[0.15] transition-all">
                                                             <i data-lucide="trash-2" class="w-3 h-3"></i>
-                                                            <span class="truncate max-w-[120px]">{{ basename($file->file_path) }}</span>
+                                        <span class="truncate max-w-[120px]">{{ $file->original_name ?? basename($file->file_path) }}</span>
                                                         </button>
                                                     </form>
                                                 @endforeach
@@ -901,9 +901,14 @@
     <script>
         (function () {
             const pulseUrl = @json(route('client.dashboard.pulse'));
+            const loginUrl = @json(route('login', ['expired' => 1]));
             let currentSignature = @json($dashboardSignature ?? '');
             let pollTimer = null;
             let inFlight = false;
+
+            function redirectToLogin() {
+                window.location.href = loginUrl;
+            }
 
              async function checkForDashboardUpdates() {
                  if (window.__clientUploadInProgress) {
@@ -926,6 +931,11 @@
                         credentials: 'same-origin',
                         cache: 'no-store',
                     });
+
+                    if (response.status === 401 || response.status === 419 || (response.redirected && response.url.includes('/login'))) {
+                        redirectToLogin();
+                        return;
+                    }
 
                     if (!response.ok) {
                         return;
@@ -987,7 +997,8 @@
     </script>
     <script>
         window.addEventListener('pageshow', function(event) {
-            if (event.persisted) {
+            const nav = performance.getEntriesByType('navigation')[0];
+            if (event.persisted || (nav && nav.type === 'back_forward')) {
                 window.location.reload();
             }
         });

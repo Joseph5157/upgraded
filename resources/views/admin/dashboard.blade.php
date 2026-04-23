@@ -262,7 +262,7 @@
                                 <tr class="act-item" style="display:table-row;">
                                     <td class="px-5 py-3.5" style="border-bottom:1px solid #DDD6FE;">
                                         <p class="text-[12px] font-semibold truncate max-w-[180px]" style="color:#1E1B4B;">
-                                            {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Order #'.$order->id }}
+                {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'Order #'.$order->id }}
                                         </p>
                                         <p class="text-[10px] mt-0.5" style="color:#9CA3AF;font-family:'DM Mono',monospace;">{{ $order->client?->name ?? 'Unknown' }}</p>
                                     </td>

@@ -304,7 +304,7 @@
                                         </div>
                                         <div class="min-w-0">
                                             <h4 class="text-[12px] sm:text-[13px] font-bold text-white truncate leading-snug max-w-[160px] sm:max-w-none">
-                                                {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
+                        {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'Document' }}
                                             </h4>
                                             @if($order->files_count > 1)
                                                 <p class="text-[9px] text-indigo-300 font-bold uppercase tracking-widest mt-1">

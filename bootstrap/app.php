@@ -4,8 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -19,10 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'           => \App\Http\Middleware\RoleMiddleware::class,
             'account.status' => \App\Http\Middleware\CheckAccountStatus::class,
+            'session.fresh'   => \App\Http\Middleware\EnsureSessionIsFresh::class,
             'nocache'        => \App\Http\Middleware\NoCacheHeaders::class,
         ]);
         $middleware->appendToGroup('web', [
             \App\Http\Middleware\RequestCorrelation::class,
+            \App\Http\Middleware\EnsureSessionIsFresh::class,
             \App\Http\Middleware\CheckAccountStatus::class,
         ]);
         $middleware->validateCsrfTokens(except: [
@@ -31,10 +34,16 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (AccessDeniedHttpException $e, Request $request) {
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            $message = 'Your session expired. Please sign in again.';
+            $loginUrl = route('login', ['expired' => 1]);
+
             if ($request->expectsJson()) {
                 return response()
-                    ->json(['message' => 'You do not have permission to do that.'], 403)
+                    ->json([
+                        'message' => $message,
+                        'redirect' => $loginUrl,
+                    ], 401)
                     ->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
             }
 
@@ -44,9 +53,23 @@ return Application::configure(basePath: dirname(__DIR__))
                 $request->session()->regenerateToken();
             }
 
-            return redirect()->route('login')->withErrors([
-                'email' => 'Your session is invalid or you do not have access. Please log in again.',
-            ])->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
+            return redirect()->route('login', ['expired' => 1])
+                ->with('error', $message)
+                ->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
+        });
+
+        $exceptions->render(function (AuthorizationException $e, Request $request) {
+            $message = $e->getMessage() ?: 'You are not authorized to do that.';
+
+            if ($request->expectsJson()) {
+                return response()
+                    ->json(['message' => $message], 403)
+                    ->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
+            }
+
+            return back()
+                ->with('error', $message)
+                ->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
         });
 
         $exceptions->render(function (Throwable $e, Request $request) {

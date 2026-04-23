@@ -24,7 +24,7 @@
                     </div>
                     <div class="min-w-0 space-y-0.5">
                         <p class="text-xs font-semibold text-gray-900 truncate dark:text-slate-200">
-                            {{ $order->files->first() ? basename($order->files->first()->file_path) : 'New Document' }}
+                            {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'New Document' }}
                         </p>
                         <div class="flex flex-wrap items-center gap-1.5">
                             @if($order->client)

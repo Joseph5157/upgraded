@@ -41,6 +41,11 @@ class OrderController extends Controller
         ]);
     }
 
+    protected function reportDownloadName(?string $originalName, string $path): string
+    {
+        return $originalName ?: basename($path);
+    }
+
     protected function bundleReports(Order $order)
     {
         $zipPath = storage_path('app/tmp/order-' . $order->id . '-reports-' . now()->timestamp . '.zip');
@@ -58,7 +63,7 @@ class OrderController extends Controller
             $aiDisk = $report->ai_report_disk ?: $this->storageDisk;
             if (Storage::disk($aiDisk)->exists($report->ai_report_path)) {
                 $zip->addFromString(
-                    basename($report->ai_report_path),
+                    $this->reportDownloadName($report->ai_report_original_name, $report->ai_report_path),
                     Storage::disk($aiDisk)->get($report->ai_report_path)
                 );
                 $hasRealArtifact = true;
@@ -74,7 +79,7 @@ class OrderController extends Controller
             $plagDisk = $report->plag_report_disk ?: $this->storageDisk;
             if (Storage::disk($plagDisk)->exists($report->plag_report_path)) {
                 $zip->addFromString(
-                    basename($report->plag_report_path),
+                    $this->reportDownloadName($report->plag_report_original_name, $report->plag_report_path),
                     Storage::disk($plagDisk)->get($report->plag_report_path)
                 );
                 $hasRealArtifact = true;
@@ -287,13 +292,21 @@ class OrderController extends Controller
             if (! $order->report->plag_report_path) abort(404);
             $disk = $order->report->plag_report_disk ?: $this->storageDisk;
             if (!Storage::disk($disk)->exists($order->report->plag_report_path)) abort(404);
-            return $this->downloadFromDisk($order->report->plag_report_path, basename($order->report->plag_report_path), $disk);
+            return $this->downloadFromDisk(
+                $order->report->plag_report_path,
+                $this->reportDownloadName($order->report->plag_report_original_name, $order->report->plag_report_path),
+                $disk
+            );
         }
 
         if (! $order->report->ai_report_path) abort(404);
         $disk = $order->report->ai_report_disk ?: $this->storageDisk;
         if (!Storage::disk($disk)->exists($order->report->ai_report_path)) abort(404);
-        return $this->downloadFromDisk($order->report->ai_report_path, basename($order->report->ai_report_path), $disk);
+        return $this->downloadFromDisk(
+            $order->report->ai_report_path,
+            $this->reportDownloadName($order->report->ai_report_original_name, $order->report->ai_report_path),
+            $disk
+        );
     }
 
     public function track($token_view)
@@ -331,12 +344,20 @@ class OrderController extends Controller
             if (!$order->report->plag_report_path) abort(404);
             $disk = $order->report->plag_report_disk ?: $this->storageDisk;
             if (!Storage::disk($disk)->exists($order->report->plag_report_path)) abort(404);
-            return $this->downloadFromDisk($order->report->plag_report_path, basename($order->report->plag_report_path), $disk);
+            return $this->downloadFromDisk(
+                $order->report->plag_report_path,
+                $this->reportDownloadName($order->report->plag_report_original_name, $order->report->plag_report_path),
+                $disk
+            );
         }
 
         if (!$order->report->ai_report_path) abort(404);
         $disk = $order->report->ai_report_disk ?: $this->storageDisk;
         if (!Storage::disk($disk)->exists($order->report->ai_report_path)) abort(404);
-        return $this->downloadFromDisk($order->report->ai_report_path, basename($order->report->ai_report_path), $disk);
+        return $this->downloadFromDisk(
+            $order->report->ai_report_path,
+            $this->reportDownloadName($order->report->ai_report_original_name, $order->report->ai_report_path),
+            $disk
+        );
     }
 }

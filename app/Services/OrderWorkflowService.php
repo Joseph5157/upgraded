@@ -226,9 +226,11 @@ class OrderWorkflowService
                 ['order_id' => $lockedOrder->id],
                 [
                     'ai_report_path'   => $data['ai_report_path'] ?? null,
+                    'ai_report_original_name' => $data['ai_report_original_name'] ?? null,
                     'ai_report_disk'   => $data['ai_report_disk'] ?? 'r2',
                     'ai_skip_reason'   => $data['ai_skip_reason'] ?? null,
                     'plag_report_path' => $data['plag_report_path'],
+                    'plag_report_original_name' => $data['plag_report_original_name'] ?? null,
                     'plag_report_disk' => $data['plag_report_disk'] ?? 'r2',
                 ]
             );

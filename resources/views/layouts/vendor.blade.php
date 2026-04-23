@@ -236,7 +236,8 @@
         setInterval(refreshCsrfToken, 30 * 60 * 1000);
 
         window.addEventListener('pageshow', function(event) {
-            if (event.persisted) {
+            const nav = performance.getEntriesByType('navigation')[0];
+            if (event.persisted || (nav && nav.type === 'back_forward')) {
                 window.location.reload();
             }
         });

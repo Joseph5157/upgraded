@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\TelegramService;
+use App\Support\SessionExpiry;
 use App\Support\LogContext;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -138,6 +140,8 @@ class OtpLoginController extends Controller
             ])
         ));
 
+        $this->applyMidnightSessionExpiry($user);
+
         Auth::login($user);
         $request->session()->regenerate();
 
@@ -154,5 +158,19 @@ class OtpLoginController extends Controller
         }
 
         return redirect('/dashboard');
+    }
+
+    protected function applyMidnightSessionExpiry(User $user): void
+    {
+        $now = CarbonImmutable::now(config('app.timezone'));
+        $expiresAt = SessionExpiry::nextMidnight($now);
+
+        config([
+            'session.lifetime' => SessionExpiry::minutesUntilMidnight($now),
+        ]);
+
+        $user->forceFill([
+            'session_expires_at' => $expiresAt,
+        ])->save();
     }
 }

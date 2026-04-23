@@ -278,7 +278,7 @@ class DashboardController extends Controller
             }
         }
 
-        $downloadName = $file->original_name ?? basename($file->file_path);
+        $downloadName = $file->original_name ?: basename($file->file_path);
 
         return Storage::disk($disk)->download($file->file_path, $downloadName);
     }

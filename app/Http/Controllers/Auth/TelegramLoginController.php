@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Support\LogContext;
+use App\Support\SessionExpiry;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,6 +59,8 @@ class TelegramLoginController extends Controller
             ])
         ));
 
+        $this->applyMidnightSessionExpiry($user);
+
         Auth::login($user);
 
         $request->session()->regenerate();
@@ -66,5 +70,18 @@ class TelegramLoginController extends Controller
             'client' => redirect('/client/dashboard'),
             default => redirect('/dashboard'),
         };
+    }
+
+    protected function applyMidnightSessionExpiry(User $user): void
+    {
+        $now = CarbonImmutable::now(config('app.timezone'));
+
+        config([
+            'session.lifetime' => SessionExpiry::minutesUntilMidnight($now),
+        ]);
+
+        $user->forceFill([
+            'session_expires_at' => SessionExpiry::nextMidnight($now),
+        ])->save();
     }
 }

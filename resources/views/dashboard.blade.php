@@ -188,7 +188,7 @@
                                 <div class="min-w-0">
                                     <p
                                         class="text-[11px] font-semibold text-gray-900 truncate group-hover:text-gray-900 transition-colors dark:text-slate-300">
-                                        {{ $history->files->first() ? basename($history->files->first()->file_path) : 'Document' }}
+                                        {{ $history->files->first() ? ($history->files->first()->original_name ?? basename($history->files->first()->file_path)) : 'Document' }}
                                     </p>
                                     <p class="text-[9px] text-gray-400 dark:text-slate-500 mt-0.5 font-mono">
                                         {{ $history->delivered_at->diffForHumans() }}</p>
@@ -211,10 +211,15 @@
 
     <script>
         const DASHBOARD_URL = @json(route('dashboard'));
+        const LOGIN_URL = @json(route('login', ['expired' => 1]));
         const CSRF_REFRESH_URL = @json(route('csrf.refresh'));
 
         const MAX_REPORT_SIZE = 100 * 1024 * 1024;
         let refreshInProgress = false;
+
+        function redirectToLogin(message = 'Your session expired. Please sign in again.') {
+            window.location.href = LOGIN_URL;
+        }
 
         function refreshAvailableQueue() {
             if (document.hidden || refreshInProgress) return;
@@ -224,10 +229,19 @@
             fetch(DASHBOARD_URL + '?queue_only=1&queue_refresh=' + Date.now(), {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
                 },
             })
-                .then(response => response.text())
+                .then(response => {
+                    if (response.status === 401 || response.status === 419 || (response.redirected && response.url.includes('/login'))) {
+                        redirectToLogin();
+                        return null;
+                    }
+
+                    return response.text();
+                })
                 .then(html => {
+                    if (!html) return;
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
                     const incomingQueue = doc.getElementById('files');
@@ -631,6 +645,11 @@ function ajaxAction(url, btn, type, orderId, status = null) {
         body: body,
     })
     .then(r => {
+        if (r.status === 401 || r.status === 419 || (r.redirected && r.url.includes('/login'))) {
+            redirectToLogin();
+            throw Object.assign(new Error('session_expired'), { isAuth: true });
+        }
+
         const ct = r.headers.get('content-type') || '';
         if (!ct.includes('application/json')) {
             // Middleware returned a redirect (session expired, role mismatch) — HTML, not JSON.
@@ -708,10 +727,10 @@ function ajaxAction(url, btn, type, orderId, status = null) {
     .catch((err) => {
         btn.disabled = false;
         btn.innerHTML = original;
-        const msg = (err && err.isAuth)
-            ? 'Your session expired. Please refresh the page and log in again.'
-            : 'Network error. Please try again.';
-        showToast(msg, 'error');
+        if (err && err.isAuth) {
+            return;
+        }
+        showToast('Network error. Please try again.', 'error');
     });
 }
 

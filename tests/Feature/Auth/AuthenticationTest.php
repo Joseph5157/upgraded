@@ -4,12 +4,20 @@ namespace Tests\Feature\Auth;
 
 use App\Models\User;
 use App\Services\TelegramService;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+        parent::tearDown();
+    }
 
     public function test_login_screen_can_be_rendered(): void
     {
@@ -22,6 +30,9 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_portal_id_and_otp(): void
     {
+        $now = CarbonImmutable::parse('2026-04-23 18:15:00', config('app.timezone'));
+        Carbon::setTestNow($now);
+
         $user = User::factory()->create([
             'role' => 'vendor',
             'portal_number' => 1001,
@@ -42,6 +53,12 @@ class AuthenticationTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
         $response->assertRedirect(route('dashboard'));
+        $this->assertSame(
+            $now->startOfDay()->addDay()->toDateTimeString(),
+            $user->fresh()->session_expires_at?->toDateTimeString()
+        );
+
+        Carbon::setTestNow();
     }
 
     public function test_otp_cannot_be_reused_after_successful_login(): void

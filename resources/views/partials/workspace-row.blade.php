@@ -10,7 +10,7 @@
             </div>
             <div class="min-w-0">
                 <p class="text-xs font-semibold text-gray-900 truncate max-w-[180px] dark:text-slate-200">
-                    {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Document' }}
+                    {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'Document' }}
                 </p>
                 <div class="flex items-center gap-1.5 mt-0.5">
                     @if($order->client)
@@ -51,7 +51,7 @@
             @foreach($order->files as $file)
                 <a href="{{ route('orders.files.download', [$order, $file]) }}"
                     class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-gray-500 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:bg-white/[0.05] dark:border-white/[0.08] dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/[0.08] rounded-lg transition-all"
-                    title="{{ basename($file->file_path) }}">
+                    title="{{ $file->original_name ?? basename($file->file_path) }}">
                     <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />

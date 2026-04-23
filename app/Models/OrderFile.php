@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderFile extends Model
 {
-    protected $fillable = ['order_id', 'file_path', 'disk'];
+    protected $fillable = ['order_id', 'file_path', 'disk', 'original_name'];
 
     public function order()
     {

@@ -34,15 +34,21 @@ class UploadVendorReportService
         $disk            = $this->storageDisk ?: $this->resolveStorageDisk();
         $aiPath          = null;
         $plagPath        = null;
+        $aiOriginalName  = null;
+        $plagOriginalName = null;
         $reportPersisted = false;
         $aiSkipped       = ! empty($aiSkipReason);
 
         try {
             if ($aiReport) {
-                $aiPath = $this->storeReportOrFail($aiReport, 'reports/' . $order->id . '/ai', $disk, 'AI');
+                $aiStored = $this->storeReportOrFail($aiReport, 'reports/' . $order->id . '/ai', $disk, 'AI');
+                $aiPath = $aiStored['path'];
+                $aiOriginalName = $aiStored['original_name'];
             }
 
-            $plagPath = $this->storeReportOrFail($plagReport, 'reports/' . $order->id . '/plag', $disk, 'plagiarism');
+            $plagStored = $this->storeReportOrFail($plagReport, 'reports/' . $order->id . '/plag', $disk, 'plagiarism');
+            $plagPath = $plagStored['path'];
+            $plagOriginalName = $plagStored['original_name'];
 
             if (empty($aiPath) && ! $aiSkipped) {
                 throw new WorkflowException('Failed to process the AI report. Please retry with the PDF or provide a skip reason.');
@@ -53,9 +59,11 @@ class UploadVendorReportService
 
             $this->workflowService->uploadReport($order, $user, [
                 'ai_report_path'   => $aiPath,
+                'ai_report_original_name' => $aiOriginalName,
                 'ai_report_disk'   => $disk,
                 'ai_skip_reason'   => $aiSkipReason,
                 'plag_report_path' => $plagPath,
+                'plag_report_original_name' => $plagOriginalName,
                 'plag_report_disk' => $disk,
             ]);
             $reportPersisted = true;
@@ -105,9 +113,10 @@ class UploadVendorReportService
         return $name;
     }
 
-    private function storeReportOrFail(UploadedFile $file, string $directory, string $disk, string $label): string
+    private function storeReportOrFail(UploadedFile $file, string $directory, string $disk, string $label): array
     {
-        $storedName = Str::uuid()->toString() . '_' . $this->sanitizeFilename($file->getClientOriginalName());
+        $originalName = basename($file->getClientOriginalName());
+        $storedName = Str::uuid()->toString() . '_' . $this->sanitizeFilename($originalName);
 
         try {
             $path = $file->storeAs($directory, $storedName, $disk);
@@ -119,7 +128,10 @@ class UploadVendorReportService
             throw new VendorReportStorageException("Failed to store the {$label} report.");
         }
 
-        return $path;
+        return [
+            'path' => $path,
+            'original_name' => $originalName,
+        ];
     }
 
     private function cleanupFile(string $disk, ?string $path, string $label, int $orderId): void
