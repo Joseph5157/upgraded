@@ -107,6 +107,15 @@
                                             class="px-4 py-2 text-[10px] font-bold uppercase text-slate-400 bg-white/5 hover:bg-white/10 rounded-xl transition-all border border-white/5">
                                             Edit
                                         </button>
+                                        <form method="POST" action="{{ route('admin.matrix.destroy', $client) }}"
+                                            onsubmit="return confirm('Delete client {{ addslashes($client->name) }} and all related files? This cannot be undone.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="px-4 py-2 text-[10px] font-bold uppercase text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all border border-red-500/20">
+                                                Delete
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

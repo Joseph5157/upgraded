@@ -5,12 +5,15 @@ namespace Tests\Feature;
 use App\Enums\OrderStatus;
 use App\Models\AuditLog;
 use App\Models\Client;
+use App\Models\OrderFile;
+use App\Models\OrderReport;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -505,6 +508,78 @@ class SmokeTest extends TestCase
             'event_type' => 'account.deleted',
             'subject_id' => $targetUser->id,
         ]);
+    }
+
+    /**
+     * C-3b: Admin deletes a client from the credits page â€” client, orders,
+     *       reports, and stored files are removed.
+     * Blocker if fails: BLOCKER â€” storage cleanup must not leave orphaned files.
+     */
+    public function test_c3b_admin_deletes_client_from_credits_page_and_removes_files(): void
+    {
+        $deletedPaths = [];
+        $disk = new class($deletedPaths) {
+            public function __construct(public array &$deletedPaths) {}
+
+            public function exists(string $path): bool
+            {
+                return true;
+            }
+
+            public function delete(string $path): bool
+            {
+                $this->deletedPaths[] = $path;
+                return true;
+            }
+        };
+
+        Storage::shouldReceive('disk')->andReturn($disk);
+
+        $admin = $this->makeAdmin();
+        $client = Client::create([
+            'name' => 'Delete Me Client',
+            'slots' => 5,
+            'slots_consumed' => 2,
+            'status' => 'active',
+        ]);
+
+        $order = Order::create([
+            'client_id' => $client->id,
+            'token_view' => Str::random(32),
+            'files_count' => 1,
+            'status' => OrderStatus::Delivered,
+            'due_at' => now()->addMinutes(20),
+            'source' => 'account',
+        ]);
+
+        OrderFile::create([
+            'order_id' => $order->id,
+            'file_path' => 'orders/' . $order->id . '/document.pdf',
+            'disk' => 'r2',
+            'original_name' => 'document.pdf',
+        ]);
+
+        OrderReport::create([
+            'order_id' => $order->id,
+            'ai_report_path' => 'reports/' . $order->id . '/ai/report-ai.pdf',
+            'ai_report_original_name' => 'report-ai.pdf',
+            'ai_report_disk' => 'r2',
+            'plag_report_path' => 'reports/' . $order->id . '/plag/report-plag.pdf',
+            'plag_report_original_name' => 'report-plag.pdf',
+            'plag_report_disk' => 'r2',
+        ]);
+
+        $this->actingAs($admin)
+            ->delete(route('admin.matrix.destroy', $client))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('clients', ['id' => $client->id]);
+        $this->assertDatabaseMissing('orders', ['id' => $order->id]);
+        $this->assertDatabaseMissing('order_files', ['order_id' => $order->id]);
+        $this->assertDatabaseMissing('order_reports', ['order_id' => $order->id]);
+        $this->assertContains('orders/' . $order->id . '/document.pdf', $deletedPaths);
+        $this->assertContains('reports/' . $order->id . '/ai/report-ai.pdf', $deletedPaths);
+        $this->assertContains('reports/' . $order->id . '/plag/report-plag.pdf', $deletedPaths);
     }
 
     /**

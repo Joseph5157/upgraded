@@ -113,6 +113,7 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
         Route::post('/accounts/invite', [InviteController::class, 'store'])->name('accounts.invite');
         Route::resource('/matrix', ClientMatrixController::class)->only(['index', 'update']);
         Route::post('/matrix/{client}/refill', [ClientMatrixController::class, 'refill'])->name('matrix.refill');
+        Route::delete('/matrix/{client}', [ClientMatrixController::class, 'destroy'])->name('matrix.destroy');
         Route::get('/topup', [TopupRequestController::class, 'index'])->name('topup.index');
         Route::post('/topup/{topupRequest}/approve', [TopupRequestController::class, 'approve'])->name('topup.approve');
         Route::post('/topup/{topupRequest}/reject', [TopupRequestController::class, 'reject'])->name('topup.reject');

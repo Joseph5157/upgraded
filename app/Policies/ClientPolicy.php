@@ -48,4 +48,12 @@ class ClientPolicy
     {
         return $user->role === 'admin';
     }
+
+    /**
+     * Determine if the admin can delete a client and all related files.
+     */
+    public function delete(User $user, Client $client): bool
+    {
+        return $user->role === 'admin';
+    }
 }
