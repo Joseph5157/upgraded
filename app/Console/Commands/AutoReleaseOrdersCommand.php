@@ -13,6 +13,13 @@ class AutoReleaseOrdersCommand extends Command
 
     public function handle(): int
     {
+        if (! Order::hasColumn('claimed_at')) {
+            $this->warn('orders:auto-release skipped because the orders.claimed_at column is missing.');
+            return Command::SUCCESS;
+        }
+
+        $supportsReleaseCount = Order::hasColumn('release_count');
+
         // --- Processing orders: vendor started work but has held for over 2 hours ---
         // claimed_at is refreshed when work begins (startProcessing), so this 2-hour
         // window starts from when the vendor actually downloaded the file.
@@ -22,12 +29,17 @@ class AutoReleaseOrdersCommand extends Command
             ->get();
 
         foreach ($processingOrders as $order) {
-            $order->update([
+            $update = [
                 'claimed_by'    => null,
                 'claimed_at'    => null,
                 'status'        => OrderStatus::Pending,
-                'release_count' => $order->release_count + 1,
-            ]);
+            ];
+
+            if ($supportsReleaseCount) {
+                $update['release_count'] = $order->release_count + 1;
+            }
+
+            $order->update($update);
         }
 
         // --- Stuck pending/claimed orders: claimed but never started processing after 30 minutes ---
@@ -39,12 +51,17 @@ class AutoReleaseOrdersCommand extends Command
             ->get();
 
         foreach ($stuckOrders as $order) {
-            $order->update([
+            $update = [
                 'claimed_by'    => null,
                 'claimed_at'    => null,
                 'status'        => OrderStatus::Pending,
-                'release_count' => $order->release_count + 1,
-            ]);
+            ];
+
+            if ($supportsReleaseCount) {
+                $update['release_count'] = $order->release_count + 1;
+            }
+
+            $order->update($update);
         }
 
         $released = $processingOrders->count() + $stuckOrders->count();

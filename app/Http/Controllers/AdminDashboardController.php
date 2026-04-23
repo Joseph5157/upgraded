@@ -59,7 +59,11 @@ class AdminDashboardController extends Controller
         $activeOrders = Order::with(['client', 'vendor', 'files'])
             ->whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
             ->whereNotNull('claimed_by')
-            ->orderBy('claimed_at', 'asc') // Oldest claimed first
+            ->when(
+                Order::hasColumn('claimed_at'),
+                fn ($query) => $query->orderBy('claimed_at', 'asc'),
+                fn ($query) => $query->latest()
+            ) // Oldest claimed first when the schema supports it
             ->get();
 
         return view('admin.dashboard', compact('stats', 'vendorPerformance', 'recentOrders', 'activeOrders'));

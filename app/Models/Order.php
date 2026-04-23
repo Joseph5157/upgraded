@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Order extends Model
 {
@@ -47,6 +48,11 @@ class Order extends Model
         if ($this->status === OrderStatus::Claimed)    return 'claimed';
         if ($this->status === OrderStatus::Processing) return 'processing';
         return 'pending';
+    }
+
+    public static function hasColumn(string $column): bool
+    {
+        return Schema::hasColumn('orders', $column);
     }
 
 }

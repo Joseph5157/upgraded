@@ -115,13 +115,18 @@ class AccountManagerController extends Controller
                 ->whereIn('status', $unfinishedStatuses)
                 ->sum('files_count');
 
+            $update = [
+                'status'     => OrderStatus::Cancelled,
+                'claimed_by' => null,
+            ];
+
+            if (Order::hasColumn('claimed_at')) {
+                $update['claimed_at'] = null;
+            }
+
             Order::where('client_id', $client->id)
                 ->whereIn('status', $unfinishedStatuses)
-                ->update([
-                    'status'     => OrderStatus::Cancelled,
-                    'claimed_by' => null,
-                    'claimed_at' => null,
-                ]);
+                ->update($update);
 
             // Restore consumed slot counter for orders that never completed
             if ($refundableSlots > 0) {
@@ -145,13 +150,18 @@ class AccountManagerController extends Controller
         }
 
         if ($user->role === 'vendor') {
+            $update = [
+                'claimed_by' => null,
+                'status'     => OrderStatus::Pending,
+            ];
+
+            if (Order::hasColumn('claimed_at')) {
+                $update['claimed_at'] = null;
+            }
+
             Order::where('claimed_by', $user->id)
                 ->whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
-                ->update([
-                    'claimed_by' => null,
-                    'claimed_at' => null,
-                    'status'     => OrderStatus::Pending,
-                ]);
+                ->update($update);
         }
 
         $this->invalidateUserSessions($user);

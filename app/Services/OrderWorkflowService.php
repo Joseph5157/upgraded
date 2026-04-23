@@ -59,11 +59,16 @@ class OrderWorkflowService
 
             $oldStatus = $locked->status->value;
 
-            $locked->update([
+            $update = [
                 'claimed_by' => $user->id,
-                'claimed_at' => now(),
                 'status'     => OrderStatus::Claimed,
-            ]);
+            ];
+
+            if (Order::hasColumn('claimed_at')) {
+                $update['claimed_at'] = now();
+            }
+
+            $locked->update($update);
 
             $this->logActivity(
                 $locked,
@@ -106,11 +111,16 @@ class OrderWorkflowService
         DB::transaction(function () use ($order, $user) {
             $oldStatus = $order->status->value;
 
-            $order->update([
+            $update = [
                 'claimed_by' => null,
-                'claimed_at' => null,
                 'status'     => OrderStatus::Pending,
-            ]);
+            ];
+
+            if (Order::hasColumn('claimed_at')) {
+                $update['claimed_at'] = null;
+            }
+
+            $order->update($update);
 
             $this->logActivity(
                 $order,
@@ -154,7 +164,11 @@ class OrderWorkflowService
             $oldStatus = $order->status->value;
             // Reset claimed_at to now so the auto-release 2-hour window starts
             // from when work actually began, not from when the order was claimed.
-            $order->update(['status' => OrderStatus::Processing, 'claimed_at' => now()]);
+            $update = ['status' => OrderStatus::Processing];
+            if (Order::hasColumn('claimed_at')) {
+                $update['claimed_at'] = now();
+            }
+            $order->update($update);
             $this->logActivity($order, $user, 'start_processing', 'Order processing started', $oldStatus, OrderStatus::Processing->value);
 
             $context = LogContext::forOrder($order, LogContext::forUser($user, LogContext::currentRequest()));
@@ -223,10 +237,11 @@ class OrderWorkflowService
 
             if ($lockedOrder->status === OrderStatus::Claimed) {
                 $oldStatus = $lockedOrder->status->value;
-                $lockedOrder->update([
-                    'status'     => OrderStatus::Processing,
-                    'claimed_at' => now(),
-                ]);
+                $update = ['status' => OrderStatus::Processing];
+                if (Order::hasColumn('claimed_at')) {
+                    $update['claimed_at'] = now();
+                }
+                $lockedOrder->update($update);
 
                 $this->logActivity($lockedOrder, $user, 'start_processing', 'Order processing started', $oldStatus, OrderStatus::Processing->value);
 

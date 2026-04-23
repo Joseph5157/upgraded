@@ -8,8 +8,10 @@ use App\Models\Client;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class VendorOrderStateStalenessTest extends TestCase
@@ -80,6 +82,31 @@ class VendorOrderStateStalenessTest extends TestCase
         ]);
     }
 
+    public function test_vendor_can_claim_when_claimed_at_column_is_missing(): void
+    {
+        if (Schema::hasColumn('orders', 'claimed_at')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->dropColumn('claimed_at');
+            });
+        }
+
+        $vendor = $this->makeVendor();
+        $order = $this->makePendingOrder();
+
+        $response = $this->actingAs($vendor)->post(route('orders.claim', $order), [], [
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+            'HTTP_ACCEPT' => 'application/json',
+        ]);
+
+        $response->assertOk()->assertJsonFragment(['success' => true]);
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => OrderStatus::Claimed->value,
+            'claimed_by' => $vendor->id,
+        ]);
+    }
+
     protected function makeVendor(): User
     {
         return User::factory()->create([
@@ -99,16 +126,21 @@ class VendorOrderStateStalenessTest extends TestCase
             'email' => 'stale-state-client@example.com',
         ]);
 
-        return Order::create([
+        $orderData = [
             'client_id' => $client->id,
             'token_view' => 'stale-claim-test',
             'files_count' => 1,
             'status' => OrderStatus::Pending,
             'claimed_by' => null,
-            'claimed_at' => null,
             'due_at' => now()->addMinutes(20),
             'source' => 'account',
-        ]);
+        ];
+
+        if (Schema::hasColumn('orders', 'claimed_at')) {
+            $orderData['claimed_at'] = null;
+        }
+
+        return Order::create($orderData);
     }
 
     protected function makeClaimedOrder(User $vendor): Order
@@ -118,15 +150,20 @@ class VendorOrderStateStalenessTest extends TestCase
             'email' => 'stale-status-client@example.com',
         ]);
 
-        return Order::create([
+        $orderData = [
             'client_id' => $client->id,
             'token_view' => 'stale-status-test',
             'files_count' => 1,
             'status' => OrderStatus::Claimed,
             'claimed_by' => $vendor->id,
-            'claimed_at' => now(),
             'due_at' => now()->addMinutes(20),
             'source' => 'account',
-        ]);
+        ];
+
+        if (Schema::hasColumn('orders', 'claimed_at')) {
+            $orderData['claimed_at'] = now();
+        }
+
+        return Order::create($orderData);
     }
 }
