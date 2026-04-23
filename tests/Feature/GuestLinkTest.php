@@ -345,6 +345,26 @@ class GuestLinkTest extends TestCase
         $this->assertNull($link->last_used_at);
     }
 
+    public function test_admin_guest_link_index_still_renders_when_new_audit_columns_are_unavailable(): void
+    {
+        $this->fakeTelegramAlerts();
+
+        Schema::shouldReceive('hasColumn')
+            ->andReturnUsing(function (string $table, string $column): bool {
+                return ! in_array($column, ['created_by_user_id', 'revoked_by_user_id', 'revoked_at', 'expires_at', 'last_used_at'], true);
+            });
+
+        $admin = $this->makeAdmin();
+        $client = $this->makeClient();
+        $link = $this->makeLink($client, ['token' => 'legacy-admin-link']);
+
+        $this->actingAs($admin)
+            ->get(route('admin.client-links.index'))
+            ->assertOk()
+            ->assertSee('Guest Links')
+            ->assertSee('legacy-admin-link');
+    }
+
     public function test_revoked_link_loses_access_immediately(): void
     {
         $this->fakeTelegramAlerts();

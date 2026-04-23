@@ -142,6 +142,7 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
             Route::delete('/clients/{client}', [ClientLinkController::class, 'destroyClient'])->name('clients.destroy');
             Route::post('/{clientLink}/revoke', [ClientLinkController::class, 'revoke'])->name('revoke');
             Route::post('/{clientLink}/toggle', [ClientLinkController::class, 'revoke'])->name('toggle');
+            Route::delete('/{clientLink}', [ClientLinkController::class, 'destroy'])->name('destroy');
             Route::get('/{clientLink}/orders', [ClientLinkController::class, 'showOrders'])->name('orders');
             Route::delete('/{clientLink}/orders/{order}', [ClientLinkController::class, 'destroyOrder'])->name('orders.destroy');
         });

@@ -16,6 +16,21 @@ use Illuminate\View\View;
 
 class ClientLinkController extends Controller
 {
+    protected function adminLinkRelations(): array
+    {
+        $relations = [];
+
+        if (Schema::hasColumn('client_links', 'created_by_user_id')) {
+            $relations[] = 'createdBy';
+        }
+
+        if (Schema::hasColumn('client_links', 'revoked_by_user_id')) {
+            $relations[] = 'revokedBy';
+        }
+
+        return $relations;
+    }
+
     protected function usableLinkExists(Client $client, ?int $ignoreLinkId = null): bool
     {
         return $client->links()
@@ -27,7 +42,7 @@ class ClientLinkController extends Controller
     public function index(): View
     {
         $clients = Client::with(['user', 'links' => function ($q) {
-            $q->latest()->with(['createdBy', 'revokedBy']);
+            $q->latest()->with($this->adminLinkRelations());
         }])->has('links')->orderBy('name')->get();
 
         return view('admin.client-links.index', compact('clients'));
@@ -88,11 +103,24 @@ class ClientLinkController extends Controller
         return back()->with('success', 'Link revoked successfully.');
     }
 
+    public function destroy(Request $request, ClientLink $clientLink): RedirectResponse
+    {
+        app(AuditLogger::class)->record('client_link.deleted', $clientLink, [
+            'client_id' => $clientLink->client_id,
+            'deleted_by_user_id' => $request->user()?->id,
+            'had_orders' => $clientLink->orders()->exists(),
+        ]);
+
+        $clientLink->delete();
+
+        return back()->with('success', 'Link deleted successfully.');
+    }
+
     public function showOrders(ClientLink $clientLink): View
     {
-        $clientLink->load(['client', 'createdBy', 'revokedBy', 'orders' => function ($q) {
+        $clientLink->load(array_merge(['client', 'orders' => function ($q) {
             $q->with(['files'])->latest();
-        }]);
+        }], $this->adminLinkRelations()));
 
         return view('admin.client-links.orders', compact('clientLink'));
     }
