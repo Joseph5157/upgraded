@@ -11,6 +11,7 @@ use App\Support\StorageLifecycle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class ClientLinkController extends Controller
@@ -47,12 +48,14 @@ class ClientLinkController extends Controller
         }
 
         $link = ClientLink::create([
-            'client_id'          => $client->id,
-            'created_by_user_id'  => $request->user()?->id,
-            'token'              => Str::random(40),
-            'is_active'          => true,
-            'expires_at'         => now()->addDay(),
-        ]);
+            'client_id' => $client->id,
+            'token' => Str::random(40),
+            'is_active' => true,
+        ] + ($request->user()?->id && Schema::hasColumn('client_links', 'created_by_user_id')
+            ? ['created_by_user_id' => $request->user()->id]
+            : []) + (Schema::hasColumn('client_links', 'expires_at')
+            ? ['expires_at' => now()->addDay()]
+            : []));
 
         app(AuditLogger::class)->record('client_link.created', $link, [
             'client_id' => $client->id,
@@ -70,10 +73,12 @@ class ClientLinkController extends Controller
         }
 
         $clientLink->update([
-            'is_active'          => false,
-            'revoked_at'         => now(),
-            'revoked_by_user_id' => $request->user()?->id,
-        ]);
+            'is_active' => false,
+        ] + (Schema::hasColumn('client_links', 'revoked_at')
+            ? ['revoked_at' => now()]
+            : []) + ($request->user()?->id && Schema::hasColumn('client_links', 'revoked_by_user_id')
+            ? ['revoked_by_user_id' => $request->user()->id]
+            : []));
 
         app(AuditLogger::class)->record('client_link.revoked', $clientLink, [
             'client_id' => $clientLink->client_id,
@@ -156,12 +161,14 @@ class ClientLinkController extends Controller
         ]);
 
         $link = ClientLink::create([
-            'client_id'         => $client->id,
-            'created_by_user_id'=> $request->user()?->id,
-            'token'             => Str::random(40),
-            'is_active'         => true,
-            'expires_at'        => now()->addDay(),
-        ]);
+            'client_id' => $client->id,
+            'token' => Str::random(40),
+            'is_active' => true,
+        ] + ($request->user()?->id && Schema::hasColumn('client_links', 'created_by_user_id')
+            ? ['created_by_user_id' => $request->user()->id]
+            : []) + (Schema::hasColumn('client_links', 'expires_at')
+            ? ['expires_at' => now()->addDay()]
+            : []));
 
         app(AuditLogger::class)->record('client_link.created', $link, [
             'client_id' => $client->id,

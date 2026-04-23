@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Schema;
 
 class ClientLink extends Model
 {
@@ -24,6 +25,14 @@ class ClientLink extends Model
         'expires_at'  => 'datetime',
         'last_used_at'=> 'datetime',
     ];
+
+    protected static array $columnPresence = [];
+
+    protected static function hasColumn(string $column): bool
+    {
+        return static::$columnPresence[$column]
+            ??= Schema::hasColumn('client_links', $column);
+    }
 
     public function client()
     {
@@ -47,12 +56,21 @@ class ClientLink extends Model
 
     public function isRevoked(): bool
     {
-        return ! $this->is_active || $this->revoked_at !== null;
+        return ! $this->is_active
+            || (self::hasColumn('revoked_at') && $this->revoked_at !== null);
     }
 
     public function isExpired(): bool
     {
-        return $this->expires_at === null || $this->expires_at->isPast();
+        if (self::hasColumn('expires_at') && $this->expires_at !== null) {
+            return $this->expires_at->isPast();
+        }
+
+        if ($this->created_at !== null) {
+            return $this->created_at->copy()->addDay()->isPast();
+        }
+
+        return false;
     }
 
     public function isUsable(): bool
@@ -62,10 +80,27 @@ class ClientLink extends Model
 
     public function scopeUsable(Builder $query): Builder
     {
-        return $query->where('is_active', true)
-            ->whereNull('revoked_at')
-            ->whereNotNull('expires_at')
-            ->where('expires_at', '>', now());
+        $query->where('is_active', true);
+
+        if (self::hasColumn('revoked_at')) {
+            $query->whereNull('revoked_at');
+        }
+
+        if (self::hasColumn('expires_at')) {
+            $query->where(function (Builder $builder): void {
+                $builder->where(function (Builder $expires): void {
+                    $expires->whereNotNull('expires_at')
+                        ->where('expires_at', '>', now());
+                })->orWhere(function (Builder $fallback): void {
+                    $fallback->whereNull('expires_at')
+                        ->where('created_at', '>', now()->subDay());
+                });
+            });
+        } else {
+            $query->where('created_at', '>', now()->subDay());
+        }
+
+        return $query;
     }
 
     public function creditsUsed(): int

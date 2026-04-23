@@ -11,6 +11,7 @@ use App\Support\LogContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
@@ -109,6 +110,26 @@ class OrderController extends Controller
         return max(0, (int) $client->slots - (int) $client->slots_consumed);
     }
 
+    protected function touchGuestLinkUsage(ClientLink $link): void
+    {
+        if (! Schema::hasColumn('client_links', 'last_used_at')) {
+            return;
+        }
+
+        try {
+            $link->forceFill(['last_used_at' => now()])->save();
+        } catch (\Throwable $e) {
+            Log::warning('client_link.touch_failed', array_merge(
+                LogContext::currentRequest(),
+                [
+                    'client_link_id' => $link->id,
+                    'exception' => class_basename($e),
+                    'message' => $e->getMessage(),
+                ]
+            ));
+        }
+    }
+
     protected function assertGuestOrderScope(ClientLink $link, Order $order): void
     {
         abort_if($order->client_link_id !== $link->id, 404);
@@ -152,7 +173,7 @@ class OrderController extends Controller
             ->latest()
             ->get();
 
-        $link->forceFill(['last_used_at' => now()])->save();
+        $this->touchGuestLinkUsage($link);
 
         app(AuditLogger::class)->record('client_link.viewed', $link, [
             'client_id' => $client->id,
@@ -204,7 +225,7 @@ class OrderController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
-        $link->forceFill(['last_used_at' => now()])->save();
+        $this->touchGuestLinkUsage($link);
 
         app(AuditLogger::class)->record('client_link.uploaded', $order, [
             'client_link_id' => $link->id,
@@ -223,7 +244,7 @@ class OrderController extends Controller
         $this->assertGuestOrderScope($link, $order);
 
         $order->load(['report', 'client']);
-        $link->forceFill(['last_used_at' => now()])->save();
+        $this->touchGuestLinkUsage($link);
         app(AuditLogger::class)->record('client_link.order_viewed', $order, [
             'client_link_id' => $link->id,
         ]);

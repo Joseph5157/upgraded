@@ -15,6 +15,7 @@ use App\Services\PortalTelegramAlertService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -319,6 +320,29 @@ class GuestLinkTest extends TestCase
 
         $this->get(route('client.link.track', ['expired-link', $order->token_view]))->assertNotFound();
         $this->get(route('client.link.download', ['expired-link', $order->token_view]))->assertNotFound();
+    }
+
+    public function test_guest_link_still_opens_when_new_lifecycle_columns_are_unavailable(): void
+    {
+        $this->fakeTelegramAlerts();
+
+        Schema::shouldReceive('hasColumn')
+            ->andReturnUsing(function (string $table, string $column): bool {
+                return ! in_array($column, ['created_by_user_id', 'revoked_by_user_id', 'revoked_at', 'expires_at', 'last_used_at'], true);
+            });
+
+        $client = $this->makeClient();
+        $link = $this->makeLink($client, [
+            'token' => 'legacy-link',
+        ]);
+
+        $response = $this->get(route('client.upload', 'legacy-link'));
+
+        $response->assertOk();
+        $response->assertSee('Guest link active');
+
+        $link->refresh();
+        $this->assertNull($link->last_used_at);
     }
 
     public function test_revoked_link_loses_access_immediately(): void
