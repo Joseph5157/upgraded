@@ -182,27 +182,34 @@ class OrderWorkflowService
      */
     public function uploadReport(Order $order, User $user, array $data): void
     {
-        $this->assertVendorOrAdmin($order, $user, 'upload a report for');
-
-        if ($order->status === OrderStatus::Cancelled) {
-            throw new WorkflowException("Cannot upload a report for a cancelled order.");
-        }
-
-        if ($order->status === OrderStatus::Delivered) {
-            throw new WorkflowException("Cannot upload a report for an order that has already been delivered.");
-        }
-
-        if (empty($data['ai_report_path']) && empty($data['ai_skip_reason'])) {
-            throw new WorkflowException("The AI report PDF file is required, unless a valid reason for skipping is provided.");
-        }
-
-        if (empty($data['plag_report_path'])) {
-            throw new WorkflowException("The Plagiarism report PDF file is required.");
-        }
-
         DB::transaction(function () use ($order, $user, $data) {
+            $lockedOrder = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            $isOwner = (int) $lockedOrder->claimed_by === (int) $user->id;
+            $isAdmin = $user->role === 'admin';
+
+            if (! $isOwner && ! $isAdmin) {
+                throw new WorkflowException("You are not authorized to upload a report for this order.");
+            }
+
+            if ($lockedOrder->status === OrderStatus::Cancelled) {
+                throw new WorkflowException("Cannot upload a report for a cancelled order.");
+            }
+
+            if ($lockedOrder->status === OrderStatus::Delivered) {
+                throw new WorkflowException("Cannot upload a report for an order that has already been delivered.");
+            }
+
+            if (empty($data['ai_report_path']) && empty($data['ai_skip_reason'])) {
+                throw new WorkflowException("The AI report PDF file is required, unless a valid reason for skipping is provided.");
+            }
+
+            if (empty($data['plag_report_path'])) {
+                throw new WorkflowException("The Plagiarism report PDF file is required.");
+            }
+
             OrderReport::updateOrCreate(
-                ['order_id' => $order->id],
+                ['order_id' => $lockedOrder->id],
                 [
                     'ai_report_path'   => $data['ai_report_path'] ?? null,
                     'ai_report_disk'   => $data['ai_report_disk'] ?? 'r2',
@@ -212,8 +219,74 @@ class OrderWorkflowService
                 ]
             );
 
-            $this->logActivity($order, $user, 'upload_report', 'Report PDFs (and/or skip info) uploaded');
+            $this->logActivity($lockedOrder, $user, 'upload_report', 'Report PDFs (and/or skip info) uploaded');
+
+            if ($lockedOrder->status === OrderStatus::Claimed) {
+                $oldStatus = $lockedOrder->status->value;
+                $lockedOrder->update([
+                    'status'     => OrderStatus::Processing,
+                    'claimed_at' => now(),
+                ]);
+
+                $this->logActivity($lockedOrder, $user, 'start_processing', 'Order processing started', $oldStatus, OrderStatus::Processing->value);
+
+                $context = LogContext::forOrder($lockedOrder, LogContext::forUser($user, LogContext::currentRequest()));
+
+                Log::info('order.processing_started', $context);
+                $this->auditLogger->record('order.processing_started', $lockedOrder, [
+                    'old_status' => $oldStatus,
+                    'new_status' => OrderStatus::Processing->value,
+                ], $user->id);
+            }
+
+            $report = $lockedOrder->report()->first();
+            if (! $report || (empty($report->ai_report_path) && empty($report->ai_skip_reason)) || empty($report->plag_report_path)) {
+                throw new WorkflowException("Both the AI report and Plagiarism report PDFs must be uploaded before delivery (or an AI skip reason provided).");
+            }
+
+            $oldStatus = $lockedOrder->status->value;
+            $lockedOrder->update([
+                'status'       => OrderStatus::Delivered,
+                'delivered_at' => now(),
+            ]);
+
+            $creditedVendor = $lockedOrder->claimed_by
+                ? User::query()->lockForUpdate()->find($lockedOrder->claimed_by)
+                : null;
+
+            ($creditedVendor ?: $user)->increment('delivered_orders_count');
+            ($creditedVendor ?: $user)->increment('daily_delivered_count');
+
+            $this->logActivity($lockedOrder, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
+
+            $context = LogContext::forOrder($lockedOrder, LogContext::forUser($user, LogContext::currentRequest()));
+
+            Log::info('order.delivered', $context);
+            $this->auditLogger->record('order.delivered', $lockedOrder, [
+                'old_status' => $oldStatus,
+                'new_status' => OrderStatus::Delivered->value,
+            ], $user->id);
         });
+
+        Cache::forget('admin_dashboard_stats');
+
+        try {
+            /** @var \App\Services\PortalTelegramAlertService $telegramAlerts */
+            $telegramAlerts = app(\App\Services\PortalTelegramAlertService::class);
+            $telegramAlerts->notifyOrderCompleted(Order::findOrFail($order->id));
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        try {
+            $this->notificationService->notifyOrderStatusChange(
+                Order::findOrFail($order->id),
+                'processing',
+                'delivered'
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /**

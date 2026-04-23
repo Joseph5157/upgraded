@@ -209,13 +209,6 @@
 
     </div>{{-- end grid --}}
 
-    {{-- Upload modals live inside workspace-row.blade.php (desktop) and
-         workspace-card.blade.php (mobile) so they exist for both initial
-         page-load orders and AJAX-injected orders with no duplicate IDs. --}}
-    @foreach($myWorkspace as $order)
-        @include('partials.workspace-upload-modal', ['order' => $order])
-    @endforeach
-
     <script>
         const DASHBOARD_URL = @json(route('dashboard'));
         const CSRF_REFRESH_URL = @json(route('csrf.refresh'));

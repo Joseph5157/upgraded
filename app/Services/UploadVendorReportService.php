@@ -31,7 +31,7 @@ class UploadVendorReportService
      */
     public function execute(Order $order, User $user, ?UploadedFile $aiReport, UploadedFile $plagReport, ?string $aiSkipReason = null): void
     {
-        $disk            = $this->storageDisk ?: config('filesystems.default', 'r2');
+        $disk            = $this->storageDisk ?: $this->resolveStorageDisk();
         $aiPath          = null;
         $plagPath        = null;
         $reportPersisted = false;
@@ -59,15 +59,6 @@ class UploadVendorReportService
                 'plag_report_disk' => $disk,
             ]);
             $reportPersisted = true;
-
-            $freshOrder = $order->fresh();
-
-            if (in_array($freshOrder->status, [OrderStatus::Pending, OrderStatus::Claimed])) {
-                $this->workflowService->startProcessing($freshOrder, $user);
-                $freshOrder->refresh();
-            }
-
-            $this->workflowService->deliver($freshOrder, $user);
         } catch (\Throwable $e) {
             if (!$reportPersisted) {
                 $this->cleanupFile($disk, $aiPath, 'AI', $order->id);
@@ -87,6 +78,17 @@ class UploadVendorReportService
 
             throw $e;
         }
+    }
+
+    private function resolveStorageDisk(): string
+    {
+        $disk = config('filesystems.default');
+
+        if (is_string($disk) && $disk !== '') {
+            return $disk;
+        }
+
+        return app()->environment('production') ? 'r2' : 'local';
     }
 
     private function sanitizeFilename(string $name): string

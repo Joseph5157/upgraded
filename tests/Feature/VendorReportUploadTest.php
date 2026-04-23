@@ -20,6 +20,160 @@ class VendorReportUploadTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_vendor_can_claim_and_upload_immediately_without_refresh(): void
+    {
+        [$vendor, $order] = $this->createPendingVendorOrder();
+
+        config(['filesystems.default' => 'local']);
+        Storage::fake('local');
+
+        $claimResponse = $this->actingAs($vendor)->post(route('orders.claim', $order), [], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ]);
+
+        $claimResponse->assertOk()->assertJsonFragment(['success' => true]);
+
+        $payload = $claimResponse->json();
+        $this->assertStringContainsString('upload-modal-' . $order->id, (string) ($payload['rowHtml'] ?? ''));
+        $this->assertStringContainsString('submit-btn-' . $order->id, (string) ($payload['rowHtml'] ?? ''));
+
+        $uploadResponse = $this->actingAs($vendor)->post(route('orders.report', $order), [
+            'ai_skipped' => '1',
+            'ai_skip_reason' => 'AI report unavailable for this document',
+            'plag_report' => UploadedFile::fake()->create('plag-report.pdf', 20, 'application/pdf'),
+        ], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ]);
+
+        $uploadResponse
+            ->assertOk()
+            ->assertJson([
+                'success' => 'Reports uploaded. Order delivered successfully.',
+            ]);
+
+        $order->refresh();
+        $this->assertSame(OrderStatus::Delivered, $order->status);
+        $this->assertDatabaseHas('order_reports', [
+            'order_id' => $order->id,
+            'ai_skip_reason' => 'AI report unavailable for this document',
+        ]);
+    }
+
+    public function test_upload_flow_rejects_state_change_and_cleans_up_files(): void
+    {
+        [$vendor, $order] = $this->createVendorOrder();
+
+        config(['filesystems.default' => 'local']);
+        Storage::fake('local');
+
+        $workflow = \Mockery::mock(\App\Services\OrderWorkflowService::class);
+        $workflow->shouldReceive('uploadReport')
+            ->once()
+            ->andReturnUsing(function () use ($order): void {
+                $order->update([
+                    'status' => OrderStatus::Pending,
+                    'claimed_by' => null,
+                    'claimed_at' => null,
+                ]);
+
+                throw new WorkflowException('This order was released back to the available pool while the upload was in progress.');
+            });
+
+        try {
+            (new UploadVendorReportService($workflow))->execute(
+                $order,
+                $vendor,
+                null,
+                UploadedFile::fake()->create('plag-report.pdf', 20, 'application/pdf'),
+                'AI report unavailable for this document',
+            );
+            $this->fail('Expected the upload to fail after the simulated state change.');
+        } catch (WorkflowException $e) {
+            $this->assertSame('This order was released back to the available pool while the upload was in progress.', $e->getMessage());
+        }
+
+        $this->assertDatabaseMissing('order_reports', ['order_id' => $order->id]);
+        $this->assertEmpty(Storage::disk('local')->allFiles());
+    }
+
+    public function test_same_filename_uploads_keep_unique_stored_paths(): void
+    {
+        $vendor = User::factory()->create([
+            'role' => 'vendor',
+            'status' => 'active',
+            'email_verified_at' => now(),
+        ]);
+
+        $firstOrder = $this->createClaimedOrderForVendor($vendor, 'vendor-upload-filename-a');
+        $secondOrder = $this->createClaimedOrderForVendor($vendor, 'vendor-upload-filename-b');
+
+        config(['filesystems.default' => 'local']);
+        Storage::fake('local');
+
+        $firstResponse = $this->actingAs($vendor)->post(route('orders.report', $firstOrder), [
+            'ai_skipped' => '1',
+            'ai_skip_reason' => 'AI report unavailable for this document',
+            'plag_report' => UploadedFile::fake()->create('same-name.pdf', 20, 'application/pdf'),
+        ], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ]);
+
+        $firstResponse->assertOk();
+
+        $secondResponse = $this->actingAs($vendor)->post(route('orders.report', $secondOrder), [
+            'ai_skipped' => '1',
+            'ai_skip_reason' => 'AI report unavailable for this document',
+            'plag_report' => UploadedFile::fake()->create('same-name.pdf', 20, 'application/pdf'),
+        ], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ]);
+
+        $secondResponse->assertOk();
+
+        $firstReport = OrderReport::where('order_id', $firstOrder->id)->firstOrFail();
+        $secondReport = OrderReport::where('order_id', $secondOrder->id)->firstOrFail();
+
+        $this->assertNotSame($firstReport->plag_report_path, $secondReport->plag_report_path);
+        $this->assertTrue(Storage::disk('local')->exists($firstReport->plag_report_path));
+        $this->assertTrue(Storage::disk('local')->exists($secondReport->plag_report_path));
+    }
+
+    public function test_failed_upload_does_not_leave_partial_database_state(): void
+    {
+        [$vendor, $order] = $this->createVendorOrder();
+
+        config(['filesystems.default' => 'local']);
+        Storage::fake('local');
+
+        $workflow = \Mockery::mock(\App\Services\OrderWorkflowService::class);
+        $workflow->shouldReceive('uploadReport')
+            ->once()
+            ->andThrow(new WorkflowException('Unable to finalize upload.'));
+
+        try {
+            (new UploadVendorReportService($workflow))->execute(
+                $order,
+                $vendor,
+                null,
+                UploadedFile::fake()->create('plag-report.pdf', 20, 'application/pdf'),
+                'AI report unavailable for this document',
+            );
+            $this->fail('Expected the upload to fail.');
+        } catch (WorkflowException $e) {
+            $this->assertSame('Unable to finalize upload.', $e->getMessage());
+        }
+
+        $this->assertDatabaseMissing('order_reports', ['order_id' => $order->id]);
+        $order->refresh();
+        $this->assertSame(OrderStatus::Claimed, $order->status);
+        $this->assertNotNull($order->claimed_by);
+        $this->assertEmpty(Storage::disk('local')->allFiles());
+    }
+
     public function test_upload_report_returns_domain_error_message_for_non_storage_failures(): void
     {
         [$vendor, $order] = $this->createVendorOrder();
@@ -188,5 +342,54 @@ class VendorReportUploadTest extends TestCase
         ]);
 
         return [$vendor, $order];
+    }
+
+    /**
+     * @return array{0: User, 1: Order}
+     */
+    protected function createPendingVendorOrder(): array
+    {
+        $vendor = User::factory()->create([
+            'role' => 'vendor',
+            'status' => 'active',
+            'email_verified_at' => now(),
+        ]);
+
+        $client = Client::create([
+            'name' => 'Client Upload Pending',
+            'email' => 'client-upload-pending@example.com',
+        ]);
+
+        $order = Order::create([
+            'client_id' => $client->id,
+            'token_view' => 'vendor-upload-pending-test',
+            'files_count' => 1,
+            'status' => OrderStatus::Pending,
+            'claimed_by' => null,
+            'claimed_at' => null,
+            'due_at' => now()->addMinutes(20),
+            'source' => 'account',
+        ]);
+
+        return [$vendor, $order];
+    }
+
+    protected function createClaimedOrderForVendor(User $vendor, string $tokenView): Order
+    {
+        $client = Client::create([
+            'name' => 'Client ' . $tokenView,
+            'email' => $tokenView . '@example.com',
+        ]);
+
+        return Order::create([
+            'client_id' => $client->id,
+            'token_view' => $tokenView,
+            'files_count' => 1,
+            'status' => OrderStatus::Claimed,
+            'claimed_by' => $vendor->id,
+            'claimed_at' => now(),
+            'due_at' => now()->addMinutes(20),
+            'source' => 'account',
+        ]);
     }
 }

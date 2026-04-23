@@ -21,7 +21,7 @@ class DashboardController extends Controller
         protected OrderWorkflowService $workflowService,
         protected UploadVendorReportService $uploadReportService,
     ) {
-        $this->storageDisk = config('filesystems.default', 'r2');
+        $this->storageDisk = $this->resolveStorageDisk();
     }
 
     public function index(Request $request)
@@ -274,5 +274,16 @@ class DashboardController extends Controller
         foreach (array_unique(array_filter($userIds)) as $userId) {
             Cache::forget('vendor_stats_' . $userId);
         }
+    }
+
+    protected function resolveStorageDisk(): string
+    {
+        $disk = config('filesystems.default');
+
+        if (is_string($disk) && $disk !== '') {
+            return $disk;
+        }
+
+        return app()->environment('production') ? 'r2' : 'local';
     }
 }

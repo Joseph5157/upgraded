@@ -94,7 +94,7 @@
     </div>
 </div>
 
-@if(false && in_array($order->status->value, ['claimed', 'processing']))
+@if(in_array($order->status->value, ['claimed', 'processing']))
 <div id="upload-modal-{{ $order->id }}" data-upload-modal="{{ $order->id }}"
     class="hidden fixed inset-0 bg-black/75 backdrop-blur-md z-50 flex items-center justify-center p-4"
     onclick="if(event.target===this)this.classList.add('hidden')">
