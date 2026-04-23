@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ ($title ?? 'Admin') }} — PlagExpert</title>
+    <title>{{ ($title ?? 'Admin') }} — {{ config('app.name') }}</title>
     <link rel="icon" type="image/png" href="/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -75,7 +75,7 @@
                 <div class="brand-mark w-7 h-7 flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
                      style="background:linear-gradient(135deg,#6D28D9,#8B5CF6);border-radius:10px;box-shadow:0 4px 12px rgba(109,40,217,0.45);font-weight:700;">P</div>
                 <div>
-                    <p class="text-sm font-bold leading-none" style="color:#1E1B4B;">PlagExpert</p>
+                    <p class="text-sm font-bold leading-none" style="color:#1E1B4B;">{{ config('app.name') }}</p>
                     <p class="text-[9px] uppercase tracking-widest mt-0.5" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Admin</p>
                 </div>
             </div>
@@ -97,7 +97,7 @@
                        onclick="event.preventDefault(); document.getElementById('create-account-modal')?.classList.remove('hidden');"
                        class="nav-link">
                         <i data-lucide="user-plus" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                        Issue Account
+                        Create Account
                     </a>
                     <a href="{{ route('admin.announcements.index') }}"
                        class="nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
@@ -173,12 +173,12 @@
                     <a href="{{ route('admin.client-links.index') }}"
                        class="nav-link {{ request()->routeIs('admin.client-links.*') ? 'active' : '' }}">
                         <i data-lucide="link" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                        Upload Links
+                        Guest Links
                     </a>
                     <a href="{{ route('admin.payment-settings.index') }}"
                        class="nav-link {{ request()->routeIs('admin.payment-settings.*') ? 'active' : '' }}">
                         <i data-lucide="wallet" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                        Payment Settings
+                        Payment Methods
                     </a>
                 </div>
             </div>
@@ -208,7 +208,7 @@
                     <a href="{{ route('admin.billing.index') }}"
                        class="nav-link {{ request()->routeIs('admin.billing.*') ? 'active' : '' }}">
                         <i data-lucide="trending-up" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                        Billing & Ledger
+                        Billing
                     </a>
                     <a href="{{ route('admin.pricing.index') }}"
                        class="nav-link {{ request()->routeIs('admin.pricing.*') ? 'active' : '' }}">
@@ -296,3 +296,4 @@
 @stack('scripts')
 </body>
 </html>
+

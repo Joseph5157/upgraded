@@ -28,8 +28,12 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'role' => 'vendor',
+            'status' => 'active',
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'portal_number' => fake()->unique()->numberBetween(100000, 999999),
+            'activated_at' => now(),
+            'telegram_chat_id' => (string) fake()->unique()->numberBetween(100000000, 999999999),
         ];
     }
 

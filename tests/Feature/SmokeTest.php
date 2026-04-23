@@ -45,9 +45,12 @@ class SmokeTest extends TestCase
             'status'         => $status,
         ]);
         $user = User::factory()->create([
-            'role'      => 'client',
-            'client_id' => $client->id,
-            'status'    => 'active',
+            'role'           => 'client',
+            'client_id'      => $client->id,
+            'status'         => 'active',
+            'portal_number'  => fake()->unique()->numberBetween(100000, 999999),
+            'activated_at'   => now(),
+            'telegram_chat_id' => (string) fake()->unique()->numberBetween(100000000, 999999999),
         ]);
         return [$client, $user];
     }
@@ -55,8 +58,11 @@ class SmokeTest extends TestCase
     private function makeVendor(): User
     {
         return User::factory()->create([
-            'role'   => 'vendor',
-            'status' => 'active',
+            'role'             => 'vendor',
+            'status'           => 'active',
+            'portal_number'    => fake()->unique()->numberBetween(100000, 999999),
+            'activated_at'     => now(),
+            'telegram_chat_id' => (string) fake()->unique()->numberBetween(100000000, 999999999),
         ]);
     }
 
@@ -64,9 +70,26 @@ class SmokeTest extends TestCase
     private function makeAdmin(): User
     {
         return User::factory()->create([
-            'role'     => 'admin',
-            'status'   => 'active',
-            'password' => Hash::make('password'),
+            'role'             => 'admin',
+            'status'           => 'active',
+            'password'         => Hash::make('password'),
+            'portal_number'    => fake()->unique()->numberBetween(100000, 999999),
+            'activated_at'     => now(),
+            'telegram_chat_id' => (string) fake()->unique()->numberBetween(100000000, 999999999),
+        ]);
+    }
+
+    private function loginWithOtp(User $user): \Illuminate\Testing\TestResponse
+    {
+        $this->post(route('login.send-otp'), [
+            'portal_number' => $user->portal_number,
+        ])->assertSessionHas('otp_sent');
+
+        $otp = $user->fresh()->otp;
+
+        return $this->post(route('login.verify-otp'), [
+            'portal_number' => $user->portal_number,
+            'otp' => $otp,
         ]);
     }
 
@@ -93,14 +116,9 @@ class SmokeTest extends TestCase
     {
         [$client, $user] = $this->makeClient();
 
-        // Login redirects to client dashboard.
-        // cf-turnstile-response must be present; when services.turnstile.secret is null
-        // (set in TestCase::setUp) ValidTurnstile returns true for any token value.
-        $this->post(route('login'), [
-            'email'                 => $user->email,
-            'password'              => 'password',
-            'cf-turnstile-response' => 'test-token',
-        ])->assertRedirect(route('client.dashboard'));
+        $otpResponse = $this->loginWithOtp($user);
+        $otpResponse->assertRedirect(route('client.dashboard'));
+        $this->assertAuthenticatedAs($user);
 
         // Dashboard renders successfully
         $this->actingAs($user)
@@ -145,10 +163,10 @@ class SmokeTest extends TestCase
     }
 
     /**
-     * A-3: Multi-file upload deducts one credit per file, not per order.
-     * Blocker if fails: BLOCKER — credit corruption is a release blocker.
+     * A-3: Client dashboard upload now rejects multi-file batches.
+     * Blocker if fails: HIGH — dashboard upload contract must stay explicit.
      */
-    public function test_a3_multi_file_upload_deducts_credits_per_file_not_per_order(): void
+    public function test_a3_multi_file_dashboard_upload_is_rejected(): void
     {
         Storage::fake('r2');
         [$client, $user] = $this->makeClient(slots: 10, consumed: 0);
@@ -161,17 +179,11 @@ class SmokeTest extends TestCase
                     UploadedFile::fake()->create('c.pdf', 100, 'application/pdf'),
                 ],
             ])
-            ->assertRedirect(route('client.dashboard'))
-            ->assertSessionHas('success');
+            ->assertSessionHasErrors('files');
 
         $client->refresh();
-        $this->assertSame(3, (int) $client->slots_consumed, 'Three-file upload must deduct exactly 3 credits.');
-
-        $this->assertDatabaseHas('orders', [
-            'client_id'   => $client->id,
-            'files_count' => 3,
-            'status'      => OrderStatus::Pending->value,
-        ]);
+        $this->assertSame(0, (int) $client->slots_consumed, 'Rejected multi-file upload must not consume credits.');
+        $this->assertDatabaseCount('orders', 0);
     }
 
     /**
@@ -296,11 +308,9 @@ class SmokeTest extends TestCase
     {
         $vendor = $this->makeVendor();
 
-        $this->post(route('login'), [
-            'email'                 => $vendor->email,
-            'password'              => 'password',
-            'cf-turnstile-response' => 'test-token',
-        ])->assertRedirect(route('dashboard'));
+        $response = $this->loginWithOtp($vendor);
+        $response->assertRedirect(route('dashboard'));
+        $this->assertAuthenticatedAs($vendor);
 
         $this->actingAs($vendor)
             ->get(route('dashboard'))
@@ -524,25 +534,24 @@ class SmokeTest extends TestCase
     }
 
     /**
-     * C-5: Admin delete with wrong password is denied — user survives,
-     *      account.delete_denied audit log is written with reason.
-     * Blocker if fails: HIGH — denial must be auditable.
+     * C-5: Admin account deletion no longer depends on legacy password confirmation.
+     * Blocker if fails: HIGH — this path must not resurrect the removed auth model.
      */
-    public function test_c5_admin_delete_denied_on_wrong_password_writes_audit_log(): void
+    public function test_c5_admin_delete_does_not_depend_on_wrong_password(): void
     {
         $admin = $this->makeAdmin();
         [$client, $targetUser] = $this->makeClient();
 
         $this->actingAs($admin)
             ->delete(route('admin.accounts.destroy', $targetUser), ['password' => 'wrong-password'])
-            ->assertSessionHasErrors('password');
+            ->assertSessionHas('success');
 
-        $this->assertDatabaseHas('users', ['id' => $targetUser->id]);
+        $this->assertSoftDeleted('users', ['id' => $targetUser->id]);
 
-        $this->assertDatabaseHas('audit_logs', ['event_type' => 'account.delete_denied']);
-        $entry = AuditLog::where('event_type', 'account.delete_denied')->first();
+        $this->assertDatabaseHas('audit_logs', ['event_type' => 'account.deleted']);
+        $entry = AuditLog::where('event_type', 'account.deleted')->first();
         $this->assertNotNull($entry->request_id);
-        $this->assertSame('password_confirmation_failed', $entry->meta['reason']);
+        $this->assertFalse((bool) ($entry->meta['force_deleted'] ?? false));
     }
 
     // ── SECTION D3 — Correlation ID on Any Response (Mobile Resume Proxy) ────

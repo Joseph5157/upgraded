@@ -16,7 +16,7 @@
     <div class="flex items-start justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight dark:text-white">Account Manager</h1>
-            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-1 dark:text-slate-500">Manage vendor and client account access</p>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-1 dark:text-slate-500">Manage vendor and client access</p>
         </div>
         {{-- Stats badges --}}
         <div class="flex items-center gap-2">
@@ -70,7 +70,7 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-[#E2E6EA] dark:border-white/5">
-                            <th class="text-left px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Operator</th>
+            <th class="text-left px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Portal User</th>
                             <th class="text-left px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Status</th>
                             <th class="text-center px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Files Today</th>
                             <th class="text-center px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Lifetime</th>
@@ -210,7 +210,7 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b border-[#E2E6EA] dark:border-white/5">
-                            <th class="text-left px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Operator</th>
+            <th class="text-left px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Portal User</th>
                             <th class="text-left px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Status</th>
                             <th class="text-center px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Credits</th>
                             <th class="text-center px-5 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest dark:text-slate-600">Orders</th>

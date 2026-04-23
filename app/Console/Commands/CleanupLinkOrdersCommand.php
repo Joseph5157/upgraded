@@ -4,10 +4,10 @@ namespace App\Console\Commands;
 
 use App\Models\Client;
 use App\Models\Order;
+use App\Support\StorageLifecycle;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class CleanupLinkOrdersCommand extends Command
 {
@@ -38,23 +38,19 @@ class CleanupLinkOrdersCommand extends Command
             DB::transaction(function () use ($order, &$deletedFiles, &$slotDeductions) {
                 // Delete uploaded files from storage
                 foreach ($order->files as $file) {
-                    Storage::disk($file->disk ?: 'r2')->delete($file->file_path);
+                    StorageLifecycle::deleteStoredFileIfPresent($file->disk ?: 'r2', $file->file_path);
                     $file->delete();
                     $deletedFiles++;
                 }
 
                 // Delete the whole order directory
-                collect($order->files->pluck('disk')->filter()->push('r2')->unique())
-                    ->each(fn ($disk) => Storage::disk($disk)->deleteDirectory('orders/' . $order->id));
+                collect(StorageLifecycle::uniqueDisks($order->files->pluck('disk')->all(), 'r2'))
+                    ->each(fn ($disk) => StorageLifecycle::deleteStoredDirectory($disk, 'orders/' . $order->id));
 
                 // Delete report files if any
                 if ($order->report) {
-                    if ($order->report->ai_report_path) {
-                        Storage::disk($order->report->ai_report_disk ?: 'r2')->delete($order->report->ai_report_path);
-                    }
-                    if ($order->report->plag_report_path) {
-                        Storage::disk($order->report->plag_report_disk ?: 'r2')->delete($order->report->plag_report_path);
-                    }
+                    StorageLifecycle::deleteStoredFileIfPresent($order->report->ai_report_disk ?: 'r2', $order->report->ai_report_path);
+                    StorageLifecycle::deleteStoredFileIfPresent($order->report->plag_report_disk ?: 'r2', $order->report->plag_report_path);
                     $order->report->delete();
                 }
 

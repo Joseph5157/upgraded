@@ -5,8 +5,8 @@ use App\Http\Controllers\AccountManagerController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\InviteController;
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\OtpLoginController;
+use App\Http\Controllers\Auth\TelegramLoginController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BotController;
@@ -50,16 +50,22 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [OtpLoginController::class, 'showLogin'])
         ->name('login');
     Route::post('/login/send-otp', [OtpLoginController::class, 'sendOtp'])
+        ->middleware('throttle:3,1')
         ->name('login.send-otp');
     Route::post('/login/verify-otp', [OtpLoginController::class, 'verifyOtp'])
+        ->middleware('throttle:5,1')
         ->name('login.verify-otp');
+    Route::get('/auth/telegram/{token}', [TelegramLoginController::class, 'authenticate'])
+        ->middleware('throttle:10,1')
+        ->name('telegram.login');
 });
 
 // Client Public Routes — throttled to prevent abuse
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/u/{token}', [OrderController::class, 'showUpload'])->name('client.upload');
     Route::post('/u/{token}', [OrderController::class, 'store'])->name('client.store');
-    Route::delete('/u/{token}/orders/{order}', [OrderController::class, 'destroyOrder'])->name('client.link.orders.delete');
+    Route::get('/u/{token}/orders/{order:token_view}', [OrderController::class, 'trackGuest'])->name('client.link.track');
+    Route::get('/u/{token}/orders/{order:token_view}/download', [OrderController::class, 'downloadGuest'])->name('client.link.download');
     Route::get('/track/{token_view}', [OrderController::class, 'track'])->name('client.track');
     Route::get('/download/{token_view}', [OrderController::class, 'download'])->name('client.download');
 });
@@ -104,7 +110,6 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
     ->name('admin.')
     ->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-        Route::post('/accounts/store', [AdminController::class, 'storeAccount'])->name('accounts.store');
         Route::post('/accounts/invite', [InviteController::class, 'store'])->name('accounts.invite');
         Route::resource('/matrix', ClientMatrixController::class)->only(['index', 'update']);
         Route::post('/matrix/{client}/refill', [ClientMatrixController::class, 'refill'])->name('matrix.refill');
@@ -135,8 +140,8 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
             Route::post('/', [ClientLinkController::class, 'store'])->name('store');
             Route::post('/clients', [ClientLinkController::class, 'storeClient'])->name('clients.store');
             Route::delete('/clients/{client}', [ClientLinkController::class, 'destroyClient'])->name('clients.destroy');
-            Route::post('/{clientLink}/toggle', [ClientLinkController::class, 'toggle'])->name('toggle');
-            Route::delete('/{clientLink}', [ClientLinkController::class, 'destroy'])->name('destroy');
+            Route::post('/{clientLink}/revoke', [ClientLinkController::class, 'revoke'])->name('revoke');
+            Route::post('/{clientLink}/toggle', [ClientLinkController::class, 'revoke'])->name('toggle');
             Route::get('/{clientLink}/orders', [ClientLinkController::class, 'showOrders'])->name('orders');
             Route::delete('/{clientLink}/orders/{order}', [ClientLinkController::class, 'destroyOrder'])->name('orders.destroy');
         });
@@ -157,7 +162,6 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
 Route::middleware(['auth', 'nocache'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__ . '/auth.php';

@@ -30,9 +30,9 @@
     </td>
     <td class="px-2 sm:px-4 py-3 sm:py-4 text-center hidden sm:table-cell">
         @if($order->status->value === 'processing')
-            <span
-                class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full">
-                <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> Processing
+                <span
+                    class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full">
+                <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> In progress
             </span>
         @elseif($order->status->value === 'claimed')
             <span
@@ -42,7 +42,7 @@
         @else
             <span
                 class="inline-flex items-center gap-1 text-[9px] font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] px-2 py-1 rounded-full">
-                <span class="w-1 h-1 bg-slate-500 rounded-full"></span> Pending
+                <span class="w-1 h-1 bg-slate-500 rounded-full"></span> Queued
             </span>
         @endif
     </td>
@@ -67,10 +67,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    Upload
-                </button>
-            @endif
-            <button
+                Submit
+            </button>
+        @endif
+        <button
                 onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
                 class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
                 data-order-id="{{ $order->id }}">
@@ -78,7 +78,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                 </svg>
-                Release
+                Release order
             </button>
         </div>
     </td>

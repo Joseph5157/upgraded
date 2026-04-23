@@ -14,7 +14,7 @@
             onclick="document.getElementById('create-account-modal').classList.remove('hidden')"
             class="btn-primary">
             <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
-            Issue Account
+            Create Account
         </button>
     </div>
 
@@ -34,7 +34,7 @@
         </div>
         <div class="rev-item">
             <span class="rev-dot" style="background:#9CA3AF"></span>
-            <span class="rev-label">Op. costs</span>
+            <span class="rev-label">Operational costs</span>
             <span class="rev-val" style="color:#4B5563">₹{{ $opCosts ?? 0 }}</span>
         </div>
         <div class="rev-item">
@@ -44,8 +44,8 @@
         </div>
         <div class="rev-item" style="margin-left:auto;border-right:none;padding-right:0;margin-right:0;">
             <span class="rev-dot" style="background:#D97706"></span>
-            <span class="rev-label">Pending pool</span>
-            <span class="rev-val" style="color:#D97706">{{ $stats['pending_pool'] ?? 0 }} awaiting</span>
+            <span class="rev-label">Queued pool</span>
+            <span class="rev-val" style="color:#D97706">{{ $stats['pending_pool'] ?? 0 }} queued</span>
         </div>
     </div>
 
@@ -71,7 +71,7 @@
                 <i data-lucide="inbox" class="w-5 h-5 text-white"></i>
             </div>
             <div>
-                <p class="stat-label">Pending pool</p>
+                <p class="stat-label">Queued pool</p>
                 <p class="stat-number">{{ $stats['pending_pool'] }}</p>
                 <p class="stat-sub">awaiting claim</p>
                 <span class="stat-badge badge-amber">Queued</span>
@@ -83,7 +83,7 @@
                 <i data-lucide="shield" class="w-5 h-5 text-white"></i>
             </div>
             <div>
-                <p class="stat-label">Working now</p>
+                <p class="stat-label">Active now</p>
                 <p class="stat-number">{{ $stats['working_vendors_now'] }}</p>
                 <p class="stat-sub">{{ $stats['active_vendors_today'] }} active today</p>
                 <span class="stat-badge" style="background:#FCE7F3;color:#831843;">Live</span>
@@ -159,7 +159,7 @@
                         @if($stats['pending_refunds'] > 0)
                             <a href="{{ route('admin.refunds.index') }}" class="flex items-center gap-1.5 text-[11px] font-semibold" style="color:#D97706;">
                                 <i data-lucide="refresh-ccw" class="w-3 h-3"></i>
-                                {{ $stats['pending_refunds'] }} refund{{ $stats['pending_refunds'] !== 1 ? 's' : '' }} pending
+                                {{ $stats['pending_refunds'] }} refund{{ $stats['pending_refunds'] !== 1 ? 's' : '' }} queued
                             </a>
                         @endif
                     </div>
@@ -188,7 +188,7 @@
                     <div class="text-center p-3 rounded-xl"
                          style="{{ $stats['working_vendors_now'] > 0 ? 'background:#D1FAE5;' : 'background:#F5F3FF;' }}">
                         <p class="text-lg font-bold font-mono" style="{{ $stats['working_vendors_now'] > 0 ? 'color:#059669;' : 'color:#1E1B4B;' }}">{{ $stats['working_vendors_now'] }}</p>
-                        <p class="text-[10px] mt-0.5" style="{{ $stats['working_vendors_now'] > 0 ? 'color:#059669;' : 'color:#9CA3AF;' }}">Working now</p>
+                        <p class="text-[10px] mt-0.5" style="{{ $stats['working_vendors_now'] > 0 ? 'color:#059669;' : 'color:#9CA3AF;' }}">In progress now</p>
                     </div>
                     <a href="{{ route('admin.accounts.index') }}?tab=vendors&filter=frozen"
                        class="text-center p-3 rounded-xl transition-colors"
@@ -403,7 +403,7 @@
     </div>
 
     {{-- ═══════════════════════════════════════════
-         ISSUE ACCOUNT MODAL
+         CREATE ACCOUNT MODAL
     ═══════════════════════════════════════════ --}}
     <div id="create-account-modal"
         class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -418,7 +418,7 @@
                         <i data-lucide="user-plus" class="w-4 h-4" style="color:#6D28D9;"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold" style="color:#1E1B4B;">Issue Account</h3>
+                        <h3 class="font-bold" style="color:#1E1B4B;">Create Account</h3>
                         <p class="text-[10px] uppercase tracking-widest mt-0.5" style="color:#9CA3AF;font-family:'DM Mono',monospace;">Create new access</p>
                     </div>
                 </div>

@@ -37,7 +37,7 @@
                 <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                     <i data-lucide="sparkles" class="w-5 h-5 text-[#1A1D23]"></i>
                 </div>
-                <span class="text-gray-900 font-bold text-lg tracking-tight dark:text-white">PlagExpert</span>
+                <span class="text-gray-900 font-bold text-lg tracking-tight dark:text-white">{{ config('app.name') }}</span>
             </div>
         </div>
 
@@ -48,17 +48,17 @@
             </a>
             <div class="flex items-center justify-between px-8 py-4 text-sm font-medium text-gray-500 cursor-not-allowed select-none dark:text-slate-600">
                 <div class="flex items-center gap-4">
-                    <i data-lucide="history" class="w-5 h-5"></i> Order History
+                    <i data-lucide="history" class="w-5 h-5"></i> Orders
                 </div>
                 <span class="text-[8px] font-black uppercase tracking-widest bg-[#EEF2FF] text-[#4F6EF7] border border-[#C7D2FE] px-1.5 py-0.5 rounded dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20">Soon</span>
             </div>
             <a href="{{ route('client.subscription') }}"
                 class="flex items-center gap-4 px-8 py-4 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-[#ECEEF2] transition-all dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5">
-                <i data-lucide="credit-card" class="w-5 h-5"></i> Subscription
+                <i data-lucide="credit-card" class="w-5 h-5"></i> Credits
             </a>
             <a href="{{ route('profile.edit') }}"
                 class="flex items-center gap-3 px-8 py-4 text-sm bg-[#EEF2FF] text-[#4F6EF7] border-r-2 border-[#4F6EF7] font-semibold sidebar-link-active dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500">
-                <i data-lucide="settings" class="w-5 h-5"></i> Settings
+                <i data-lucide="settings" class="w-5 h-5"></i> Profile
             </a>
         </nav>
 
@@ -85,8 +85,8 @@
                 </svg>
             </button>
             <div>
-                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Account Settings</h1>
-                <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">Manage your profile and security</p>
+                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Profile Settings</h1>
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">Manage your profile and Telegram login</p>
             </div>
             <div class="flex items-center gap-6">
                 <div class="flex items-center gap-3">
@@ -108,10 +108,10 @@
                     <i data-lucide="layout-grid" class="w-4 h-4"></i> Dashboard
                 </a>
                 <a href="{{ route('client.subscription') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-slate-400 hover:bg-[#ECEEF2] dark:hover:bg-white/5">
-                    <i data-lucide="credit-card" class="w-4 h-4"></i> Subscription
+                    <i data-lucide="credit-card" class="w-4 h-4"></i> Credits
                 </a>
                 <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium bg-[#EEF2FF] text-[#4F6EF7] dark:bg-indigo-500/10 dark:text-indigo-400">
-                    <i data-lucide="settings" class="w-4 h-4"></i> Settings
+                    <i data-lucide="settings" class="w-4 h-4"></i> Profile
                 </a>
                 <form method="POST" action="{{ route('logout') }}" class="mt-2 pt-2 border-t border-[#E2E6EA] dark:border-[#1e2030]">
                     @csrf
@@ -143,7 +143,7 @@
                         </div>
                         <div>
                             <h2 class="text-sm font-bold text-gray-900 dark:text-white">Profile Information</h2>
-                            <p class="text-[11px] text-gray-400">Update your display name.</p>
+                            <p class="text-[11px] text-gray-400">Update the name shown across the portal.</p>
                         </div>
                     </div>
 
@@ -173,7 +173,7 @@
                             <label class="block text-xs font-semibold text-gray-600 dark:text-slate-400 mb-1.5">Portal ID</label>
                             <input type="text" value="{{ $user->portal_number }}" disabled
                                 class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-[#F5F6F8] text-sm text-gray-400 dark:bg-white/5 dark:border-white/5">
-                            <p class="text-[10px] text-gray-400 mt-1">Your Portal ID is used to login. Keep it safe.</p>
+                            <p class="text-[10px] text-gray-400 mt-1">Your Portal ID is used to log in. Keep it safe.</p>
                         </div>
 
                         <div class="pt-2">
@@ -211,22 +211,6 @@
                 </div>
             </div>
 
-            {{-- CARD 3: Danger Zone --}}
-            <div class="border border-red-200 bg-red-50 rounded-2xl p-8 dark:bg-red-500/5 dark:border-red-500/20">
-                <div class="flex items-start justify-between gap-6">
-                    <div class="space-y-2">
-                        <h2 class="text-sm font-bold text-red-600 dark:text-red-400">Delete Account</h2>
-                        <p class="text-xs text-red-500/80 dark:text-red-400/70 max-w-md">
-                            Once deleted, all your orders and files will be permanently removed. This cannot be undone.
-                        </p>
-                    </div>
-                    <button
-                        onclick="document.getElementById('delete-account-modal').classList.remove('hidden')"
-                        class="flex-shrink-0 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-colors">
-                        Delete Account
-                    </button>
-                </div>
-            </div>
         </div>
 
         {{-- Mobile Bottom Nav --}}
@@ -267,37 +251,9 @@
         {{-- Coming Soon Toast --}}
         <div id="coming-soon-toast"
              class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 hidden md:hidden bg-[#1e1e2e] border border-indigo-500/20 text-indigo-300 text-xs font-semibold px-5 py-3 rounded-2xl shadow-xl">
-            Order History coming soon
+            Orders coming soon
         </div>
     </main>
-
-    {{-- Delete Account Confirmation Modal --}}
-    <div id="delete-account-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div class="bg-white dark:bg-[#0f1117] border border-[#E2E6EA] dark:border-[#1e2030] rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 space-y-6">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-100 dark:bg-red-500/10 rounded-xl flex items-center justify-center text-red-500">
-                    <i data-lucide="triangle-alert" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">Confirm Account Deletion</h3>
-                    <p class="text-[11px] text-gray-400">This action is permanent and cannot be reversed.</p>
-                </div>
-            </div>
-
-            <p class="text-xs text-gray-500 dark:text-slate-400">
-                To delete your account, contact your admin directly.
-            </p>
-
-            <div class="pt-2">
-                <button
-                    type="button"
-                    onclick="document.getElementById('delete-account-modal').classList.add('hidden')"
-                    class="w-full py-2.5 rounded-xl border border-[#E2E6EA] text-xs font-semibold text-gray-600 hover:bg-[#F0F2F5] transition-colors dark:border-[#1e2030] dark:text-slate-400 dark:hover:bg-white/5">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
 
     <script>
         lucide.createIcons();

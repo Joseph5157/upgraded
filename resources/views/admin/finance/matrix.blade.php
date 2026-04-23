@@ -18,9 +18,8 @@
         {{-- Header --}}
         <div class="px-10 py-8 border-b border-white/[0.04] flex items-center justify-between">
             <div>
-                <h1 class="text-xl font-bold text-white tracking-tight">Client Matrix</h1>
-                <p class="text-[10px] text-slate-600 uppercase tracking-[0.25em] mt-0.5">Credit Management & Unit
-                    Pricing</p>
+            <h1 class="text-xl font-bold text-white tracking-tight">Client credits</h1>
+            <p class="text-[10px] text-slate-600 uppercase tracking-[0.25em] mt-0.5">Credit management and unit pricing</p>
             </div>
             <span class="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{{ $clients->count() }}
                 Clients</span>
@@ -36,7 +35,7 @@
                             <i data-lucide="clock" class="w-4 h-4"></i>
                         </div>
                         <div>
-                            <h2 class="text-sm font-bold text-white">Pending Top-up Requests</h2>
+                            <h2 class="text-sm font-bold text-white">Queued top-up requests</h2>
                             <p class="text-[9px] text-amber-500/60 uppercase tracking-widest">{{ $pendingTopups->count() }}
                                 awaiting approval</p>
                         </div>

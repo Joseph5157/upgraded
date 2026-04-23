@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PendingInvite;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class InviteController extends Controller
@@ -41,7 +42,22 @@ class InviteController extends Controller
         ]);
 
         $botUsername = config('services.telegram.bot_username');
+        if (! $botUsername) {
+            Log::warning('telegram.invite_link.missing_bot_username', [
+                'invite_name' => $data['name'],
+                'invite_role' => $data['role'],
+            ]);
+
+            return back()->with('error', 'Telegram bot username is not configured.');
+        }
+
         $link = "https://t.me/{$botUsername}?start=invite_{$token}";
+
+        Log::info('telegram.invite_link.created', [
+            'invite_name' => $data['name'],
+            'invite_role' => $data['role'],
+            'invite_expires_at' => now()->addDays(7)->toIso8601String(),
+        ]);
 
         return redirect()->back()
             ->with('invite_link', $link)

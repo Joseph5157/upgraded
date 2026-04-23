@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\LogContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class TelegramLoginController extends Controller
@@ -18,27 +21,50 @@ class TelegramLoginController extends Controller
 
     public function authenticate(Request $request, string $token): RedirectResponse
     {
-        $user = User::where('login_token', $token)
-            ->where('login_token_expires_at', '>', now())
-            ->first();
+        $user = DB::transaction(function () use ($token) {
+            $user = User::where('login_token', $token)
+                ->where('login_token_expires_at', '>', now())
+                ->whereNotNull('activated_at')
+                ->whereNull('deleted_at')
+                ->lockForUpdate()
+                ->first();
+
+            if (! $user) {
+                return null;
+            }
+
+            $user->forceFill([
+                'login_token' => null,
+                'login_token_expires_at' => null,
+            ])->save();
+
+            return $user;
+        });
 
         if (! $user) {
+            Log::warning('auth.telegram_login.failed', array_merge(
+                LogContext::currentRequest(),
+                ['token_length' => strlen($token)]
+            ));
+
             return redirect('/login')->withErrors(['link' => 'Invalid or expired link.']);
         }
 
-        $user->update([
-            'login_token'            => null,
-            'login_token_expires_at' => null,
-        ]);
+        Log::info('auth.telegram_login.used', array_merge(
+            LogContext::currentRequest(),
+            LogContext::forUser($user, [
+                'token_length' => strlen($token),
+            ])
+        ));
 
         Auth::login($user);
 
         $request->session()->regenerate();
 
         return match ($user->role) {
-            'admin'  => redirect('/admin/dashboard'),
+            'admin' => redirect('/admin/dashboard'),
             'client' => redirect('/client/dashboard'),
-            default  => redirect('/dashboard'),
+            default => redirect('/dashboard'),
         };
     }
 }

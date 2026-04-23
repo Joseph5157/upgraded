@@ -3,8 +3,8 @@
     <div class="flex items-center gap-3">
         <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0" style="background:#4f46e5; color:#fff;">P</div>
         <div>
-            <p class="text-sm font-bold leading-none" style="color:#ffffff;">PlagExpert</p>
-            <p class="text-[9px] mt-0.5 uppercase tracking-widest" style="color:#64748b;">Agent Portal</p>
+            <p class="text-sm font-bold leading-none" style="color:#ffffff;">{{ config('app.name') }}</p>
+            <p class="text-[9px] mt-0.5 uppercase tracking-widest" style="color:#64748b;">Vendor Portal</p>
         </div>
     </div>
     {{-- Close button (mobile drawer only) --}}
@@ -101,7 +101,7 @@
         </div>
         <div class="min-w-0">
             <p class="text-xs font-semibold truncate" style="color:#ffffff;">{{ auth()->user()->name }}</p>
-            <p class="text-[9px] truncate" style="color:#64748b;">Agent</p>
+            <p class="text-[9px] truncate" style="color:#64748b;">Vendor</p>
         </div>
         <form method="POST" action="{{ route('logout') }}" class="ml-auto flex-shrink-0">
             @csrf

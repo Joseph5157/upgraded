@@ -77,7 +77,9 @@ class OrderPolicy
     public function delete(User $user, Order $order): bool
     {
         return $user->role === 'client'
-            && (int) $user->client_id === (int) $order->client_id;
+            && (int) $user->client_id === (int) $order->client_id
+            && $order->status === OrderStatus::Pending
+            && $order->claimed_by === null;
     }
 
     public function cancel(User $user, Order $order): bool

@@ -25,8 +25,8 @@
     {{-- Header --}}
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-xl font-bold text-[#1E1B4B] tracking-tight">Top-up Requests</h1>
-            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] font-mono mt-0.5">Slot Purchases &amp; Approvals</p>
+            <h1 class="text-xl font-bold text-[#1E1B4B] tracking-tight">Top-up requests</h1>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] font-mono mt-0.5">Credit purchases and approvals</p>
         </div>
         <a href="{{ route('admin.matrix.index') }}"
            class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F8FAFF] text-slate-400 text-xs font-bold uppercase tracking-widest rounded-xl border border-[#DDD6FE] transition-all shadow-sm">
@@ -39,7 +39,7 @@
         {{-- ── Pending Requests ────────────────────────────────────────────── --}}
         <div>
             <div class="flex items-center gap-3 mb-5">
-                <h2 class="text-sm font-bold text-[#1E1B4B] uppercase tracking-widest">Pending</h2>
+                <h2 class="text-sm font-bold text-[#1E1B4B] uppercase tracking-widest">Queued</h2>
                 @if($pending->count() > 0)
                     <span class="px-2.5 py-0.5 bg-amber-500/10 text-amber-400 text-[9px] font-bold font-mono rounded-full border border-amber-500/20 animate-pulse">
                         {{ $pending->count() }}
@@ -103,13 +103,13 @@
                                     class="absolute right-0 top-10 z-20 w-72 bg-white border border-[#DDD6FE] rounded-xl p-5 shadow-sm">
                                     <form method="POST" action="{{ route('admin.topup.reject', $topup) }}">
                                         @csrf
-                                        <label class="block text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-2">Rejection Note (optional)</label>
+                                        <label class="block text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-2">Rejection note (optional)</label>
                                         <textarea name="notes" rows="3" maxlength="500"
                                             class="w-full bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl px-3 py-2 text-xs text-[#1E1B4B] placeholder-slate-400 resize-none focus:outline-none focus:border-red-500/40"
                                             placeholder="e.g. UTR not found in bank records…"></textarea>
                                         <button type="submit"
                                             class="mt-3 w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-red-500/20 transition-all">
-                                            Confirm Reject
+                                            Confirm reject
                                         </button>
                                     </form>
                                 </div>
@@ -120,7 +120,7 @@
                 </div>
             @empty
                 <div class="bg-white border border-[#DDD6FE] rounded-xl px-6 py-10 text-center text-xs text-slate-600 shadow-sm">
-                    No pending top-up requests.
+                    No queued top-up requests.
                 </div>
             @endforelse
         </div>
@@ -135,7 +135,7 @@
                         <tr class="text-[9px] text-slate-600 font-bold uppercase tracking-[0.25em] border-b border-[#DDD6FE]">
                             <th class="px-6 py-4">Client</th>
                             <th class="px-4 py-4">Slots</th>
-                            <th class="px-4 py-4">UTR / Txn ID</th>
+                            <th class="px-4 py-4">UTR / transaction ID</th>
                             <th class="px-4 py-4">Reviewed</th>
                             <th class="px-4 py-4">Status</th>
                             <th class="px-6 py-4">Note</th>

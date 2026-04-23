@@ -3,9 +3,9 @@
     {{-- Page Header --}}
     <div class="flex items-center justify-between mb-2">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight dark:text-white">Operator Settings</h1>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight dark:text-white">Profile Settings</h1>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mt-1 dark:text-slate-500">
-                Manage your credentials and account security
+                Manage your profile and login security
             </p>
         </div>
     </div>
@@ -29,8 +29,8 @@
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ $user->name }}</h2>
                 <p class="text-sm text-gray-400 font-mono">Portal ID: {{ $user->portal_number }}</p>
             </div>
-            <span class="bg-red-500/10 text-red-500 border border-red-500/20 text-[9px] font-bold uppercase tracking-widest rounded-full px-3 py-1">
-                SYSTEM_ROOT
+            <span class="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-[9px] font-bold uppercase tracking-widest rounded-full px-3 py-1">
+                ADMIN
             </span>
             <div class="w-full border-t border-[#E2E6EA] dark:border-white/5 pt-4 mt-2 space-y-2">
                 <div class="flex items-center justify-between text-xs">
@@ -52,7 +52,7 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Update Name</h3>
-                    <p class="text-[11px] text-gray-400">Change your display name.</p>
+                    <p class="text-[11px] text-gray-400">Change the name shown across the portal.</p>
                 </div>
             </div>
             <form method="POST" action="{{ route('profile.update') }}" class="space-y-5">
@@ -68,11 +68,11 @@
                     <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Portal ID</label>
                     <input type="text" value="{{ $user->portal_number }}" disabled
                         class="w-full px-4 py-2.5 rounded-xl border border-[#E2E6EA] bg-[#F5F6F8] text-sm text-gray-400 dark:bg-white/5 dark:border-white/5">
-                    <p class="text-[10px] text-gray-400 mt-1">Your Portal ID cannot be changed.</p>
+                    <p class="text-[10px] text-gray-400 mt-1">Your Portal ID is fixed and used for login.</p>
                 </div>
-                <button type="submit"
+                    <button type="submit"
                     class="w-full bg-[#4F6EF7] hover:bg-[#3B5BDB] text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-xl transition-colors">
-                    Save Name
+                    Save Changes
                 </button>
             </form>
         </div>
@@ -87,7 +87,7 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Telegram Login</h3>
-                    <p class="text-[11px] text-gray-400">Your account is secured via Telegram OTP.</p>
+                    <p class="text-[11px] text-gray-400">Your account is secured via Telegram login codes.</p>
                 </div>
             </div>
             <div class="space-y-3">
@@ -95,60 +95,12 @@
                     <span class="text-xs font-semibold text-green-600 dark:text-green-400">Telegram Connected</span>
                     <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
                 </div>
-                <p class="text-xs text-gray-400 dark:text-slate-500">
+                    <p class="text-xs text-gray-400 dark:text-slate-500">
                     You log in using a one-time code sent to your Telegram account.
                     No password is required or stored.
                 </p>
             </div>
         </div>
     </div>
-
-    {{-- CARD 4: Danger Zone --}}
-    <div class="border border-red-500/20 bg-red-500/5 rounded-2xl p-8 dark:border-red-500/20 dark:bg-red-500/5">
-        <div class="flex items-start justify-between gap-6">
-            <div class="space-y-2">
-                <h3 class="text-sm font-bold text-red-500 uppercase tracking-wide">Danger Zone &mdash; Delete Account</h3>
-                <p class="text-xs text-red-400/80 max-w-xl">
-                    Once deleted, all your orders and files will be permanently removed.
-                    This action cannot be undone and will immediately terminate your operator access.
-                </p>
-            </div>
-            <button
-                onclick="document.getElementById('admin-delete-modal').classList.remove('hidden')"
-                class="flex-shrink-0 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest px-5 py-2.5 rounded-xl transition-colors">
-                Delete Account
-            </button>
-        </div>
-    </div>
-
-    {{-- Delete Account Modal --}}
-    <div id="admin-delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-        <div class="bg-[#FAFBFC] dark:bg-[#0a0a0c] border border-[#E2E6EA] dark:border-white/5 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 space-y-6">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500">
-                    <i data-lucide="triangle-alert" class="w-5 h-5"></i>
-                </div>
-                <div>
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Confirm Deletion</h3>
-                    <p class="text-[11px] text-gray-400">This action is permanent and cannot be reversed.</p>
-                </div>
-            </div>
-
-            <p class="text-xs text-red-400 dark:text-red-300">
-                Contact another admin to delete your account.
-                Admin accounts cannot be self-deleted for security reasons.
-            </p>
-
-            <div class="pt-2">
-                <button
-                    type="button"
-                    onclick="document.getElementById('admin-delete-modal').classList.add('hidden')"
-                    class="w-full py-2.5 rounded-xl border border-[#E2E6EA] dark:border-white/5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:bg-[#F0F2F5] dark:hover:bg-white/5 transition-colors">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-
 
 </x-admin-layout>

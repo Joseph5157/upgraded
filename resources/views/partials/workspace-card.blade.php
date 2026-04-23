@@ -9,7 +9,7 @@
         </div>
         @if($order->status->value === 'processing')
             <span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full flex-shrink-0">
-                <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> Processing
+                <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> In progress
             </span>
         @elseif($order->status->value === 'claimed')
             <span class="inline-flex items-center gap-1 text-[9px] font-bold text-amber-400 bg-amber-500/5 border border-amber-500/10 px-2 py-1 rounded-full flex-shrink-0">
@@ -17,7 +17,7 @@
             </span>
         @else
             <span class="inline-flex items-center gap-1 text-[9px] font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] px-2 py-1 rounded-full flex-shrink-0">
-                <span class="w-1 h-1 bg-slate-500 rounded-full"></span> Pending
+                <span class="w-1 h-1 bg-slate-500 rounded-full"></span> Queued
             </span>
         @endif
     </div>
@@ -69,15 +69,15 @@
         @else
             <div></div>
         @endif
-        <button
-            onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
-            class="w-full inline-flex items-center justify-center gap-1 px-4 py-2.5 text-xs font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
-            data-order-id="{{ $order->id }}">
+            <button
+                onclick="ajaxAction('{{ route('orders.unclaim', $order) }}', this, 'unclaim', {{ $order->id }})"
+                class="w-full inline-flex items-center justify-center gap-1 px-4 py-2.5 text-xs font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-all border border-red-500/20"
+                data-order-id="{{ $order->id }}">
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
             </svg>
-            Release
+            Release order
         </button>
         <div></div>
         @if($order->status->value === 'processing' || $order->status->value === 'claimed')
@@ -88,7 +88,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
-                Upload Reports
+                Submit reports
             </button>
         @endif
     </div>

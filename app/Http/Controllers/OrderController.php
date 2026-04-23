@@ -6,7 +6,7 @@ use App\Models\ClientLink;
 use App\Models\Order;
 use App\Enums\OrderStatus;
 use App\Services\CreateClientOrderService;
-use App\Services\DeleteClientOrderService;
+use App\Services\AuditLogger;
 use App\Support\LogContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -20,7 +20,6 @@ class OrderController extends Controller
 
     public function __construct(
         protected CreateClientOrderService $createOrderService,
-        protected DeleteClientOrderService $deleteOrderService,
     ) {
         $this->storageDisk = config('filesystems.default', 'r2');
     }
@@ -52,6 +51,7 @@ class OrderController extends Controller
         }
 
         $report = $order->report;
+        $hasRealArtifact = false;
 
         if ($report->ai_report_path) {
             $aiDisk = $report->ai_report_disk ?: $this->storageDisk;
@@ -60,6 +60,7 @@ class OrderController extends Controller
                     basename($report->ai_report_path),
                     Storage::disk($aiDisk)->get($report->ai_report_path)
                 );
+                $hasRealArtifact = true;
             }
         } elseif ($report->ai_skip_reason) {
             $zip->addFromString(
@@ -75,7 +76,12 @@ class OrderController extends Controller
                     basename($report->plag_report_path),
                     Storage::disk($plagDisk)->get($report->plag_report_path)
                 );
+                $hasRealArtifact = true;
             }
+        }
+
+        if (! $hasRealArtifact) {
+            abort(404, 'No report files are available for this order.');
         }
 
         $zip->close();
@@ -86,29 +92,102 @@ class OrderController extends Controller
             ['Content-Type' => 'application/zip']
         )->deleteFileAfterSend(true);
     }
+
+    protected function resolveGuestLinkOrFail(string $token): ClientLink
+    {
+        $link = ClientLink::where('token', $token)->with('client')->firstOrFail();
+
+        abort_if(! $link->isUsable(), 404);
+
+        return $link;
+    }
+
+    protected function guestCreditsRemaining(ClientLink $link): int
+    {
+        $client = $link->client->fresh();
+
+        return max(0, (int) $client->slots - (int) $client->slots_consumed);
+    }
+
+    protected function assertGuestOrderScope(ClientLink $link, Order $order): void
+    {
+        abort_if($order->client_link_id !== $link->id, 404);
+        abort_if($order->created_at->lt(now()->subDay()), 404);
+    }
+
+    protected function orderHasDownloadableGuestOutput(Order $order, ?string $type = null): bool
+    {
+        $report = $order->report;
+
+        if (! $report) {
+            return false;
+        }
+
+        if ($type === 'plag') {
+            $disk = $report->plag_report_disk ?: $this->storageDisk;
+            return (bool) $report->plag_report_path && Storage::disk($disk)->exists($report->plag_report_path);
+        }
+
+        if ($type === 'ai') {
+            $disk = $report->ai_report_disk ?: $this->storageDisk;
+            return (bool) $report->ai_report_path && Storage::disk($disk)->exists($report->ai_report_path);
+        }
+
+        $aiDisk = $report->ai_report_disk ?: $this->storageDisk;
+        $plagDisk = $report->plag_report_disk ?: $this->storageDisk;
+
+        return (
+            ($report->ai_report_path && Storage::disk($aiDisk)->exists($report->ai_report_path))
+            || ($report->plag_report_path && Storage::disk($plagDisk)->exists($report->plag_report_path))
+        );
+    }
+
     public function showUpload($token)
     {
-        $link = ClientLink::where('token', $token)->where('is_active', true)->with('client')->firstOrFail();
+        $link = $this->resolveGuestLinkOrFail($token);
         $client = $link->client;
-        $orders = Order::where('client_id', $client->id)->with(['report', 'files'])->latest()->get();
+        $orders = Order::where('client_link_id', $link->id)
+            ->where('created_at', '>=', now()->subDay())
+            ->with(['report', 'files'])
+            ->latest()
+            ->get();
+
+        $link->forceFill(['last_used_at' => now()])->save();
+
+        app(AuditLogger::class)->record('client_link.viewed', $link, [
+            'client_id' => $client->id,
+            'orders_visible' => $orders->count(),
+        ]);
+
         return view('client.upload', compact('link', 'client', 'orders'));
     }
 
     public function store(Request $request, $token)
     {
-        $link = ClientLink::where('token', $token)->where('is_active', true)->with('client')->firstOrFail();
+        $link = $this->resolveGuestLinkOrFail($token);
 
         $request->validate([
-            'files.*'               => 'required|file|mimes:pdf,doc,docx,zip|max:102400',
-            'files'                 => 'required|array|min:1|max:20',
+            'file'                  => 'required|file|mimes:pdf,doc,docx,zip|max:102400',
+            'notes'                 => 'nullable|string|max:5000',
         ]);
+
+        $remainingCredits = $this->guestCreditsRemaining($link);
+
+        if ($remainingCredits <= 0) {
+            return back()->withErrors([
+                'file' => 'This guest link has no credits remaining. Existing orders remain available until the link expires.',
+            ]);
+        }
 
         try {
             $order = $this->createOrderService->execute(
                 $link->client,
-                $request->file('files'),
+                [$request->file('file')],
                 'link',
-                ['client_link_id' => $link->id],
+                [
+                    'client_link_id' => $link->id,
+                    'notes' => $request->input('notes'),
+                ],
             );
         } catch (\Exception $e) {
             Log::warning('order.create_failed', array_merge(
@@ -117,7 +196,7 @@ class OrderController extends Controller
                     'source' => 'link',
                     'client_id' => $link->client_id,
                     'client_link_id' => $link->id,
-                    'file_count' => is_array($request->file('files')) ? count($request->file('files')) : null,
+                    'file_count' => 1,
                     'exception' => class_basename($e),
                     'message' => $e->getMessage(),
                 ]
@@ -125,43 +204,98 @@ class OrderController extends Controller
             return back()->with('error', $e->getMessage());
         }
 
+        $link->forceFill(['last_used_at' => now()])->save();
+
+        app(AuditLogger::class)->record('client_link.uploaded', $order, [
+            'client_link_id' => $link->id,
+            'credits_used' => 1,
+            'remaining_credits' => $this->guestCreditsRemaining($link),
+        ]);
+
         return redirect()->route('client.upload', $token)
             ->with('success', "Order #{$order->id} submitted successfully. Your files are being processed.");
 
     }
 
-    public function destroyOrder(Request $request, $token, Order $order)
+    public function trackGuest($token, Order $order)
     {
-        $link = ClientLink::where('token', $token)->where('is_active', true)->with('client')->firstOrFail();
+        $link = $this->resolveGuestLinkOrFail($token);
+        $this->assertGuestOrderScope($link, $order);
 
-        if ($order->client_id !== $link->client->id) {
-            abort(403);
+        $order->load(['report', 'client']);
+        $link->forceFill(['last_used_at' => now()])->save();
+        app(AuditLogger::class)->record('client_link.order_viewed', $order, [
+            'client_link_id' => $link->id,
+        ]);
+
+        return view('client.track', compact('order', 'link'));
+    }
+
+    public function downloadGuest($token, Order $order, Request $request)
+    {
+        $link = $this->resolveGuestLinkOrFail($token);
+        $this->assertGuestOrderScope($link, $order);
+
+        $order->load('report');
+
+        if ($order->status !== OrderStatus::Delivered || ! $order->report) {
+            abort(404);
         }
 
-        try {
-            $this->deleteOrderService->execute($order, $link->client);
-        } catch (\Exception $e) {
-            return redirect()->route('client.upload', $token)->with('error', $e->getMessage());
+        $type = $request->query('type');
+
+        if (! $this->orderHasDownloadableGuestOutput($order, $type)) {
+            abort(404);
         }
 
-        return redirect()->route('client.upload', $token)->with('success', 'Order deleted successfully.');
+        if (! $order->is_downloaded) {
+            $order->update(['is_downloaded' => true]);
+        }
+
+        $link->forceFill(['last_used_at' => now()])->save();
+        app(AuditLogger::class)->record('client_link.downloaded', $order, [
+            'client_link_id' => $link->id,
+            'download_type' => $type ?: 'bundle',
+        ]);
+
+        if ($type === null) {
+            return $this->bundleReports($order);
+        }
+
+        if ($type === 'plag') {
+            if (! $order->report->plag_report_path) abort(404);
+            $disk = $order->report->plag_report_disk ?: $this->storageDisk;
+            if (!Storage::disk($disk)->exists($order->report->plag_report_path)) abort(404);
+            return $this->downloadFromDisk($order->report->plag_report_path, basename($order->report->plag_report_path), $disk);
+        }
+
+        if (! $order->report->ai_report_path) abort(404);
+        $disk = $order->report->ai_report_disk ?: $this->storageDisk;
+        if (!Storage::disk($disk)->exists($order->report->ai_report_path)) abort(404);
+        return $this->downloadFromDisk($order->report->ai_report_path, basename($order->report->ai_report_path), $disk);
     }
 
     public function track($token_view)
     {
         $order = Order::where('token_view', $token_view)->with(['report', 'client'])->firstOrFail();
+        abort_if($order->client_link_id !== null, 404);
         return view('client.track', compact('order'));
     }
 
     public function download($token_view, Request $request)
     {
         $order = Order::where('token_view', $token_view)->with('report')->firstOrFail();
+        abort_if($order->client_link_id !== null, 404);
 
         if ($order->status !== OrderStatus::Delivered || !$order->report) {
             abort(404);
         }
 
         $type = $request->query('type');
+
+        if (! $this->orderHasDownloadableGuestOutput($order, $type)) {
+            abort(404);
+        }
 
         // Mark as downloaded on the first successful download of either report type.
         if (!$order->is_downloaded) {

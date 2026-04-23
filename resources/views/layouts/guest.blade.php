@@ -6,7 +6,7 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="icon" type="image/png" href="/favicon.png">
 
-        <title>PlagExpert — Sign In</title>
+        <title>{{ config('app.name') }} — Sign In</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,14 +94,14 @@
                     <div class="flex-1 flex flex-col justify-center py-10 hero-copy">
                         <div class="inline-flex items-center gap-3 rounded-full px-5 py-2.5 mb-10 w-fit shadow-[inset_0_1px_0_rgba(255,255,255,0.10)] mx-auto" style="background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16);">
                             <span class="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_0_5px_rgba(52,211,153,0.12)]" style="background:#48c7a8;"></span>
-                            <span class="text-[0.8rem] font-semibold tracking-[0.18em] uppercase" style="color:#f8fafc;">Secure Client Portal</span>
+                            <span class="text-[0.8rem] font-semibold tracking-[0.18em] uppercase" style="color:#f8fafc;">Secure client portal</span>
                         </div>
                         <h1 class="text-[4rem] leading-[1.02] font-extrabold mb-7 panel-text-shadow tracking-[-0.045em] text-center" style="color:#f8fafc;">
-                            <span style="color:#f8fafc;">Plagiarism &amp; AI Reports,</span><br>
+                            <span style="color:#f8fafc;">Plagiarism and AI reports,</span><br>
                             <span style="color:#b8b7ff;">all in one place.</span>
                         </h1>
                         <p class="text-[1.08rem] leading-[1.85] max-w-[38rem] font-medium text-center mx-auto" style="color:#d4d0e7;">
-                            Upload, track, and receive your plagiarism and AI reports through a secure, fully API automated system — designed for speed, accuracy, and zero manual delays.
+                            Upload, track, and receive your plagiarism and AI reports through a secure, fully API automated system - designed for speed, accuracy, and zero manual delays.
                         </p>
                     </div>
 
@@ -156,10 +156,11 @@
                 </div>
 
                 <p class="mt-5 sm:mt-8 text-center text-xs" style="color:#64748b;">
-                    &copy; {{ date('Y') }} PlagExpert. All rights reserved.
+                    &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
                 </p>
             </div>
 
         </div>
     </body>
 </html>
+

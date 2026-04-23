@@ -61,7 +61,7 @@
                 <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0">
                     <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
                 </div>
-                <span class="font-bold text-white text-[15px] tracking-tight">PlagExpert</span>
+                <span class="font-bold text-white text-[15px] tracking-tight">{{ config('app.name') }}</span>
             </div>
         </div>
 
@@ -119,21 +119,15 @@
                         <p class="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Client Portal</p>
                         <h2 class="text-[1.2rem] sm:text-[1.5rem] font-semibold text-white mt-2 tracking-tight leading-tight">Upload. Track. Download.</h2>
                     </div>
-                    @if($client->plan_expiry && $client->plan_expiry->isPast())
-                        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border border-red-500/[0.18] bg-red-500/[0.06] text-red-300 flex-shrink-0">
-                            <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Expired
-                        </span>
-                    @else
-                        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border border-emerald-500/[0.18] bg-emerald-500/[0.06] text-emerald-300 flex-shrink-0">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Active
-                        </span>
-                    @endif
+                    <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border border-emerald-500/[0.18] bg-emerald-500/[0.06] text-emerald-300 flex-shrink-0">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Guest link active
+                    </span>
                 </div>
 
                 <div class="mt-4 space-y-3">
                     <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border border-white/[0.06] bg-white/[0.02]">
                         <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0"></i>
-                        <p class="text-[12px] sm:text-[13px] font-medium text-slate-200 leading-6">Files are automatically removed after 24 hours. Download your reports before then.</p>
+                        <p class="text-[12px] sm:text-[13px] font-medium text-slate-200 leading-6">This guest link is active for 24 hours. View and download your orders before it expires.</p>
                     </div>
 
                     @if(session('success'))
@@ -164,6 +158,16 @@
                                 @elseif($remaining > 0) {{ $remaining }} credits remaining
                                 @else No credits — contact admin
                                 @endif
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 rounded-2xl px-4 py-3 border border-white/[0.06] bg-white/[0.02]">
+                        <span class="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0"></span>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Link Window</p>
+                            <p class="text-[13px] font-semibold mt-1 text-slate-200">
+                                Expires {{ $link->expires_at?->format('d M Y, h:i A') ?? 'at 24 hours' }}
                             </p>
                         </div>
                     </div>
@@ -208,27 +212,19 @@
                             <div>
                                 <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">New Order</p>
                                 <h2 class="text-[15px] sm:text-[17px] font-bold text-white tracking-tight mt-2">Secure Upload</h2>
-                                <p class="text-[11px] text-slate-400 mt-1">Submit your document for non-repository scanning</p>
+                                <p class="text-[11px] text-slate-400 mt-1">Submit one document per order. Each upload consumes one credit immediately.</p>
                             </div>
                             <div class="w-10 h-10 sm:w-11 sm:h-11 bg-white/[0.03] rounded-2xl flex items-center justify-center border border-white/[0.06] flex-shrink-0">
                                 <i data-lucide="shield" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400"></i>
                             </div>
                         </div>
 
-                        @if($client->plan_expiry && $client->plan_expiry->isPast())
-                            <div class="border-2 border-dashed border-red-500/20 rounded-3xl p-12 text-center bg-red-500/[0.03]">
-                                <div class="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-red-500/20">
-                                    <i data-lucide="ban" class="w-7 h-7 text-red-500/60"></i>
-                                </div>
-                                <h3 class="text-red-400 font-bold mb-1">Plan Expired</h3>
-                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Contact admin to renew</p>
-                            </div>
-                        @elseif($remaining <= 0)
+                        @if($remaining <= 0)
                             <div class="border-2 border-dashed border-amber-500/20 rounded-3xl p-12 text-center bg-amber-500/[0.02]">
                                 <div class="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-amber-500/20">
                                     <i data-lucide="alert-triangle" class="w-7 h-7 text-amber-500/60"></i>
                                 </div>
-                                <h3 class="text-amber-400 font-bold mb-1">No Credits Remaining</h3>
+                                <h3 class="text-amber-400 font-bold mb-1">No credits remaining</h3>
                                 <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Contact admin for more slots</p>
                             </div>
                         @else
@@ -236,14 +232,14 @@
                                 @csrf
                                 <label for="files" id="drop-zone"
                                     class="group block rounded-[1.25rem] sm:rounded-[1.5rem] px-4 sm:px-8 py-6 sm:py-7 text-center cursor-pointer transition-all border border-dashed border-indigo-500/[0.16] bg-indigo-500/[0.03] hover:border-indigo-400/40 hover:bg-indigo-500/[0.05]">
-                                    <input type="file" name="files[]" id="files" required multiple class="sr-only"
+                                    <input type="file" name="file" id="files" required class="sr-only"
                                         accept=".pdf,.doc,.docx,.zip"
                                         onchange="handleFileSelect(this)">
                                     <div class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
                                         <i data-lucide="file-plus" class="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400"></i>
                                     </div>
-                                    <h3 class="text-[13px] sm:text-[15px] font-bold text-white/90 mb-1.5">Drop files here or click to browse</h3>
-                                    <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em]">PDF, DOCX, DOC, ZIP &middot; Up to 20 files &middot; 100MB each</p>
+                                    <h3 class="text-[13px] sm:text-[15px] font-bold text-white/90 mb-1.5">Drop a file here or click to browse</h3>
+                                    <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em]">PDF, DOCX, DOC, ZIP &middot; 1 file only &middot; 100MB max</p>
                                     <p id="selected-file-count" class="hidden text-[10px] text-emerald-400 font-bold mt-2 uppercase tracking-[0.18em]"></p>
                                 </label>
 
@@ -327,7 +323,7 @@
                                         </span>
                                     @elseif($order->status->value === 'processing')
                                         <span class="status-badge bg-blue-500/[0.1] text-blue-400 border border-blue-500/[0.15] flex-shrink-0">
-                                            <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> Processing
+                                            <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> In progress
                                         </span>
                                     @elseif($order->status->value === 'claimed')
                                         <span class="status-badge bg-amber-500/[0.1] text-amber-400 border border-amber-500/[0.15] flex-shrink-0">
@@ -335,28 +331,32 @@
                                         </span>
                                     @else
                                         <span class="status-badge bg-slate-500/[0.08] text-slate-500 border border-slate-500/[0.1] flex-shrink-0">
-                                            <span class="w-1 h-1 rounded-full bg-slate-500 pulse-dot"></span> Pending
+                                            <span class="w-1 h-1 rounded-full bg-slate-500 pulse-dot"></span> Queued
                                         </span>
                                     @endif
                                 </div>
 
                                 <div class="border-t border-white/[0.05] mt-3 pt-3">
-                                    @if($order->status->value === 'delivered')
-                                        <div class="flex flex-wrap items-center gap-2">
+                                            @if($order->status->value === 'delivered')
+                                                <div class="flex flex-wrap items-center gap-2">
+                                            <a href="{{ route('client.link.track', [$link->token, $order->token_view]) }}"
+                                                class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-indigo-500/[0.12] text-indigo-300 text-[9px] font-bold rounded-lg border border-indigo-500/[0.12] transition-all">
+                                                <i data-lucide="eye" class="w-3 h-3"></i> View Status
+                                            </a>
                                             @if($order->report?->ai_report_path && $order->report?->plag_report_path)
-                                                <a href="{{ route('client.download', $order->token_view) }}"
+                                                <a href="{{ route('client.link.download', [$link->token, $order->token_view]) }}"
                                                     class="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-500/[0.12] hover:bg-indigo-500/[0.2] text-indigo-300 text-[9px] font-bold rounded-lg border border-indigo-500/[0.2] transition-all">
                                                     <i data-lucide="archive" class="w-3 h-3"></i> Download Both
                                                 </a>
                                             @endif
                                             @if($order->report?->ai_report_path)
-                                                <a href="{{ route('client.download', $order->token_view) }}?type=ai"
+                                                <a href="{{ route('client.link.download', [$link->token, $order->token_view]) }}?type=ai"
                                                     class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-red-500/[0.12] text-red-300 text-[9px] font-bold rounded-lg border border-red-500/[0.12] transition-all">
                                                     <i data-lucide="download" class="w-3 h-3"></i> AI Report
                                                 </a>
                                             @endif
                                             @if($order->report?->plag_report_path)
-                                                <a href="{{ route('client.download', $order->token_view) }}?type=plag"
+                                                <a href="{{ route('client.link.download', [$link->token, $order->token_view]) }}?type=plag"
                                                     class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-amber-500/[0.12] text-amber-300 text-[9px] font-bold rounded-lg border border-amber-500/[0.12] transition-all">
                                                     <i data-lucide="download" class="w-3 h-3"></i> Plag Report
                                                 </a>
@@ -366,25 +366,17 @@
                                         <div class="flex items-center justify-between gap-3">
                                             <div class="flex items-center gap-2 text-[9px] text-slate-500 font-bold uppercase tracking-widest">
                                                 @if($order->status->value === 'processing')
-                                                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full pulse-dot"></span> Processing...
+                                                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full pulse-dot"></span> In progress...
                                                 @elseif($order->status->value === 'claimed')
                                                     <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span> Reserved...
                                                 @else
-                                                    <span class="w-1.5 h-1.5 bg-slate-600 rounded-full pulse-dot"></span> In Queue...
+                                                    <span class="w-1.5 h-1.5 bg-slate-600 rounded-full pulse-dot"></span> Queued...
                                                 @endif
                                             </div>
-                                            @if($order->status->value === 'pending' && !$order->claimed_by)
-                                                <form method="POST"
-                                                    action="{{ route('client.link.orders.delete', [$link->token, $order]) }}"
-                                                    onsubmit="return confirm('Delete this order permanently?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-red-500/[0.12] text-red-400 text-[9px] font-bold rounded-lg border border-red-500/[0.12] transition-all">
-                                                        <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
-                                                    </button>
-                                                </form>
-                                            @endif
+                                            <a href="{{ route('client.link.track', [$link->token, $order->token_view]) }}"
+                                                class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-indigo-500/[0.12] text-indigo-300 text-[9px] font-bold rounded-lg border border-indigo-500/[0.12] transition-all">
+                                                <i data-lucide="eye" class="w-3 h-3"></i> View
+                                            </a>
                                         </div>
                                     @endif
                                 </div>
@@ -404,7 +396,7 @@
         </div>
 
         <footer class="px-8 py-6 text-center border-t border-white/[0.04] bg-[#0b0b0f] mt-4">
-            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">PlagExpert &bull; Advanced Plagiarism Prevention</p>
+            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">{{ config('app.name') }} &bull; Advanced plagiarism review</p>
         </footer>
     </main>
 
@@ -452,7 +444,12 @@
                 e.preventDefault();
                 zone.classList.remove('drag-over');
                 const input = document.getElementById('files');
-                if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; handleFileSelect(input); }
+                if (e.dataTransfer.files.length) {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(e.dataTransfer.files[0]);
+                    input.files = dataTransfer.files;
+                    handleFileSelect(input);
+                }
             });
         }
 

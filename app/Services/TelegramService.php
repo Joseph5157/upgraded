@@ -17,6 +17,16 @@ class TelegramService
             return false;
         }
 
+        if (app()->environment('testing') && config('services.telegram.testing_fake', true)) {
+            Log::info('Telegram send faked in testing.', [
+                'chat_id' => $chatId,
+                'message_length' => mb_strlen($text),
+                'has_reply_markup' => $replyMarkup !== null,
+            ]);
+
+            return true;
+        }
+
         try {
             $payload = [
                 'chat_id' => $chatId,
@@ -44,6 +54,7 @@ class TelegramService
 
             Log::warning('Telegram send failed.', [
                 'chat_id' => $chatId,
+                'status' => $response->status(),
                 'body' => $response->body(),
             ]);
             return false;

@@ -6,10 +6,10 @@ use App\Enums\OrderStatus;
 use App\Models\Client;
 use App\Models\Order;
 use App\Support\LogContext;
+use App\Support\StorageLifecycle;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class DeleteClientOrderService
 {
@@ -67,30 +67,24 @@ class DeleteClientOrderService
             // delete/credit-restore races (e.g. two simultaneous delete requests).
             $client = Client::where('id', $client->id)->lockForUpdate()->first();
 
-            // Delete uploaded source files from R2
+            // Delete uploaded source files from storage first. Missing files are
+            // tolerated, but if a file exists and cannot be removed we abort so
+            // the database rows are not removed out from under it.
             foreach ($order->files as $file) {
-                Storage::disk($file->disk ?: $this->storageDisk)->delete($file->file_path);
+                StorageLifecycle::deleteStoredFileIfPresent($file->disk ?: $this->storageDisk, $file->file_path);
             }
-
-            // Delete the entire order directory
-            foreach ($order->files->pluck('disk')->filter()->push($this->storageDisk)->unique() as $disk) {
-                Storage::disk($disk)->deleteDirectory('orders/' . $order->id);
-            }
+            collect(StorageLifecycle::uniqueDisks($order->files->pluck('disk')->all(), $this->storageDisk))
+                ->each(fn ($disk) => StorageLifecycle::deleteStoredDirectory($disk, 'orders/' . $order->id));
 
             // Delete report PDFs (AI + plagiarism)
             if ($order->report) {
-                if ($order->report->ai_report_path) {
-                    Storage::disk($order->report->ai_report_disk ?: $this->storageDisk)
-                        ->delete($order->report->ai_report_path);
-                }
-                if ($order->report->plag_report_path) {
-                    Storage::disk($order->report->plag_report_disk ?: $this->storageDisk)
-                        ->delete($order->report->plag_report_path);
-                }
-                collect([$order->report->ai_report_disk, $order->report->plag_report_disk, $this->storageDisk])
-                    ->filter()
-                    ->unique()
-                    ->each(fn($disk) => Storage::disk($disk)->deleteDirectory('reports/' . $order->id));
+                StorageLifecycle::deleteStoredFileIfPresent($order->report->ai_report_disk ?: $this->storageDisk, $order->report->ai_report_path);
+                StorageLifecycle::deleteStoredFileIfPresent($order->report->plag_report_disk ?: $this->storageDisk, $order->report->plag_report_path);
+                collect(StorageLifecycle::uniqueDisks([
+                    $order->report->ai_report_disk,
+                    $order->report->plag_report_disk,
+                ], $this->storageDisk))
+                    ->each(fn ($disk) => StorageLifecycle::deleteStoredDirectory($disk, 'reports/' . $order->id));
             }
 
             // Delete database records

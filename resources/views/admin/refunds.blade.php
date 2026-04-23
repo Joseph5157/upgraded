@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-lg font-bold text-[#1E1B4B] tracking-tight">Refund Requests</h1>
-            <p class="text-[10px] text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">CLIENT CREDIT RECOVERIES</p>
+            <p class="text-[10px] text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">Client credit recoveries</p>
         </div>
     </div>
 
@@ -44,7 +44,7 @@
                         </td>
                         <td class="px-4 py-4">
                             @if($refund->status === 'pending')
-                                <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold border border-amber-500/10">Pending</span>
+                                <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold border border-amber-500/10">Queued</span>
                             @elseif($refund->status === 'approved')
                                 <span class="px-2.5 py-1 bg-green-500/10 text-green-400 rounded-lg text-[9px] font-bold border border-green-500/10">Approved</span>
                             @else

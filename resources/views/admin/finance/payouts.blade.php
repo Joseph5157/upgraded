@@ -13,7 +13,7 @@
         <div>
             <h1 class="text-xl font-bold text-[#1E1B4B] tracking-tight">Vendor Payouts</h1>
             <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] font-mono mt-0.5">
-                Balance Ledger · Rate: ₹{{ number_format($payoutRate, 0) }}/order
+                Vendor balance sheet - Rate: ₹{{ number_format($payoutRate, 0) }}/order
             </p>
         </div>
     </div>
@@ -27,9 +27,8 @@
                     <i data-lucide="users" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-[#1E1B4B]">Vendor Balance Sheet</h2>
-                    <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Earnings vs Paid
-                        Out</p>
+                    <h2 class="text-lg font-bold text-[#1E1B4B]">Vendor balance sheet</h2>
+                    <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Earnings versus paid out</p>
                 </div>
             </div>
 
@@ -39,11 +38,11 @@
                             <tr
                                 class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-[#DDD6FE]">
                             <th class="pb-6 px-4">Vendor</th>
-                            <th class="pb-6 text-center">Payout Rate</th>
+                            <th class="pb-6 text-center">Payout rate</th>
                             <th class="pb-6 text-center">Delivered</th>
-                            <th class="pb-6 text-center">Total Earned</th>
-                            <th class="pb-6 text-center">Total Paid</th>
-                            <th class="pb-6 text-center">Balance Due</th>
+                            <th class="pb-6 text-center">Total earned</th>
+                            <th class="pb-6 text-center">Total paid</th>
+                            <th class="pb-6 text-center">Balance due</th>
                             <th class="pb-6 text-right px-4">Actions</th>
                         </tr>
                     </thead>

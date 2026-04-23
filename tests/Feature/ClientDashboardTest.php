@@ -57,9 +57,10 @@ class ClientDashboardTest extends TestCase
         $response = $this->actingAs($user)->get(route('client.dashboard'));
 
         $response->assertStatus(200);
-        $response->assertSee('Pending');
-        $response->assertSee('Overdue');
+        $response->assertSee('Queued');
+        $response->assertSee('In progress');
         $response->assertSee('Ready');
-        $response->assertSee('download'); // download icon/btn for delivered
+        $response->assertSee('Download Both');
+        $response->assertSee('AI Report');
     }
 }

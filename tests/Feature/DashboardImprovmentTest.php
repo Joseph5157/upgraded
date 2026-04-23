@@ -15,11 +15,15 @@ class DashboardImprovmentTest extends TestCase
     protected function setupData()
     {
         $agent = User::create([
-            'name' => 'Agent Smith',
-            'email' => 'smith@example.com',
-            'password' => bcrypt('password'),
-            'role' => 'vendor',
-            'email_verified_at' => now(),
+            'name'             => 'Agent Smith',
+            'email'            => 'smith@example.com',
+            'password'         => bcrypt('password'),
+            'role'             => 'vendor',
+            'status'           => 'active',
+            'portal_number'    => 7001,
+            'activated_at'     => now(),
+            'telegram_chat_id' => '123456789',
+            'delivered_orders_count' => 1,
         ]);
 
         $client = Client::create([
@@ -89,17 +93,10 @@ class DashboardImprovmentTest extends TestCase
         $response->assertViewHas('recentHistory');
 
         $stats = $response->viewData('stats');
-        $this->assertEquals(2, $stats['available_pool']); // pool-1 and overdue-1 are both pending/unclaimed
-        $this->assertEquals(1, $stats['active_jobs']);    // work-1
-        $this->assertEquals(1, $stats['total_checked_today']); // delivered-1
-        $this->assertEquals(1, $stats['overdue_count']); // Only overdue-1 is pending/unclaimed and due in the past
-        // Let's re-calculate: 
-        // 1. pool-1 (due in 20m) -> NOT overdue
-        // 2. work-1 (due in 10m) -> NOT overdue
-        // 3. overdue-1 (due -10m ago) -> OVERDUE
-        // 4. delivered-1 (due -60m ago) -> Delivered, so NOT included in overdue count (status != delivered)
-        // So overdue_count should be 1.
-        $this->assertEquals(1, $stats['overdue_count']);
+        $this->assertEquals(2, $stats['available_pool']);
+        $this->assertEquals(1, $stats['active_jobs']);
+        $this->assertEquals(1, $stats['total_checked_today']);
+        $this->assertEquals(1, $stats['total_delivered']);
 
         $this->assertCount(1, $response->viewData('myWorkspace'));
         $this->assertCount(2, $response->viewData('availableFiles'));

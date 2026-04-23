@@ -102,7 +102,7 @@
                 <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0">
                     <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
                 </div>
-                <span class="font-bold text-white text-[15px] tracking-tight">PlagExpert</span>
+                <span class="font-bold text-white text-[15px] tracking-tight">{{ config('app.name') }}</span>
             </div>
         </div>
 
@@ -114,18 +114,18 @@
             <div class="flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-600 cursor-not-allowed select-none text-sm font-medium">
                 <div class="flex items-center gap-3">
                     <i data-lucide="history" class="w-4 h-4 flex-shrink-0"></i>
-                    Order History
+                    Orders
                 </div>
                 <span class="text-[7px] font-black uppercase tracking-widest text-indigo-500/40 bg-indigo-500/[0.06] border border-indigo-500/[0.1] px-1.5 py-0.5 rounded">Soon</span>
             </div>
             <a href="{{ route('client.subscription') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-200 hover:bg-white/[0.04] transition-all">
                 <i data-lucide="credit-card" class="w-4 h-4 flex-shrink-0"></i>
-                Subscription
+                Credits
             </a>
             <div class="flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-600 cursor-not-allowed select-none text-sm font-medium">
                 <div class="flex items-center gap-3">
                     <i data-lucide="settings" class="w-4 h-4 flex-shrink-0"></i>
-                    Settings
+                    Profile
                 </div>
                 <span class="text-[7px] font-black uppercase tracking-widest text-indigo-500/40 bg-indigo-500/[0.06] border border-indigo-500/[0.1] px-1.5 py-0.5 rounded">Soon</span>
             </div>
@@ -136,7 +136,7 @@
                 @csrf
                 <button type="submit"
                     class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-bold text-red-400 bg-red-500/[0.08] hover:bg-red-500/[0.15] border border-red-500/[0.15] hover:border-red-500/[0.3] transition-all active:scale-[0.98]">
-                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign out
                 </button>
             </form>
         </div>
@@ -153,7 +153,7 @@
                 <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30 flex-shrink-0">
                     <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
                 </div>
-                <span class="font-bold text-white text-[15px] tracking-tight">PlagExpert</span>
+                <span class="font-bold text-white text-[15px] tracking-tight">{{ config('app.name') }}</span>
             </div>
         </div>
 
@@ -166,18 +166,18 @@
             <div class="flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-600 cursor-not-allowed select-none text-sm font-medium">
                 <div class="flex items-center gap-3">
                     <i data-lucide="history" class="w-4 h-4 flex-shrink-0"></i>
-                    Order History
+                    Orders
                 </div>
                 <span class="text-[7px] font-black uppercase tracking-widest text-indigo-500/40 bg-indigo-500/[0.06] border border-indigo-500/[0.1] px-1.5 py-0.5 rounded">Soon</span>
             </div>
             <a href="{{ route('client.subscription') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-200 hover:bg-white/[0.04] transition-all">
                 <i data-lucide="credit-card" class="w-4 h-4 flex-shrink-0"></i>
-                Subscription
+                Credits
             </a>
             <div class="flex items-center justify-between px-4 py-2.5 rounded-xl text-slate-600 cursor-not-allowed select-none text-sm font-medium">
                 <div class="flex items-center gap-3">
                     <i data-lucide="settings" class="w-4 h-4 flex-shrink-0"></i>
-                    Settings
+                    Profile
                 </div>
                 <span class="text-[7px] font-black uppercase tracking-widest text-indigo-500/40 bg-indigo-500/[0.06] border border-indigo-500/[0.1] px-1.5 py-0.5 rounded">Soon</span>
             </div>
@@ -189,7 +189,7 @@
                 @csrf
                 <button type="submit"
                     class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-bold text-red-400 bg-red-500/[0.08] hover:bg-red-500/[0.15] border border-red-500/[0.15] hover:border-red-500/[0.3] transition-all active:scale-[0.98]">
-                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign Out
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Sign out
                 </button>
             </form>
         </div>
@@ -268,7 +268,7 @@
                 <div class="mt-4 space-y-3">
                     <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border border-white/[0.06] bg-white/[0.02]">
                         <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0"></i>
-                        <p class="text-[12px] sm:text-[13px] font-medium text-slate-200 leading-6">Files are removed from the server every night. Download your reports before the end of the day.</p>
+                        <p class="text-[12px] sm:text-[13px] font-medium text-slate-200 leading-6">This guest link is active for 24 hours. Download your reports before it expires.</p>
                     </div>
 
                     @if(session('success'))
@@ -474,7 +474,7 @@
                                         </span>
                                     @elseif($order->status->value === 'processing')
                                         <span class="status-badge bg-blue-500/[0.1] text-blue-400 border border-blue-500/[0.15] flex-shrink-0">
-                                            <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> Processing
+                                            <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> In progress
                                         </span>
                                     @elseif($order->status->value === 'claimed')
                                         <span class="status-badge bg-amber-500/[0.1] text-amber-400 border border-amber-500/[0.15] flex-shrink-0">
@@ -482,7 +482,7 @@
                                         </span>
                                     @else
                                         <span class="status-badge bg-slate-500/[0.08] text-slate-500 border border-slate-500/[0.1] flex-shrink-0">
-                                            <span class="w-1 h-1 rounded-full bg-slate-500 pulse-dot"></span> Pending
+                                            <span class="w-1 h-1 rounded-full bg-slate-500 pulse-dot"></span> Queued
                                         </span>
                                     @endif
                                 </div>
@@ -560,7 +560,7 @@
                                                 </span>
                                             @elseif($existingRefund && $existingRefund->status === 'pending')
                                                 <span class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/[0.08] text-amber-400 text-[10px] font-bold rounded-lg border border-amber-500/[0.15]">
-                                                    <i data-lucide="clock" class="w-3 h-3"></i> Refund Pending
+                                                    <i data-lucide="clock" class="w-3 h-3"></i> Refund queued
                                                 </span>
                                             @elseif($existingRefund && $existingRefund->status === 'approved')
                                                 <span class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/[0.08] text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-500/[0.15]">
@@ -579,13 +579,13 @@
                                             <div class="flex items-center gap-2 text-[9px] text-slate-400 font-bold uppercase tracking-widest">
                                                 @if($order->status->value === 'processing')
                                                     <span class="w-1.5 h-1.5 bg-blue-500 rounded-full pulse-dot"></span>
-                                                    Processing...
+                                                    In progress...
                                                 @elseif($order->status->value === 'claimed')
                                                     <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
                                                     Reserved...
                                                 @else
                                                     <span class="w-1.5 h-1.5 bg-slate-600 rounded-full pulse-dot"></span>
-                                                    In Queue...
+                                                    Queued...
                                                 @endif
                                             </div>
 
@@ -610,7 +610,7 @@
 
         {{-- FOOTER --}}
         <footer class="px-8 py-6 text-center border-t border-white/[0.04] bg-[#0b0b0f] mt-4">
-            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">PlagExpert &bull; Advanced Plagiarism Prevention</p>
+            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-[0.3em]">{{ config('app.name') }} &bull; Advanced plagiarism review</p>
         </footer>
 
         {{-- Mobile Bottom Nav --}}
@@ -661,7 +661,7 @@
         {{-- Coming Soon Toast --}}
         <div id="coming-soon-toast"
              class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 hidden md:hidden bg-[#1e1e2e] border border-indigo-500/20 text-indigo-300 text-xs font-semibold px-5 py-3 rounded-2xl shadow-xl">
-            Order History coming soon
+            Orders coming soon
         </div>
     </main>
 
@@ -679,8 +679,8 @@
                         <i data-lucide="zap" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-[15px] font-bold text-white">Request Top-up</h3>
-                        <p class="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">Add Credits to Your Account</p>
+                        <h3 class="text-[15px] font-bold text-white">Request credit top-up</h3>
+                        <p class="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">Add credits to your account</p>
                     </div>
                 </div>
                 <button onclick="document.getElementById('topup-modal').classList.add('hidden')"
@@ -693,7 +693,7 @@
                 @csrf
 
                 <div>
-                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Select Package</label>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Choose a top-up amount</label>
                     <div class="grid grid-cols-3 gap-2 mb-3">
                         <button type="button" onclick="setSlots(50)"
                             class="slot-preset py-2.5 bg-white/[0.04] hover:bg-indigo-500/[0.1] border border-white/[0.06] hover:border-indigo-500/30 rounded-xl text-xs font-bold text-slate-400 hover:text-indigo-400 transition-all">
@@ -727,14 +727,14 @@
                 </div>
 
                 <div class="p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl space-y-3">
-                    <p class="text-[9px] font-black uppercase tracking-widest text-slate-600">Payment Instructions</p>
+                    <p class="text-[9px] font-black uppercase tracking-widest text-slate-600">Payment instructions</p>
                     @if($paymentSetting)
                         <div class="flex items-center gap-3">
                             <div class="w-9 h-9 bg-emerald-500/[0.1] rounded-lg flex items-center justify-center text-emerald-500 flex-shrink-0">
                                 <i data-lucide="smartphone" class="w-4 h-4"></i>
                             </div>
                             <div>
-                                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">UPI Holder's Name</p>
+                                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Account holder name</p>
                                 <p class="text-[13px] font-semibold text-white mt-0.5">{{ $paymentSetting->upi_name }}</p>
                             </div>
                         </div>
@@ -750,11 +750,11 @@
                     @else
                         <p class="text-[11px] text-amber-400">Payment details not configured yet. Contact admin.</p>
                     @endif
-                    <p class="text-[10px] text-slate-400 leading-relaxed">Send the exact amount to the UPI ID, then paste your <span class="text-indigo-400 font-semibold">Transaction / UTR Reference Number</span> below.</p>
+                    <p class="text-[10px] text-slate-400 leading-relaxed">Send the exact amount to the UPI ID, then paste your <span class="text-indigo-400 font-semibold">UTR or transaction reference number</span> below.</p>
                 </div>
 
                 <div>
-                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Transaction / UTR Reference</label>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">UTR or transaction reference</label>
                     <input type="text" name="transaction_id" required placeholder="e.g. 123456789012"
                         class="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors placeholder-slate-700 font-mono">
                 </div>
@@ -762,7 +762,7 @@
                 <button type="submit"
                     class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold uppercase tracking-[0.25em] rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg shadow-indigo-500/20">
                     <i data-lucide="send" class="w-4 h-4"></i>
-                    Submit Top-up Request
+                    Submit top-up request
                 </button>
             </form>
         </div>

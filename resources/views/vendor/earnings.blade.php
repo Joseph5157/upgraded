@@ -3,8 +3,8 @@
     {{-- Header --}}
     <div class="flex items-center justify-between mb-2">
         <div>
-            <h2 class="text-lg font-bold text-white">Earnings Statement</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Your complete earning and payment history</p>
+            <h2 class="text-lg font-bold text-white">Payout Summary</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Your completed work and payment history</p>
         </div>
     </div>
 
@@ -21,11 +21,11 @@
             <p class="text-[10px] text-slate-500 mt-1">₹{{ number_format($totalPaid, 0) }} already paid</p>
         </div>
         <div class="bg-[#0f0f14] border border-white/[0.06] rounded-2xl p-5">
-            <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600 mb-1">Pending Payout</p>
+                <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600 mb-1">Awaiting release</p>
             <p class="text-3xl font-extrabold font-mono {{ $pendingPayout > 0 ? 'text-amber-400' : 'text-slate-600' }}">
                 ₹{{ number_format($pendingPayout, 0) }}
             </p>
-            <p class="text-[10px] text-slate-500 mt-1">Waiting for admin payment</p>
+            <p class="text-[10px] text-slate-500 mt-1">Waiting for admin release</p>
         </div>
     </div>
 
@@ -36,7 +36,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            <h3 class="text-sm font-bold text-white">Transaction History</h3>
+            <h3 class="text-sm font-bold text-white">Payout history</h3>
         </div>
 
         @if($statement->isEmpty())

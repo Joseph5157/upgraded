@@ -84,14 +84,17 @@ class DashboardController extends Controller
 
     public function claim(Request $request, Order $order)
     {
-        $this->authorize('claim', $order);
+        $currentOrder = $order->fresh();
+        $orderToUse = $currentOrder ?: $order;
+
+        $this->authorize('claim', $orderToUse);
 
         try {
-            $this->workflowService->claim($order, auth()->user());
+            $this->workflowService->claim($orderToUse, auth()->user());
             $this->forgetVendorStatsCache(auth()->id());
 
             if ($request->expectsJson()) {
-                $claimedOrder = Order::with(['client', 'files', 'report', 'vendor'])->find($order->id);
+                $claimedOrder = Order::with(['client', 'files', 'report', 'vendor'])->find($orderToUse->id);
                 $rowHtml  = view('partials.workspace-row',  ['order' => $claimedOrder])->render();
                 $cardHtml = view('partials.workspace-card', ['order' => $claimedOrder])->render();
 
@@ -114,13 +117,16 @@ class DashboardController extends Controller
 
     public function unclaim(Request $request, Order $order)
     {
-        $this->authorize('unclaim', $order);
-        $claimedBy = $order->claimed_by;
+        $currentOrder = $order->fresh();
+        $orderToUse = $currentOrder ?: $order;
+
+        $this->authorize('unclaim', $orderToUse);
+        $claimedBy = $orderToUse->claimed_by;
 
         try {
             // Delegate to the service so the order update and audit log are
             // always written atomically inside a single DB transaction.
-            $this->workflowService->unclaim($order, auth()->user());
+            $this->workflowService->unclaim($orderToUse, auth()->user());
             $this->forgetVendorStatsCache(auth()->id(), $claimedBy);
             if ($request->expectsJson()) {
                 return response()->json(['success' => true, 'message' => 'Order returned to pool.']);
@@ -137,19 +143,21 @@ class DashboardController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate(['status' => 'required|in:processing,delivered']);
+        $currentOrder = $order->fresh();
+        $orderToUse = $currentOrder ?: $order;
 
         try {
             $newStatus = OrderStatus::from($request->status);
 
             if ($newStatus === OrderStatus::Processing) {
-                $this->authorize('process', $order);
-                $this->workflowService->startProcessing($order, auth()->user());
+                $this->authorize('process', $orderToUse);
+                $this->workflowService->startProcessing($orderToUse, auth()->user());
             } elseif ($newStatus === OrderStatus::Delivered) {
-                $this->authorize('deliver', $order);
-                $this->workflowService->deliver($order, auth()->user());
+                $this->authorize('deliver', $orderToUse);
+                $this->workflowService->deliver($orderToUse, auth()->user());
             }
 
-            $this->forgetVendorStatsCache(auth()->id(), $order->claimed_by);
+            $this->forgetVendorStatsCache(auth()->id(), $orderToUse->claimed_by);
 
             if ($request->expectsJson()) {
                 return response()->json(['success' => true, 'message' => 'Status updated.']);
@@ -168,9 +176,12 @@ class DashboardController extends Controller
 
     public function uploadReport(UploadVendorReportRequest $request, Order $order)
     {
+        $currentOrder = $order->fresh(['report']);
+        $orderToUse = $currentOrder ?: $order;
+
         // When the auto-release command has reclaimed an order (claimed_by is null),
         // the policy would return a generic 403. Surface a specific, helpful message instead.
-        if (is_null($order->claimed_by) && auth()->user()->role !== 'admin') {
+        if (is_null($orderToUse->claimed_by) && auth()->user()->role !== 'admin') {
             $message = 'This order was released back to the available pool because the claim window expired. You can re-claim it from the Available Queue.';
             if ($request->expectsJson()) {
                 return response()->json(['error' => $message], 403);
@@ -179,7 +190,7 @@ class DashboardController extends Controller
         }
 
         try {
-            $this->authorize('uploadReport', $order);
+            $this->authorize('uploadReport', $orderToUse);
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             if ($request->expectsJson()) {
                 return response()->json(['error' => 'You are not authorized to upload reports for this order.'], 403);
@@ -189,7 +200,7 @@ class DashboardController extends Controller
 
         try {
             $this->uploadReportService->execute(
-                $order,
+                $orderToUse,
                 auth()->user(),
                 $request->file('ai_report'),
                 $request->file('plag_report'),
@@ -221,7 +232,7 @@ class DashboardController extends Controller
             return redirect()->route('dashboard')->with('error', $message);
         }
 
-        $this->forgetVendorStatsCache(auth()->id(), $order->claimed_by);
+        $this->forgetVendorStatsCache(auth()->id(), $orderToUse->claimed_by);
         $successMessage = 'Reports uploaded. Order delivered successfully.';
 
         if ($request->expectsJson()) {
@@ -236,14 +247,17 @@ class DashboardController extends Controller
 
     public function downloadFile(Order $order, \App\Models\OrderFile $file)
     {
+        $currentOrder = $order->fresh();
+        $orderToUse = $currentOrder ?: $order;
+
         // Ensure the file belongs to this order
-        if ($file->order_id !== $order->id) {
+        if ($file->order_id !== $orderToUse->id) {
             abort(404);
         }
 
         // Only the vendor who claimed this order (or an admin) may download its files
         $user = auth()->user();
-        if ($user->role !== 'admin' && (int) $order->claimed_by !== (int) $user->id) {
+        if ($user->role !== 'admin' && (int) $orderToUse->claimed_by !== (int) $user->id) {
             abort(403);
         }
 
@@ -254,10 +268,10 @@ class DashboardController extends Controller
         }
 
         // Auto-advance order to Processing when vendor downloads the file.
-        if ($order->status === OrderStatus::Claimed) {
+        if ($orderToUse->status === OrderStatus::Claimed) {
             try {
                 app(\App\Services\OrderWorkflowService::class)
-                    ->startProcessing($order, auth()->user());
+                    ->startProcessing($orderToUse, auth()->user());
             } catch (\Throwable $e) {
                 // Non-fatal — download still proceeds even if status update fails
                 report($e);

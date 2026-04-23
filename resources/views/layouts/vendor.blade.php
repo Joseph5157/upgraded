@@ -15,7 +15,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Dashboard' }} — PlagExpert Agent</title>
+    <title>{{ $title ?? 'Dashboard' }} — {{ config('app.name') }}</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -115,7 +115,7 @@
                     {{-- Live Sync --}}
                     <div class="hidden sm:flex items-center gap-1.5 bg-[#162a1f] border border-emerald-500/20 px-3 py-1.5 rounded-full">
                         <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-[0_0_6px_#34d399] animate-pulse"></span>
-                        <span class="text-[9px] text-emerald-400 font-bold uppercase tracking-widest">Live</span>
+                        <span class="text-[9px] text-emerald-400 font-bold uppercase tracking-widest">Live sync</span>
                     </div>
 
                     {{-- Profile menu --}}
@@ -244,3 +244,5 @@
 </body>
 
 </html>
+
+

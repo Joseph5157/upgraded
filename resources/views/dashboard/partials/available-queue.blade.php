@@ -5,7 +5,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Available Queue</h2>
+            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Available Orders</h2>
             @if($availableFiles->count() > 0)
                 <span class="bg-amber-500/10 text-amber-400 border border-amber-500/15 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{{ $availableFiles->count() }} waiting</span>
             @endif
@@ -42,13 +42,13 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    Claim
+                    Claim order
                 </button>
             </div>
         @empty
             <div class="px-6 py-12 text-center">
-                <p class="text-sm font-semibold text-gray-400 dark:text-slate-500">Queue is empty</p>
-                <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">No new orders are available right now</p>
+                <p class="text-sm font-semibold text-gray-400 dark:text-slate-500">No available orders</p>
+                <p class="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">New work will appear here when it is ready to claim</p>
             </div>
         @endforelse
     </div>

@@ -12,6 +12,7 @@ use App\Services\CreateClientOrderService;
 use App\Services\DeleteClientOrderService;
 use App\Services\TelegramService;
 use App\Support\LogContext;
+use App\Support\StorageLifecycle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -30,9 +31,15 @@ class ClientDashboardController extends Controller
         $this->storageDisk = config('filesystems.default', 'r2');
     }
 
-    protected function downloadFromDisk(string $path, string $downloadName)
+    protected function downloadFromDisk(string $path, string $downloadName, ?string $disk = null)
     {
-        $stream = Storage::disk($this->storageDisk)->readStream($path);
+        $disk = $disk ?: $this->storageDisk;
+
+        if (! Storage::disk($disk)->exists($path)) {
+            abort(404);
+        }
+
+        $stream = Storage::disk($disk)->readStream($path);
 
         return response()->streamDownload(function () use ($stream) {
             fpassthru($stream);
@@ -168,7 +175,7 @@ class ClientDashboardController extends Controller
             abort(403, 'Files cannot be deleted after the order has been reserved, processed, or delivered.');
         }
 
-        Storage::disk($file->disk ?: $this->storageDisk)->delete($file->file_path);
+        StorageLifecycle::deleteStoredFileIfPresent($file->disk ?: $this->storageDisk, $file->file_path);
         $file->delete();
 
         return back()->with('success', 'File deleted successfully.');
@@ -209,6 +216,11 @@ class ClientDashboardController extends Controller
             'telegram_connected_at' => null,
         ]);
 
+        Log::info('telegram.link_token.regenerated', LogContext::forUser($user, array_merge(
+            LogContext::currentRequest(),
+            ['user_id' => $user->id]
+        )));
+
         return back()->with('success', 'Telegram connection link refreshed. Please connect again from the card.');
     }
 
@@ -229,8 +241,18 @@ class ClientDashboardController extends Controller
         );
 
         if (! $ok) {
+            Log::warning('telegram.test_message.failed', LogContext::forUser($user, array_merge(
+                LogContext::currentRequest(),
+                ['user_id' => $user->id, 'chat_id' => $user->telegram_chat_id]
+            )));
+
             return back()->with('error', 'Unable to send test message. Please reconnect Telegram and try again.');
         }
+
+        Log::info('telegram.test_message.sent', LogContext::forUser($user, array_merge(
+            LogContext::currentRequest(),
+            ['user_id' => $user->id, 'chat_id' => $user->telegram_chat_id]
+        )));
 
         return back()->with('success', 'Telegram test message sent successfully.');
     }

@@ -174,6 +174,43 @@ class VendorReportUploadTest extends TestCase
         $this->assertEmpty(Storage::disk('local')->allFiles());
     }
 
+    public function test_upload_report_uses_current_order_state_before_submitting(): void
+    {
+        $vendor = User::factory()->create([
+            'role' => 'vendor',
+            'status' => 'active',
+            'email_verified_at' => now(),
+        ]);
+        $order = $this->createClaimedOrderForVendor($vendor, 'vendor-upload-stale-state-test');
+
+        config(['filesystems.default' => 'local']);
+        Storage::fake('local');
+
+        $order->update([
+            'status' => OrderStatus::Pending,
+            'claimed_by' => null,
+            'claimed_at' => null,
+        ]);
+
+        $response = $this->actingAs($vendor)->post(route('orders.report', $order), [
+            'ai_skipped' => '1',
+            'ai_skip_reason' => 'AI report unavailable for this document',
+            'plag_report' => UploadedFile::fake()->create('plag-report.pdf', 20, 'application/pdf'),
+        ], [
+            'X-Requested-With' => 'XMLHttpRequest',
+            'Accept' => 'application/json',
+        ]);
+
+        $response
+            ->assertStatus(403)
+            ->assertJson([
+                'error' => 'This order was released back to the available pool because the claim window expired. You can re-claim it from the Available Queue.',
+            ]);
+
+        $this->assertDatabaseMissing('order_reports', ['order_id' => $order->id]);
+        $this->assertEmpty(Storage::disk('local')->allFiles());
+    }
+
     public function test_upload_report_returns_domain_error_message_for_non_storage_failures(): void
     {
         [$vendor, $order] = $this->createVendorOrder();

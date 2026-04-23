@@ -10,8 +10,8 @@
     {{-- Nav Header Area --}}
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-xl font-bold text-[#1E1B4B] tracking-tight">Financial Matrix</h1>
-            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] font-mono mt-0.5">Billing & Ledger
+            <h1 class="text-xl font-bold text-[#1E1B4B] tracking-tight">Billing</h1>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] font-mono mt-0.5">Revenue, payouts, and ledger history
             </p>
         </div>
         <div class="flex items-center gap-3">
@@ -52,7 +52,7 @@
                     <div class="w-10 h-10 bg-slate-500/10 rounded-2xl flex items-center justify-center text-slate-400">
                         <i data-lucide="settings-2" class="w-5 h-5"></i>
                     </div>
-                    <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Operational Costs</p>
+                    <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Operational costs</p>
                     <h2 class="text-3xl font-bold text-[#1E1B4B] font-mono">₹0</h2>
                     <p class="text-[10px] text-slate-600 font-mono">None configured</p>
                 </div>
@@ -126,7 +126,7 @@
             </div>
         @endif
 
-        {{-- Ledger History --}}
+        {{-- Ledger history --}}
         <div class="bg-white border border-[#DDD6FE] rounded-xl p-8 shadow-sm">
             <div class="flex justify-between items-center mb-8">
                 <div class="flex items-center gap-4">
@@ -134,9 +134,8 @@
                         <i data-lucide="book-open" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-[#1E1B4B]">Ledger History</h2>
-                        <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Past daily
-                            snapshots</p>
+                        <h2 class="text-lg font-bold text-[#1E1B4B]">Ledger history</h2>
+                        <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Past daily snapshots</p>
                     </div>
                 </div>
                 <div class="flex gap-3">
@@ -184,7 +183,7 @@
                                     <td class="py-6 text-right px-4">
                                         <a href="{{ route('admin.billing.show', $ledger) }}"
                                             class="px-4 py-2 bg-[#F8FAFF] hover:bg-white text-slate-400 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border border-[#DDD6FE]">
-                                            View Details
+                                            View ledger
                                         </a>
                                     </td>
                                 </tr>

@@ -7,7 +7,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subscription — {{ config('app.name') }}</title>
+    <title>Credits - {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -37,7 +37,7 @@
                 <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                     <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
                 </div>
-                <span class="font-bold text-white text-lg tracking-tight">PlagExpert</span>
+                <span class="font-bold text-white text-lg tracking-tight">{{ config('app.name') }}</span>
             </div>
         </div>
         <nav class="flex-1 space-y-2">
@@ -48,11 +48,11 @@
                 <i data-lucide="credit-card" class="w-5 h-5"></i> Subscription
             </div>
             <div class="flex items-center justify-between px-8 py-4 text-sm font-medium text-slate-600 cursor-not-allowed select-none">
-                <div class="flex items-center gap-4"><i data-lucide="history" class="w-5 h-5"></i> Order History</div>
+                <div class="flex items-center gap-4"><i data-lucide="history" class="w-5 h-5"></i> Orders</div>
                 <span class="text-[8px] font-black uppercase tracking-widest text-indigo-500/50 bg-indigo-500/5 border border-indigo-500/10 px-1.5 py-0.5 rounded">Soon</span>
             </div>
             <a href="{{ route('profile.edit') }}" class="flex items-center gap-4 px-8 py-4 text-sm font-medium text-slate-500 hover:text-slate-200 transition-all">
-                <i data-lucide="settings" class="w-5 h-5"></i> Settings
+                <i data-lucide="settings" class="w-5 h-5"></i> Profile
             </a>
         </nav>
         <div class="p-6">
@@ -75,12 +75,12 @@
                 </svg>
             </button>
             <div>
-                <h1 class="text-white font-semibold">Subscription & Credits</h1>
-                <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Manage your plan and top-ups</p>
+                <h1 class="text-white font-semibold">Credits</h1>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Manage your credits and top-ups</p>
             </div>
             <div class="flex items-center gap-3 pr-6">
                 <div class="text-right">
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Client ID</p>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Portal ID</p>
                     <p class="text-xs font-mono text-indigo-400">ID-{{ str_pad($client->id, 4, '0', STR_PAD_LEFT) }}</p>
                 </div>
                 <div class="w-10 h-10 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-500 ring-4 ring-indigo-500/5">
@@ -133,10 +133,10 @@
                         {{ $client->plan_expiry && $client->plan_expiry->isPast() ? 'Expired' : 'Professional' }}
                     </h3>
                     <p class="text-xs text-slate-400">
-                        {{ $client->plan_expiry ? 'Expires ' . $client->plan_expiry->format('d M, Y') : 'Perpetual Plan' }}
+                        {{ $client->plan_expiry ? 'Expires ' . $client->plan_expiry->format('d M, Y') : 'No expiry set' }}
                     </p>
                     <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">Price Per File</p>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">Rate per file</p>
                         <p class="text-sm font-bold text-indigo-400 font-mono">₹{{ number_format($client->price_per_file, 0) }}</p>
                     </div>
                 </div>
@@ -144,13 +144,13 @@
                 {{-- Slots Remaining --}}
                 <div class="premium-card p-6 rounded-3xl">
                     <div class="flex justify-between items-start mb-4">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Credits Remaining</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Credits remaining</p>
                         <div class="w-8 h-8 bg-indigo-500/10 rounded-lg flex items-center justify-center text-indigo-500">
                             <i data-lucide="coins" class="w-4 h-4"></i>
                         </div>
                     </div>
                     <h3 class="text-4xl font-bold text-white font-mono">{{ $slotsRemaining }}</h3>
-                    <p class="text-xs text-slate-400 mt-1">of {{ $client->slots }} total slots</p>
+                    <p class="text-xs text-slate-400 mt-1">of {{ $client->slots }} total credits</p>
                     <div class="mt-4 w-full bg-white/[0.06] rounded-full h-1.5">
                         <div class="h-1.5 rounded-full {{ $slotsRemaining > 10 ? 'bg-indigo-500' : ($slotsRemaining > 0 ? 'bg-amber-500' : 'bg-red-500') }}"
                             style="width: {{ $client->slots > 0 ? min(100, ($slotsRemaining / $client->slots) * 100) : 0 }}%"></div>
@@ -160,7 +160,7 @@
                 {{-- Slots Used --}}
                 <div class="premium-card p-6 rounded-3xl">
                     <div class="flex justify-between items-start mb-4">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Credits Used</p>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Credits used</p>
                         <div class="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center text-purple-500">
                             <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
                         </div>
@@ -169,7 +169,7 @@
                     <p class="text-xs text-slate-400 mt-1">files processed</p>
                     @if($lastTopup)
                         <div class="mt-4 pt-4 border-t border-white/5">
-                            <p class="text-[10px] text-slate-500 uppercase tracking-widest">Last Top-up</p>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest">Last top-up</p>
                             <p class="text-xs text-slate-400 mt-0.5 font-mono">+{{ $lastTopup->amount_requested }} slots · {{ $lastTopup->created_at->format('d M Y') }}</p>
                         </div>
                     @endif
@@ -180,7 +180,7 @@
             <div class="premium-card p-8 rounded-3xl">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h2 class="text-lg font-bold text-white">Request Top-up</h2>
+                        <h2 class="text-lg font-bold text-white">Request credit top-up</h2>
                         <p class="text-xs text-slate-400 mt-0.5">Add more credits to your account</p>
                     </div>
                     <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
@@ -191,7 +191,7 @@
                 <form action="{{ route('client.topup.store') }}" method="POST" class="space-y-6">
                     @csrf
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Select Package</label>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Choose a top-up amount</label>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                             <button type="button" onclick="setSlots(50)"
                                 class="py-3 bg-white/5 hover:bg-indigo-500/10 border border-white/10 hover:border-indigo-500/30 rounded-xl text-xs font-bold text-slate-300 hover:text-indigo-400 transition-all">50 Slots</button>
@@ -217,7 +217,7 @@
                     </div>
 
                     <div class="p-4 bg-white/[0.03] border border-white/5 rounded-2xl space-y-3">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Payment Instructions</p>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Payment instructions</p>
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center text-green-500 flex-shrink-0">
                                 <i data-lucide="smartphone" class="w-4 h-4"></i>
@@ -227,25 +227,25 @@
                                 <p class="text-sm font-bold text-white font-mono">your-upi@ybl</p>
                             </div>
                         </div>
-                        <p class="text-[10px] text-slate-500 leading-relaxed">Send the exact amount to the UPI ID above, then paste your <span class="text-indigo-400">Transaction / UTR Reference Number</span> below.</p>
+                        <p class="text-[10px] text-slate-500 leading-relaxed">Send the exact amount to the UPI ID above, then paste your <span class="text-indigo-400">UTR or transaction reference number</span> below.</p>
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Transaction / UTR Reference Number</label>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">UTR or transaction reference number</label>
                         <input type="text" name="transaction_id" required placeholder="e.g. 123456789012"
                             class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors placeholder-slate-700">
                     </div>
 
                     <button type="submit"
                         class="w-full py-4 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-indigo-600/30 transition-all flex justify-center items-center gap-2">
-                        <i data-lucide="send" class="w-4 h-4"></i> Submit Top-up Request
+                        <i data-lucide="send" class="w-4 h-4"></i> Submit top-up request
                     </button>
                 </form>
             </div>
 
             {{-- ── Top-up History ─────────────────────────────────────────── --}}
             <div>
-                <h2 class="text-sm font-bold text-white uppercase tracking-widest mb-4">Top-up History</h2>
+                <h2 class="text-sm font-bold text-white uppercase tracking-widest mb-4">Top-up history</h2>
                 <div class="premium-card rounded-2xl overflow-hidden">
                     <table class="w-full text-left">
                         <thead>
@@ -276,7 +276,7 @@
                                         @elseif($topup->status === 'rejected')
                                             <span class="px-2.5 py-1 bg-red-500/10 text-red-400 rounded-lg text-[9px] font-bold border border-red-500/10">Rejected</span>
                                         @else
-                                            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold border border-amber-500/10">Pending</span>
+                                            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold border border-amber-500/10">Queued</span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-[10px] text-slate-400 max-w-[160px] truncate" title="{{ $topup->notes ?? '' }}">
@@ -284,7 +284,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="px-6 py-10 text-center text-xs text-slate-500">No top-up history yet.</td></tr>
+                                <tr><td colspan="6" class="px-6 py-10 text-center text-xs text-slate-500">No top-up requests yet.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -319,7 +319,7 @@
                                         @elseif($refund->status === 'rejected')
                                             <span class="px-2.5 py-1 bg-red-500/10 text-red-400 rounded-lg text-[9px] font-bold border border-red-500/10">Rejected</span>
                                         @else
-                                            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold border border-amber-500/10">Pending</span>
+                                            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold border border-amber-500/10">Queued</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -369,7 +369,7 @@
         {{-- Coming Soon Toast --}}
         <div id="coming-soon-toast"
              class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 hidden md:hidden bg-[#1e1e2e] border border-indigo-500/20 text-indigo-300 text-xs font-semibold px-5 py-3 rounded-2xl shadow-xl">
-            Order History coming soon
+            Orders coming soon
         </div>
     </main>
 

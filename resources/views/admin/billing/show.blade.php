@@ -6,7 +6,7 @@
             <i data-lucide="arrow-left" class="w-5 h-5 text-slate-400"></i>
         </a>
         <div>
-            <h1 class="text-xl font-bold text-white tracking-tight uppercase">Ledger Detail</h1>
+            <h1 class="text-xl font-bold text-white tracking-tight uppercase">Ledger detail</h1>
             <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em] font-mono mt-0.5">
                 {{ $ledger->date->format('d M Y') }}
             </p>
@@ -101,7 +101,7 @@
                     </div>
                     <div>
                         <h2 class="text-lg font-bold text-white">Vendor Breakdown</h2>
-                        <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Payouts per agent
+                        <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Payouts per vendor
                         </p>
                     </div>
                 </div>

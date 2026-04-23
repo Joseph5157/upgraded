@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Payment Settings</h1>
-            <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">Manage UPI payment methods for client top-ups</p>
+            <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">Manage UPI payment methods for credit top-ups</p>
         </div>
     </div>
 
@@ -33,7 +33,7 @@
 
         {{-- ── Active Payment Method ────────────────────────────────────────── --}}
         <div class="bg-white dark:bg-[#0d0d10] border border-[#E8ECF0] dark:border-white/[0.05] rounded-2xl p-6">
-            <p class="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-4">Active Payment Method</p>
+            <p class="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-4">Active payment method</p>
 
             @if($active)
                 <div class="flex items-center gap-4">
@@ -52,27 +52,27 @@
             @else
                 <div class="flex items-center gap-3 py-6 text-gray-400 dark:text-slate-500">
                     <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
-                    <p class="text-sm">No active payment method. Add one below.</p>
+                    <p class="text-sm">No active payment method. Add one to enable client top-ups.</p>
                 </div>
             @endif
         </div>
 
         {{-- ── Add New Payment Method ───────────────────────────────────────── --}}
         <div class="bg-white dark:bg-[#0d0d10] border border-[#E8ECF0] dark:border-white/[0.05] rounded-2xl p-6">
-            <p class="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-5">Add Payment Method</p>
+            <p class="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-5">Add payment method</p>
 
             <form method="POST" action="{{ route('admin.payment-settings.store') }}" class="space-y-4">
                 @csrf
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-600 dark:text-slate-400 uppercase tracking-widest mb-2">UPI Holder's Name</label>
+                        <label class="block text-[10px] font-bold text-gray-600 dark:text-slate-400 uppercase tracking-widest mb-2">Account holder name</label>
                         <input type="text" name="upi_name" value="{{ old('upi_name') }}" placeholder="e.g. Joseph Sikha"
                             class="w-full bg-[#F5F7FA] dark:bg-white/[0.04] border border-[#E8ECF0] dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
                             required>
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-gray-600 dark:text-slate-400 uppercase tracking-widest mb-2">UPI ID</label>
-                        <input type="text" name="upi_id" value="{{ old('upi_id') }}" placeholder="e.g. plagexpert@ybl"
+                        <input type="text" name="upi_id" value="{{ old('upi_id') }}" placeholder="e.g. payments@ybl"
                             class="w-full bg-[#F5F7FA] dark:bg-white/[0.04] border border-[#E8ECF0] dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm font-mono text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 transition-colors"
                             required>
                     </div>
@@ -80,7 +80,7 @@
                 <div class="pt-2">
                     <button type="submit"
                         class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-indigo-600/20 transition-all">
-                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Payment Method
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add payment method
                     </button>
                 </div>
             </form>
@@ -89,13 +89,13 @@
         {{-- ── All Payment Methods Table ────────────────────────────────────── --}}
         <div class="bg-white dark:bg-[#0d0d10] border border-[#E8ECF0] dark:border-white/[0.05] rounded-2xl overflow-hidden">
             <div class="px-6 pt-5 pb-4 border-b border-[#E8ECF0] dark:border-white/[0.05]">
-                <p class="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.3em]">All Payment Methods</p>
+                <p class="text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-[0.3em]">All payment methods</p>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
                         <tr class="text-[9px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-gray-100 dark:border-white/[0.05]">
-                            <th class="px-6 py-4">UPI Holder's Name</th>
+                            <th class="px-6 py-4">Account holder</th>
                             <th class="px-4 py-4">UPI ID</th>
                             <th class="px-4 py-4">Status</th>
                             <th class="px-6 py-4 text-right">Actions</th>
@@ -129,14 +129,14 @@
                                                 @csrf
                                                 <button type="submit"
                                                     class="px-3 py-1.5 bg-green-500/10 hover:bg-green-500/20 text-green-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-green-500/20 transition-all whitespace-nowrap">
-                                                    Set Active
+                                                    Make active
                                                 </button>
                                             </form>
                                         @endif
 
                                         <button onclick="document.getElementById('edit-modal-{{ $setting->id }}').classList.remove('hidden')"
                                             class="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-indigo-500/20 transition-all">
-                                            Edit
+                                            Edit method
                                         </button>
 
                                         @if(!$setting->is_active)
@@ -146,7 +146,7 @@
                                                 @method('DELETE')
                                                 <button type="submit"
                                                     class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-red-500/20 transition-all">
-                                                    Delete
+                                                    Delete method
                                                 </button>
                                             </form>
                                         @endif
@@ -181,7 +181,7 @@
                             <i data-lucide="pencil" class="w-5 h-5"></i>
                         </div>
                         <div>
-                            <h3 class="text-gray-900 dark:text-white font-bold">Edit Payment Method</h3>
+                            <h3 class="text-gray-900 dark:text-white font-bold">Edit payment method</h3>
                             <p class="text-[10px] text-gray-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 font-mono">{{ $setting->upi_name }}</p>
                         </div>
                     </div>
@@ -194,7 +194,7 @@
                 <form method="POST" action="{{ route('admin.payment-settings.update', $setting) }}" class="space-y-4">
                     @csrf
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-600 dark:text-slate-400 uppercase tracking-widest mb-2">UPI Holder's Name</label>
+                        <label class="block text-[10px] font-bold text-gray-600 dark:text-slate-400 uppercase tracking-widest mb-2">Account holder name</label>
                         <input type="text" name="upi_name" value="{{ $setting->upi_name }}" required
                             class="w-full bg-[#F5F7FA] dark:bg-white/[0.04] border border-[#E8ECF0] dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-indigo-500/50 transition-colors">
                     </div>
@@ -206,7 +206,7 @@
                     <div class="pt-4 border-t border-gray-100 dark:border-white/[0.05]">
                         <button type="submit"
                             class="w-full py-3 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-indigo-600/20 transition-all flex justify-center items-center gap-2">
-                            <i data-lucide="save" class="w-4 h-4"></i> Save Changes
+                            <i data-lucide="save" class="w-4 h-4"></i> Save changes
                         </button>
                     </div>
                 </form>

@@ -12,7 +12,7 @@
                     <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-400"></i>
                 </div>
                 <div>
-                    <h3 class="text-[14px] font-bold text-white tracking-tight">Submit Results</h3>
+                    <h3 class="text-[14px] font-bold text-white tracking-tight">Submit reports</h3>
                     <p class="text-[9px] text-slate-600 font-mono uppercase tracking-widest mt-0.5 truncate max-w-[220px]">
                         {{ $order->files->first() ? basename($order->files->first()->file_path) : 'Order #' . $order->id }}
                     </p>
@@ -50,8 +50,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         <div id="ai-preview-{{ $order->id }}" class="min-w-0 flex-1">
-                            <p class="text-xs font-semibold text-white">AI Report PDF</p>
-                            <p class="text-[10px] text-slate-500">Tap to select PDF</p>
+                            <p class="text-xs font-semibold text-white">AI report PDF</p>
+                            <p class="text-[10px] text-slate-500">Tap to select a PDF</p>
                         </div>
                         <input type="file" name="ai_report" accept=".pdf" required class="hidden"
                             onchange="previewFile(this, 'ai-preview-{{ $order->id }}', 'ai-label-{{ $order->id }}', 'red', {{ $order->id }})">
@@ -65,8 +65,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                         <div id="plag-preview-{{ $order->id }}" class="min-w-0 flex-1">
-                            <p class="text-xs font-semibold text-white">Plagiarism Report PDF</p>
-                            <p class="text-[10px] text-slate-500">Tap to select PDF</p>
+                            <p class="text-xs font-semibold text-white">Plagiarism report PDF</p>
+                            <p class="text-[10px] text-slate-500">Tap to select a PDF</p>
                         </div>
                         <input type="file" name="plag_report" accept=".pdf" required class="hidden"
                             onchange="previewFile(this, 'plag-preview-{{ $order->id }}', 'plag-label-{{ $order->id }}', 'amber', {{ $order->id }})">
@@ -76,7 +76,7 @@
 
             <div class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg border border-white/[0.06] bg-white/[0.03]">
                 <p class="text-[10px] text-slate-400">PDF only. Max 100 MB</p>
-                <p class="text-[10px] text-slate-500">Both required unless AI skipped</p>
+                <p class="text-[10px] text-slate-500">Both required unless AI is skipped</p>
             </div>
 
             <div id="progress-{{ $order->id }}" class="hidden items-center gap-2.5 px-3.5 py-2.5 bg-emerald-500/[0.06] border border-emerald-500/[0.12] rounded-xl">
@@ -110,7 +110,7 @@
                     disabled
                     class="flex-1 py-2.5 text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2">
                     <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                    Select Required Files
+                    Select required files
                 </button>
             </div>
         </form>

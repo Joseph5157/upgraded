@@ -26,7 +26,7 @@
                     </div>
                     <div>
                         <h2 class="text-sm font-semibold text-[#1A1D23] dark:text-white">Update Profile</h2>
-                        <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-0.5 dark:text-slate-500">Display name &amp; Portal ID</p>
+                        <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-0.5 dark:text-slate-500">Display name and Portal ID</p>
                     </div>
                 </div>
 
@@ -78,7 +78,7 @@
                     </div>
                     <div>
                         <h2 class="text-sm font-semibold text-[#1A1D23] dark:text-white">Telegram Login</h2>
-                        <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-0.5 dark:text-slate-500">Your account is secured via Telegram OTP</p>
+                        <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-0.5 dark:text-slate-500">Your account is secured via Telegram login codes</p>
                     </div>
                 </div>
                 <div class="space-y-3">
@@ -119,7 +119,7 @@
                         VENDOR
                     </span>
 
-                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Agent</p>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Vendor</p>
                 </div>
 
                 <div class="mt-5 pt-5 border-t border-[#E2E6EA] dark:border-white/[0.06] space-y-3">
@@ -151,7 +151,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"/>
                             </svg>
                         </div>
-                        <p class="text-xs text-[#6B7280] dark:text-slate-400">Your account is secured by Telegram OTP. No password is stored.</p>
+                        <p class="text-xs text-[#6B7280] dark:text-slate-400">Your account is secured by Telegram login codes. No password is stored.</p>
                     </li>
                     <li class="flex items-start gap-3">
                         <div class="w-5 h-5 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -176,10 +176,10 @@
     </div>
 
     {{-- ===== DANGER ZONE ===== --}}
-    <div class="border border-red-500/20 bg-red-500/[0.04] rounded-2xl p-6">
+    <div class="border border-red-500/20 bg-red-500/[0.04] rounded-2xl p-6 mt-5">
         <div class="flex items-start justify-between gap-6">
             <div class="space-y-1.5">
-                <h3 class="text-sm font-semibold text-red-400">Danger Zone — Delete Account</h3>
+                <h3 class="text-sm font-semibold text-red-400">Danger Zone - Delete Account</h3>
                 <p class="text-xs text-red-400/70 max-w-xl">
                     Once deleted, all your orders and files will be permanently removed.
                     This action cannot be undone.
@@ -222,6 +222,5 @@
             </div>
         </div>
     </div>
-
 
 </x-vendor-layout>

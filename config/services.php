@@ -47,6 +47,7 @@ return [
         'vendor_chat_id'  => env('TELEGRAM_VENDOR_CHAT_ID'),
         'admin_chat_id'   => env('ADMIN_TELEGRAM_CHAT_ID'),
         'webhook_secret'  => env('TELEGRAM_WEBHOOK_SECRET', env('TELEGRAM_BOT_SECRET')),
+        'testing_fake'    => env('TELEGRAM_FAKE_IN_TESTS', true),
     ],
 
 

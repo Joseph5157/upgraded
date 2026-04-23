@@ -3,17 +3,17 @@
     {{-- ── Page Header ─────────────────────────────────────────────────────── --}}
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Client Upload Links</h1>
-            <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">Generate and manage shareable upload links per client</p>
+            <h1 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Guest Links</h1>
+            <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">Create, review, and revoke client upload links</p>
         </div>
         <div class="flex items-center gap-2">
             <button onclick="document.getElementById('new-link-client-modal').classList.remove('hidden')"
                 class="flex items-center gap-2 px-4 py-2 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-indigo-600/20 transition-all">
-                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> New Link Client
+                <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Create Link-Only Client
             </button>
             <button onclick="document.getElementById('create-link-modal').classList.remove('hidden')"
                 class="flex items-center gap-2 px-4 py-2 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-slate-500/20 transition-all">
-                <i data-lucide="link" class="w-3.5 h-3.5"></i> Link for Existing
+                <i data-lucide="link" class="w-3.5 h-3.5"></i> Create Upload Link
             </button>
         </div>
     </div>
@@ -46,7 +46,7 @@
                                 <div class="flex items-center gap-2">
                                     <p class="text-sm font-bold text-gray-900 dark:text-white">{{ $client->name }}</p>
                                     @if(!$client->user)
-                                        <span class="px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 text-[8px] font-bold uppercase tracking-widest rounded border border-indigo-500/20">Link Only</span>
+                                        <span class="px-1.5 py-0.5 bg-indigo-500/10 text-indigo-400 text-[8px] font-bold uppercase tracking-widest rounded border border-indigo-500/20">Link only</span>
                                     @endif
                                 </div>
                                 <p class="text-[10px] font-mono text-gray-400 dark:text-slate-500">{{ $client->links->count() }} link{{ $client->links->count() !== 1 ? 's' : '' }}</p>
@@ -70,9 +70,10 @@
                         <table class="w-full text-left">
                             <thead>
                                 <tr class="text-[9px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-gray-100 dark:border-white/[0.05]">
-                                    <th class="px-6 py-3">Upload URL</th>
+                                    <th class="px-6 py-3">Guest Link</th>
                                     <th class="px-4 py-3 text-center">Status</th>
                                     <th class="px-4 py-3 text-center">Created</th>
+                                    <th class="px-4 py-3 text-center">Activity</th>
                                     <th class="px-6 py-3 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -97,10 +98,12 @@
 
                                         {{-- Status --}}
                                         <td class="px-4 py-3 text-center">
-                                            @if($link->is_active)
-                                                <span class="px-2.5 py-1 bg-green-500/10 text-green-400 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-green-500/20">Active</span>
+                                            @if($link->isRevoked())
+                                                <span class="px-2.5 py-1 bg-red-500/10 text-red-400 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-red-500/20">Revoked</span>
+                                            @elseif($link->isExpired())
+                                                <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-amber-500/20">Expired</span>
                                             @else
-                                                <span class="px-2.5 py-1 bg-gray-100 dark:bg-white/[0.05] text-gray-400 dark:text-slate-500 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-gray-200 dark:border-white/[0.08]">Inactive</span>
+                                                <span class="px-2.5 py-1 bg-green-500/10 text-green-400 rounded-lg text-[9px] font-bold uppercase tracking-widest border border-green-500/20">Active</span>
                                             @endif
                                         </td>
 
@@ -109,44 +112,62 @@
                                             <span class="text-[10px] font-mono text-gray-400 dark:text-slate-500">{{ $link->created_at->format('d M Y') }}</span>
                                         </td>
 
+                                        {{-- Audit --}}
+                                        <td class="px-4 py-3 text-center">
+                                            @php $creditsUsed = $link->creditsUsed(); @endphp
+                                            <div class="space-y-1 text-[10px] text-gray-500 dark:text-slate-400">
+                                                <p>Created by {{ $link->createdBy?->name ?? 'system' }}</p>
+                                                <p>Spent {{ $creditsUsed }} credit{{ $creditsUsed === 1 ? '' : 's' }}</p>
+                                                <p>
+                                                    @if($link->isRevoked())
+                                                        Revoked {{ $link->revoked_at?->format('d M Y, H:i') ?? 'manually' }}
+                                                    @elseif($link->isExpired())
+                                                        Expired {{ $link->expires_at?->format('d M Y, H:i') }}
+                                                    @else
+                                                        Expires {{ $link->expires_at?->format('d M Y, H:i') }}
+                                                    @endif
+                                                </p>
+                                                @if($link->revokedBy)
+                                                    <p>Revoked by {{ $link->revokedBy->name }}</p>
+                                                @endif
+                                            </div>
+                                        </td>
+
                                         {{-- Actions --}}
                                         <td class="px-6 py-3 text-right">
                                             <div class="flex items-center justify-end gap-2">
 
-                                                {{-- Toggle active/inactive --}}
-                                                <form method="POST" action="{{ route('admin.client-links.toggle', $link) }}">
-                                                    @csrf
-                                                    <button type="submit"
-                                                        class="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest rounded-lg border transition-all
-                                                            {{ $link->is_active
-                                                                ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/20'
-                                                                : 'bg-green-500/10 hover:bg-green-500/20 text-green-400 border-green-500/20' }}">
-                                                        {{ $link->is_active ? 'Deactivate' : 'Activate' }}
-                                                    </button>
-                                                </form>
+                                                @if($link->isUsable())
+                                                    <form method="POST" action="{{ route('admin.client-links.revoke', $link) }}">
+                                                        @csrf
+                                                        <button type="submit"
+                                                            class="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest rounded-lg border transition-all bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/20">
+                                                            Revoke link
+                                                        </button>
+                                                    </form>
+                                                @endif
 
                                                 {{-- Copy Link --}}
                                                 <button
                                                     onclick="copyLink('{{ url('/u/' . $link->token) }}', this)"
                                                     class="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-indigo-500/20 transition-all">
-                                                    <i data-lucide="copy" class="w-3 h-3"></i> Copy
+                                                    <i data-lucide="copy" class="w-3 h-3"></i> Copy link
                                                 </button>
 
                                                 {{-- View Orders --}}
                                                 <a href="{{ route('admin.client-links.orders', $link) }}"
                                                     class="px-3 py-1.5 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-slate-500/20 transition-all">
-                                                    Orders
+                                                    View orders
                                                 </a>
 
                                                 {{-- Open in new tab --}}
-                                                @if($link->is_active)
+                                                @if($link->isUsable())
                                                     <a href="{{ url('/u/' . $link->token) }}" target="_blank"
                                                         class="px-3 py-1.5 bg-slate-500/10 hover:bg-slate-500/20 text-slate-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-slate-500/20 transition-all">
-                                                        Open
+                                                        Open link
                                                     </a>
                                                 @endif
 
-                                                {{-- Delete --}}
                                                 <form method="POST" action="{{ route('admin.client-links.destroy', $link) }}"
                                                     onsubmit="return confirm('Delete this link permanently? Clients using it will lose access.')">
                                                     @csrf
@@ -169,7 +190,7 @@
         @empty
             <div class="bg-white dark:bg-[#0d0d10] border border-[#E8ECF0] dark:border-white/[0.05] rounded-2xl px-6 py-14 text-center">
                 <i data-lucide="link" class="w-8 h-8 text-gray-300 dark:text-slate-700 mx-auto mb-3"></i>
-                <p class="text-sm text-gray-400 dark:text-slate-500">No clients found.</p>
+                <p class="text-sm text-gray-400 dark:text-slate-500">No guest links have been created yet.</p>
             </div>
         @endforelse
 
@@ -187,7 +208,7 @@
                         <i data-lucide="user-plus" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-gray-900 dark:text-white font-bold">New Link Client</h3>
+                        <h3 class="text-gray-900 dark:text-white font-bold">Create Link-Only Client</h3>
                         <p class="text-[10px] text-gray-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">No portal login needed</p>
                     </div>
                 </div>
@@ -232,8 +253,8 @@
                         <i data-lucide="link" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-gray-900 dark:text-white font-bold">New Upload Link</h3>
-                        <p class="text-[10px] text-gray-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">Select a client</p>
+                    <h3 class="text-gray-900 dark:text-white font-bold">Create Upload Link</h3>
+                        <p class="text-[10px] text-gray-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">Select an existing client</p>
                     </div>
                 </div>
                 <button onclick="document.getElementById('create-link-modal').classList.add('hidden')"

@@ -9,10 +9,18 @@
             </a>
             <div>
                 <h1 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
-                    Orders via Link
+                    Orders via Guest Link
                 </h1>
                 <p class="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-[0.25em] mt-0.5 font-mono">
                     {{ $clientLink->client->name }} &mdash; <span class="lowercase">{{ $clientLink->token }}</span>
+                </p>
+                <p class="text-[10px] text-gray-400 dark:text-slate-500 font-mono mt-1">
+                    Created by {{ $clientLink->createdBy?->name ?? 'system' }}
+                    @if($clientLink->revokedBy)
+                        &middot; Revoked by {{ $clientLink->revokedBy->name }}
+                    @endif
+                    &middot; Credits used {{ $clientLink->creditsUsed() }}
+                    &middot; Expires {{ $clientLink->expires_at?->format('d M Y, H:i') ?? 'n/a' }}
                 </p>
             </div>
         </div>
@@ -81,9 +89,9 @@
                                 <td class="px-4 py-3 text-center">
                                     @php
                                         $statusMap = [
-                                            'pending'    => ['bg-yellow-500/10 text-yellow-400 border-yellow-500/20', 'Pending'],
-                                            'claimed'    => ['bg-blue-500/10 text-blue-400 border-blue-500/20', 'Claimed'],
-                                            'processing' => ['bg-indigo-500/10 text-indigo-400 border-indigo-500/20', 'Processing'],
+                                            'pending'    => ['bg-yellow-500/10 text-yellow-400 border-yellow-500/20', 'Queued'],
+                                            'claimed'    => ['bg-blue-500/10 text-blue-400 border-blue-500/20', 'Reserved'],
+                                            'processing' => ['bg-indigo-500/10 text-indigo-400 border-indigo-500/20', 'In progress'],
                                             'delivered'  => ['bg-green-500/10 text-green-400 border-green-500/20', 'Delivered'],
                                         ];
                                         $s = $order->computed_status ?? 'pending';
@@ -98,18 +106,18 @@
                                 </td>
 
                                 {{-- Actions --}}
-                                <td class="px-6 py-3 text-right">
-                                    <form method="POST"
-                                        action="{{ route('admin.client-links.orders.destroy', [$clientLink, $order]) }}"
-                                        onsubmit="return confirm('Delete order #{{ $order->id }} and all its files permanently?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-red-500/20 transition-all">
-                                            Delete
-                                        </button>
-                                    </form>
-                                </td>
+                                    <td class="px-6 py-3 text-right">
+                                        <form method="POST"
+                                            action="{{ route('admin.client-links.orders.destroy', [$clientLink, $order]) }}"
+                                            onsubmit="return confirm('Delete order #{{ $order->id }} and all its files permanently?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[9px] font-bold uppercase tracking-widest rounded-lg border border-red-500/20 transition-all">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
 
                             </tr>
                         @endforeach

@@ -62,7 +62,7 @@
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L8.32 13.617l-2.96-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.828.942z"/>
                 </svg>
             </div>
-            <h2 class="text-2xl font-bold" style="color:#0f172a;">Check Telegram</h2>
+            <h2 class="text-2xl font-bold" style="color:#0f172a;">Check your Telegram</h2>
             <p class="text-sm mt-1" style="color:#64748b;">
                 We sent a 6-digit code to your Telegram account
             </p>
@@ -95,7 +95,7 @@
             <button type="submit"
                 class="w-full py-3 px-4 rounded-xl font-bold text-sm text-white transition mb-3"
                 style="background:#4F6EF7;">
-                Verify & Login
+                Verify and Log In
             </button>
         </form>
 
@@ -103,7 +103,7 @@
             <button type="submit"
                 class="w-full py-2.5 px-4 rounded-xl font-semibold text-sm transition"
                 style="color:#64748b; background:#F1F5F9;">
-                ← Use a different Portal ID
+                Use a different Portal ID
             </button>
         </form>
 

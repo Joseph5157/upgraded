@@ -20,9 +20,8 @@
     {{-- Header Content Area --}}
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-xl font-bold text-[#1E1B4B] tracking-tight">Client Matrix</h1>
-            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] font-mono mt-0.5">Auditing &
-                Credits</p>
+            <h1 class="text-xl font-bold text-[#1E1B4B] tracking-tight">Client credits</h1>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-[0.3em] font-mono mt-0.5">Audit view and credits</p>
         </div>
     </div>
 
@@ -36,8 +35,8 @@
                         <i data-lucide="building" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-[#1E1B4B]">Client Organizations</h2>
-                        <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Manage quotas
+                        <h2 class="text-lg font-bold text-[#1E1B4B]">Client accounts</h2>
+                        <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Manage credits
                         </p>
                     </div>
                 </div>
@@ -48,10 +47,10 @@
                     <thead>
                         <tr
                             class="text-[9px] text-slate-700 font-bold uppercase tracking-[0.25em] border-b border-white/5">
-                            <th class="pb-6 px-4">Client / Org name</th>
+                            <th class="pb-6 px-4">Client name</th>
                             <th class="pb-6 text-center">Total Slots</th>
                             <th class="pb-6 text-center">Used Slots</th>
-                            <th class="pb-6 text-center">Rate/File</th>
+                            <th class="pb-6 text-center">Rate / file</th>
                             <th class="pb-6 text-center">Status</th>
                             <th class="pb-6 text-right">Actions</th>
                         </tr>
@@ -101,7 +100,7 @@
                                         <button
                                             onclick="openRefillModal({{ $client->id }}, '{{ addslashes($client->name) }}')"
                                             class="px-4 py-2 text-[10px] font-bold uppercase text-green-500 bg-green-500/10 hover:bg-green-500/20 rounded-xl transition-all border border-green-500/20">
-                                            Refill
+                                            Refill credits
                                         </button>
                                         <button
                                             onclick="openCreditsModal({{ $client->id }}, {{ $client->slots }}, '{{ addslashes($client->name) }}', '{{ $client->status }}', {{ $client->price_per_file }})"
@@ -125,11 +124,11 @@
                     <i data-lucide="clock" class="w-5 h-5"></i>
                 </div>
                 <div class="flex-1">
-                    <p class="text-sm font-bold text-[#1E1B4B]">Pending Top-up Requests</p>
+                    <p class="text-sm font-bold text-[#1E1B4B]">Queued top-up requests</p>
                     <p class="text-[10px] text-slate-500 font-mono mt-0.5">{{ $pendingTopups->count() }} awaiting review — click to manage</p>
                 </div>
-                <span class="px-3 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold font-mono rounded-full border border-amber-500/20 animate-pulse">
-                    {{ $pendingTopups->count() }} Pending
+                    <span class="px-3 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold font-mono rounded-full border border-amber-500/20 animate-pulse">
+                    {{ $pendingTopups->count() }} Queued
                 </span>
                 <i data-lucide="arrow-right" class="w-4 h-4 text-slate-500 group-hover:text-amber-400 transition-colors flex-shrink-0"></i>
             </a>
@@ -139,7 +138,7 @@
                 <div class="w-8 h-8 bg-white/5 rounded-xl flex items-center justify-center text-slate-500 flex-shrink-0">
                     <i data-lucide="credit-card" class="w-4 h-4"></i>
                 </div>
-                <p class="text-xs text-slate-500 flex-1">No pending top-up requests.</p>
+                <p class="text-xs text-slate-500 flex-1">No queued top-up requests.</p>
                 <span class="text-[10px] text-slate-600 group-hover:text-slate-400 transition-colors font-mono uppercase tracking-widest">View History →</span>
             </a>
         @endif
@@ -194,7 +193,7 @@
                 <div class="pt-4 mt-8 border-t border-[#DDD6FE]">
                     <button type="submit"
                         class="w-full py-4 bg-purple-600/10 hover:bg-purple-600/20 text-purple-500 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-purple-600/20 transition-all flex justify-center items-center gap-2">
-                        <i data-lucide="check" class="w-4 h-4"></i> Save Changes
+                        <i data-lucide="check" class="w-4 h-4"></i> Save changes
                     </button>
                 </div>
             </form>
@@ -214,8 +213,8 @@
                         <i data-lucide="plus-circle" class="w-5 h-5"></i>
                     </div>
                     <div>
-                        <h3 class="text-[#1E1B4B] font-bold" id="modal-refill-name">Refill Client</h3>
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Add Slots</p>
+                        <h3 class="text-[#1E1B4B] font-bold" id="modal-refill-name">Refill credits</h3>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Add credits</p>
                     </div>
                 </div>
                 <button onclick="document.getElementById('refill-modal').classList.add('hidden')"
@@ -226,15 +225,14 @@
             <form id="refill-form" method="POST" action="" class="space-y-5">
                 @csrf
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Number of
-                        files to add</label>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Credits to add</label>
                     <input type="number" name="additional_slots" required min="1"
                         class="w-full bg-[#F8FAFF] border border-[#DDD6FE] rounded-xl px-4 py-3 text-sm text-[#1E1B4B] font-mono focus:outline-none focus:border-green-500/50 transition-colors">
                 </div>
                 <div class="pt-4 mt-8 border-t border-[#DDD6FE]">
                     <button type="submit"
                         class="w-full py-4 bg-green-600/10 hover:bg-green-600/20 text-green-500 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-green-600/20 transition-all flex justify-center items-center gap-2">
-                        <i data-lucide="check" class="w-4 h-4"></i> Confirm Top-up
+                        <i data-lucide="check" class="w-4 h-4"></i> Confirm top-up
                     </button>
                 </div>
             </form>

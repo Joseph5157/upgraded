@@ -21,42 +21,52 @@
 </head>
 
 <body class="bg-[#0f172a] text-slate-200 min-h-screen p-4 sm:p-6 overflow-x-hidden">
+    @php
+        $downloadRoute = isset($link)
+            ? route('client.link.download', [$link->token, $order->token_view])
+            : route('client.download', $order->token_view);
+
+        $statusClass = [
+            'pending' => 'bg-yellow-500/10 text-yellow-400',
+            'claimed' => 'bg-amber-500/10 text-amber-400',
+            'processing' => 'bg-blue-500/10 text-blue-400',
+            'delivered' => 'bg-green-500/10 text-green-400',
+        ][$order->computed_status] ?? 'bg-slate-500/10 text-slate-400';
+
+        $statusLabel = [
+            'pending' => 'Queued',
+            'claimed' => 'Reserved',
+            'processing' => 'In progress',
+            'delivered' => 'Delivered',
+        ][$order->computed_status] ?? ucfirst($order->computed_status);
+    @endphp
     <div class="max-w-2xl mx-auto space-y-8 mt-12">
         <div class="glass p-8 rounded-3xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
                 <h1 class="text-2xl font-bold">Order #{{ $order->id }}</h1>
-                <p class="text-slate-400">Status:
-                    @php
-                        $statusClass = [
-                            'pending' => 'bg-yellow-500/10 text-yellow-400',
-                            'claimed' => 'bg-amber-500/10 text-amber-400',
-                            'processing' => 'bg-blue-500/10 text-blue-400',
-                            'delivered' => 'bg-green-500/10 text-green-400',
-                        ][$order->computed_status];
-                    @endphp
+                <p class="text-slate-400">
+                    Status:
                     <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $statusClass }}">
-                        {{ $order->computed_status }}
+                        {{ $statusLabel }}
                     </span>
                 </p>
             </div>
-
         </div>
 
         @if($order->status == 'delivered')
             <div class="glass p-8 rounded-3xl border-2 border-green-500/30 text-center space-y-4">
-                <h2 class="text-xl font-bold text-green-400">Your results are ready!</h2>
-                <p class="text-slate-400">You can download your report bundle below. Please note that downloads are restricted
-                    to one-time only.</p>
+                <h2 class="text-xl font-bold text-green-400">Your results are ready</h2>
+                <p class="text-slate-400">Download the report bundle now. This download can be used only once.</p>
 
                 @if(!$order->is_downloaded)
-                    <a href="{{ route('client.download', $order->token_view) }}"
+                    <a href="{{ $downloadRoute }}"
                         class="inline-block py-4 px-12 bg-green-600 hover:bg-green-500 text-white font-bold rounded-2xl shadow-lg shadow-green-500/25 transition-all transform hover:scale-[1.05]">
-                        Download Results Bundle
+                        Download Report Bundle
                     </a>
                 @else
                     <button disabled
                         class="inline-block py-4 px-12 bg-slate-700 text-slate-500 font-bold rounded-2xl cursor-not-allowed">
-                        Report Already Downloaded
+                        Report already downloaded
                     </button>
                 @endif
             </div>
@@ -65,11 +75,17 @@
                 <div class="flex justify-center">
                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                 </div>
-                <h2 class="text-xl font-bold">{{ $order->status->value === 'claimed' ? 'Reserved...' : 'Processing...' }}</h2>
-                <p class="text-slate-400">{{ $order->status->value === 'claimed' ? 'Your order has been reserved by a vendor and is waiting to be started.' : 'Our agents are working on your documents. This page checks for updates automatically.' }}</p>
+                <h2 class="text-xl font-bold">
+                    {{ $order->status->value === 'claimed' ? 'Reserved' : 'In progress' }}
+                </h2>
+                <p class="text-slate-400">
+                    {{ $order->status->value === 'claimed'
+                        ? 'A vendor has reserved your order and will start work shortly.'
+                        : 'Your order is being worked on. This page refreshes automatically.' }}
+                </p>
                 <div class="flex items-center justify-center gap-2 mt-1">
                     <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
-                    <span id="refresh-badge" class="text-[11px] font-semibold text-blue-400 tracking-wide">Checking for updates in 60s…</span>
+                    <span id="refresh-badge" class="text-[11px] font-semibold text-blue-400 tracking-wide">Checking for updates in 60s...</span>
                 </div>
             </div>
         @endif
@@ -90,7 +106,7 @@
     </div>
 
     <script>
-        // Auto-refresh with live badge — stops once delivered
+        // Auto-refresh with live badge - stops once delivered
         const status = "{{ $order->status }}";
         if (status !== 'delivered') {
             let refreshIn = 60;
@@ -100,8 +116,8 @@
                 refreshIn--;
                 if (badge) {
                     badge.textContent = refreshIn > 0
-                        ? `Checking for updates in ${refreshIn}s…`
-                        : 'Checking…';
+                        ? `Checking for updates in ${refreshIn}s...`
+                        : 'Checking...';
                 }
                 if (refreshIn <= 0) {
                     clearInterval(pollTick);

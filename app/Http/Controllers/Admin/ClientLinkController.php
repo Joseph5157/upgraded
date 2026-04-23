@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\ClientLink;
 use App\Models\Order;
+use App\Services\AuditLogger;
+use App\Support\StorageLifecycle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -13,10 +15,18 @@ use Illuminate\View\View;
 
 class ClientLinkController extends Controller
 {
+    protected function usableLinkExists(Client $client, ?int $ignoreLinkId = null): bool
+    {
+        return $client->links()
+            ->when($ignoreLinkId !== null, fn ($query) => $query->where('id', '!=', $ignoreLinkId))
+            ->usable()
+            ->exists();
+    }
+
     public function index(): View
     {
         $clients = Client::with(['user', 'links' => function ($q) {
-            $q->latest();
+            $q->latest()->with(['createdBy', 'revokedBy']);
         }])->has('links')->orderBy('name')->get();
 
         return view('admin.client-links.index', compact('clients'));
@@ -28,34 +38,54 @@ class ClientLinkController extends Controller
             'client_id' => ['required', 'integer', 'exists:clients,id'],
         ]);
 
-        ClientLink::create([
-            'client_id' => $request->client_id,
-            'token'     => Str::random(40),
-            'is_active' => true,
+        $client = Client::with('links')->findOrFail($request->client_id);
+
+        if ($this->usableLinkExists($client)) {
+            return back()->withErrors([
+                'client_id' => 'This client already has an active guest link. Revoke it before creating another one.',
+            ]);
+        }
+
+        $link = ClientLink::create([
+            'client_id'          => $client->id,
+            'created_by_user_id'  => $request->user()?->id,
+            'token'              => Str::random(40),
+            'is_active'          => true,
+            'expires_at'         => now()->addDay(),
+        ]);
+
+        app(AuditLogger::class)->record('client_link.created', $link, [
+            'client_id' => $client->id,
+            'created_by_user_id' => $request->user()?->id,
+            'expires_at' => $link->expires_at?->toIso8601String(),
         ]);
 
         return back()->with('success', 'Upload link created successfully.');
     }
 
-    public function toggle(ClientLink $clientLink): RedirectResponse
+    public function revoke(Request $request, ClientLink $clientLink): RedirectResponse
     {
-        $clientLink->update(['is_active' => ! $clientLink->is_active]);
+        if ($clientLink->isRevoked()) {
+            return back()->with('success', 'Link is already revoked.');
+        }
 
-        $state = $clientLink->is_active ? 'activated' : 'deactivated';
+        $clientLink->update([
+            'is_active'          => false,
+            'revoked_at'         => now(),
+            'revoked_by_user_id' => $request->user()?->id,
+        ]);
 
-        return back()->with('success', "Link {$state} successfully.");
-    }
+        app(AuditLogger::class)->record('client_link.revoked', $clientLink, [
+            'client_id' => $clientLink->client_id,
+            'revoked_by_user_id' => $request->user()?->id,
+        ]);
 
-    public function destroy(ClientLink $clientLink): RedirectResponse
-    {
-        $clientLink->delete();
-
-        return back()->with('success', 'Link deleted successfully.');
+        return back()->with('success', 'Link revoked successfully.');
     }
 
     public function showOrders(ClientLink $clientLink): View
     {
-        $clientLink->load(['client', 'orders' => function ($q) {
+        $clientLink->load(['client', 'createdBy', 'revokedBy', 'orders' => function ($q) {
             $q->with(['files'])->latest();
         }]);
 
@@ -66,10 +96,16 @@ class ClientLinkController extends Controller
     {
         abort_if($order->client_link_id !== $clientLink->id, 403);
 
-        $order->files()->each(function ($file) {
-            \Storage::disk('public')->delete($file->path);
+        foreach ($order->files as $file) {
+            StorageLifecycle::deleteStoredFileIfPresent('public', $file->path);
             $file->delete();
-        });
+        }
+
+        if ($order->report) {
+            StorageLifecycle::deleteStoredFileIfPresent($order->report->ai_report_disk ?: 'r2', $order->report->ai_report_path);
+            StorageLifecycle::deleteStoredFileIfPresent($order->report->plag_report_disk ?: 'r2', $order->report->plag_report_path);
+            $order->report->delete();
+        }
 
         $order->delete();
 
@@ -85,10 +121,14 @@ class ClientLinkController extends Controller
         foreach ($client->links as $link) {
             foreach ($link->orders as $order) {
                 foreach ($order->files as $file) {
-                    \Storage::disk($file->disk ?: 'r2')->delete($file->file_path);
+                    StorageLifecycle::deleteStoredFileIfPresent($file->disk ?: 'r2', $file->file_path);
                     $file->delete();
                 }
-                $order->report?->delete();
+                if ($order->report) {
+                    StorageLifecycle::deleteStoredFileIfPresent($order->report->ai_report_disk ?: 'r2', $order->report->ai_report_path);
+                    StorageLifecycle::deleteStoredFileIfPresent($order->report->plag_report_disk ?: 'r2', $order->report->plag_report_path);
+                    $order->report->delete();
+                }
                 $order->delete();
             }
             $link->delete();
@@ -115,10 +155,18 @@ class ClientLinkController extends Controller
             'status'         => 'active',
         ]);
 
-        ClientLink::create([
+        $link = ClientLink::create([
+            'client_id'         => $client->id,
+            'created_by_user_id'=> $request->user()?->id,
+            'token'             => Str::random(40),
+            'is_active'         => true,
+            'expires_at'        => now()->addDay(),
+        ]);
+
+        app(AuditLogger::class)->record('client_link.created', $link, [
             'client_id' => $client->id,
-            'token'     => Str::random(40),
-            'is_active' => true,
+            'created_by_user_id' => $request->user()?->id,
+            'expires_at' => $link->expires_at?->toIso8601String(),
         ]);
 
         return back()->with('success', "Link client \"{$client->name}\" created with {$client->slots} slots.");
