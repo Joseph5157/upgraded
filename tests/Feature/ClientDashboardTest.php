@@ -63,4 +63,50 @@ class ClientDashboardTest extends TestCase
         $response->assertSee('Download Both');
         $response->assertSee('AI Report');
     }
+
+    public function test_client_dashboard_pulse_returns_fragment_html_when_orders_change(): void
+    {
+        $client = Client::create(['name' => 'Pulse Client', 'slots' => 10]);
+        $user = User::factory()->create(['role' => 'client', 'client_id' => $client->id]);
+
+        $initialOrder = Order::create([
+            'client_id' => $client->id,
+            'token_view' => 'pulse-1',
+            'status' => 'pending',
+            'due_at' => now()->addMinutes(15),
+            'source' => 'account',
+            'created_by_user_id' => $user->id,
+        ]);
+        OrderFile::create([
+            'order_id' => $initialOrder->id,
+            'file_path' => 'orders/' . $initialOrder->id . '/initial.pdf',
+            'original_name' => 'initial.pdf',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('client.dashboard'));
+        $signature = (string) $response->viewData('dashboardSignature');
+
+        $newOrder = Order::create([
+            'client_id' => $client->id,
+            'token_view' => 'pulse-2',
+            'status' => 'pending',
+            'due_at' => now()->addMinutes(15),
+            'source' => 'account',
+            'created_by_user_id' => $user->id,
+        ]);
+        OrderFile::create([
+            'order_id' => $newOrder->id,
+            'file_path' => 'orders/' . $newOrder->id . '/fresh.pdf',
+            'original_name' => 'fresh.pdf',
+        ]);
+
+        $pulse = $this->actingAs($user)->getJson(route('client.dashboard.pulse', ['signature' => $signature]));
+
+        $pulse->assertOk()
+            ->assertJsonStructure(['signature', 'checked_at', 'liveHtml']);
+
+        $this->assertNotSame($signature, $pulse->json('signature'));
+        $this->assertStringContainsString('client-dashboard-live', (string) $pulse->json('liveHtml'));
+        $this->assertStringContainsString('fresh.pdf', (string) $pulse->json('liveHtml'));
+    }
 }

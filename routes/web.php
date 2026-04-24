@@ -79,6 +79,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
     // Vendor/Admin Dashboard Routes
     Route::middleware(['role:vendor,admin', 'account.status'])->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard/pulse', [DashboardController::class, 'pulse'])->name('dashboard.pulse');
         Route::post('/orders/{order}/claim', [DashboardController::class, 'claim'])->name('orders.claim');
         Route::post('/orders/{order}/unclaim', [DashboardController::class, 'unclaim'])->name('orders.unclaim');
         Route::post('/orders/{order}/status', [DashboardController::class, 'updateStatus'])->name('orders.status');

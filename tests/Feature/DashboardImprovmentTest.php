@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Client;
+use App\Models\OrderFile;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -100,5 +101,41 @@ class DashboardImprovmentTest extends TestCase
 
         $this->assertCount(1, $response->viewData('myWorkspace'));
         $this->assertCount(2, $response->viewData('availableFiles'));
+    }
+
+    public function test_vendor_dashboard_pulse_returns_fragment_html_when_queue_changes(): void
+    {
+        $agent = $this->setupData();
+
+        $response = $this->actingAs($agent)->get(route('dashboard'));
+        $signature = (string) $response->viewData('dashboardSignature');
+
+        $client = Client::create([
+            'name' => 'Pulse Customer',
+            'email' => 'pulse@example.com',
+        ]);
+
+        $order = Order::create([
+            'client_id' => $client->id,
+            'token_view' => 'pulse-order',
+            'files_count' => 1,
+            'status' => 'pending',
+            'due_at' => now()->addMinutes(20),
+            'source' => 'account',
+        ]);
+        OrderFile::create([
+            'order_id' => $order->id,
+            'file_path' => 'orders/' . $order->id . '/pulse-order.pdf',
+            'original_name' => 'pulse-order.pdf',
+        ]);
+
+        $pulse = $this->actingAs($agent)->getJson(route('dashboard.pulse', ['signature' => $signature]));
+
+        $pulse->assertOk()
+            ->assertJsonStructure(['signature', 'checked_at', 'liveHtml']);
+
+        $this->assertNotSame($signature, $pulse->json('signature'));
+        $this->assertStringContainsString('vendor-dashboard-live', (string) $pulse->json('liveHtml'));
+        $this->assertStringContainsString('pulse-order.pdf', (string) $pulse->json('liveHtml'));
     }
 }

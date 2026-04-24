@@ -7,6 +7,7 @@ use App\Exceptions\VendorReportStorageException;
 use App\Exceptions\WorkflowException;
 use App\Http\Requests\UploadVendorReportRequest;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\OrderWorkflowService;
 use App\Services\UploadVendorReportService;
 use Illuminate\Http\Request;
@@ -27,59 +28,36 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-
-        // Cache slower-moving stats for 60 seconds per user to reduce query load.
-        $cachedStats = Cache::remember(
-            'vendor_stats_' . $user->id,
-            60,
-            function () use ($user) {
-                return [
-                    'available_pool'      => Order::where('status', OrderStatus::Pending)
-                        ->whereNull('claimed_by')
-                        ->count(),
-
-                    'active_jobs'         => Order::whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
-                        ->where('claimed_by', $user->id)
-                        ->count(),
-
-                    'total_checked_today' => Order::where('status', OrderStatus::Delivered)
-                        ->where('claimed_by', $user->id)
-                        ->whereDate('delivered_at', today())
-                        ->count(),
-
-                    'total_delivered'     => $user->delivered_orders_count ?? 0,
-                ];
-            }
-        );
-
-        $stats = $cachedStats;
-
-        // Eager load relationships + consistent ordering
-        $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
-            ->where('claimed_by', $user->id)
-            ->whereIn('status', [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing])
-            ->latest()
-            ->get();
-
-        $availableFiles = Order::with(['client', 'files', 'vendor'])
-            ->whereNull('claimed_by')
-            ->where('status', OrderStatus::Pending)
-            ->latest()
-            ->take(50)
-            ->get();
+        $state = $this->loadDashboardState($user, true);
+        $dashboardSignature = $this->buildDashboardSignature($user);
 
         if ($request->boolean('queue_only')) {
-            return view('dashboard.partials.available-queue', compact('availableFiles'));
+            return view('dashboard.partials.available-queue', ['availableFiles' => $state['availableFiles']]);
         }
 
-        $recentHistory = Order::with(['client', 'files', 'report'])
-            ->where('claimed_by', $user->id)
-            ->where('status', OrderStatus::Delivered)
-            ->latest('delivered_at')
-            ->take(5)
-            ->get();
+        return view('dashboard', $state + compact('dashboardSignature'));
+    }
 
-        return view('dashboard', compact('stats', 'myWorkspace', 'availableFiles', 'recentHistory'));
+    public function pulse(Request $request)
+    {
+        $user = auth()->user();
+        $signature = $this->buildDashboardSignature($user);
+
+        if ((string) $request->query('signature', '') === $signature) {
+            return response()->json([
+                'signature'  => $signature,
+                'checked_at'  => now()->toIso8601String(),
+            ]);
+        }
+
+        $state = $this->loadDashboardState($user, false);
+        $liveHtml = view('dashboard.partials.live', $state)->render();
+
+        return response()->json([
+            'signature'  => $signature,
+            'checked_at'  => now()->toIso8601String(),
+            'liveHtml'   => $liveHtml,
+        ]);
     }
 
     public function claim(Request $request, Order $order)
@@ -290,6 +268,94 @@ class DashboardController extends Controller
         foreach (array_unique(array_filter($userIds)) as $userId) {
             Cache::forget('vendor_stats_' . $userId);
         }
+    }
+
+    protected function loadDashboardState(User $user, bool $useCachedStats = true): array
+    {
+        $stats = $useCachedStats
+            ? Cache::remember(
+                'vendor_stats_' . $user->id,
+                60,
+                function () use ($user) {
+                    return $this->buildVendorStats($user);
+                }
+            )
+            : $this->buildVendorStats($user);
+
+        $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
+            ->where('claimed_by', $user->id)
+            ->whereIn('status', [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing])
+            ->latest()
+            ->get();
+
+        $availableFiles = Order::with(['client', 'files', 'vendor'])
+            ->whereNull('claimed_by')
+            ->where('status', OrderStatus::Pending)
+            ->latest()
+            ->take(50)
+            ->get();
+
+        $recentHistory = Order::with(['client', 'files', 'report'])
+            ->where('claimed_by', $user->id)
+            ->where('status', OrderStatus::Delivered)
+            ->latest('delivered_at')
+            ->take(5)
+            ->get();
+
+        return compact('stats', 'myWorkspace', 'availableFiles', 'recentHistory');
+    }
+
+    protected function buildVendorStats(User $user): array
+    {
+        return [
+            'available_pool'      => Order::where('status', OrderStatus::Pending)
+                ->whereNull('claimed_by')
+                ->count(),
+            'active_jobs'         => Order::whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
+                ->where('claimed_by', $user->id)
+                ->count(),
+            'total_checked_today' => Order::where('status', OrderStatus::Delivered)
+                ->where('claimed_by', $user->id)
+                ->whereDate('delivered_at', today())
+                ->count(),
+            'total_delivered'     => $user->delivered_orders_count ?? 0,
+        ];
+    }
+
+    protected function buildDashboardSignature(User $user): string
+    {
+        $stats = $this->buildVendorStats($user);
+
+        $availableState = Order::query()
+            ->whereNull('claimed_by')
+            ->where('status', OrderStatus::Pending)
+            ->selectRaw('count(*) as total, max(updated_at) as max_updated_at')
+            ->first();
+
+        $workspaceState = Order::query()
+            ->where('claimed_by', $user->id)
+            ->whereIn('status', [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing])
+            ->selectRaw('count(*) as total, max(updated_at) as max_updated_at')
+            ->first();
+
+        $historyState = Order::query()
+            ->where('claimed_by', $user->id)
+            ->where('status', OrderStatus::Delivered)
+            ->selectRaw('count(*) as total, max(delivered_at) as max_delivered_at')
+            ->first();
+
+        return sha1(implode('|', [
+            $stats['available_pool'],
+            $stats['active_jobs'],
+            $stats['total_checked_today'],
+            $stats['total_delivered'],
+            $availableState->total ?? 0,
+            $availableState->max_updated_at ?? '0',
+            $workspaceState->total ?? 0,
+            $workspaceState->max_updated_at ?? '0',
+            $historyState->total ?? 0,
+            $historyState->max_delivered_at ?? '0',
+        ]));
     }
 
     protected function resolveStorageDisk(): string

@@ -241,7 +241,7 @@
         {{--  ANNOUNCEMENTS BANNER  --}}
         <x-announcements-banner class="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 px-6 rounded-lg shadow-lg" />
 
-        <div class="px-3 py-4 pb-24 md:pb-0 max-w-[1380px] mx-auto space-y-4 sm:px-6 sm:py-5 sm:space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
+        <div id="client-dashboard-live" class="px-3 py-4 pb-24 md:pb-0 max-w-[1380px] mx-auto space-y-4 sm:px-6 sm:py-5 sm:space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
 
             @php
                 $activeOrders = $orders->whereNotIn('status', ['delivered', 'cancelled'])->count();
@@ -848,7 +848,7 @@
             document.getElementById('notes-counter').textContent = '0 / 1000';
         }
 
-         document.addEventListener('DOMContentLoaded', function () {
+        function wireUploadDashboardControls() {
              const notesInput = document.getElementById('notes-input');
              if (notesInput) {
                  notesInput.addEventListener('input', function () {
@@ -863,14 +863,17 @@
                      window.__clientUploadInProgress = true;
                      try {
                          if (window.__clientDashboardPolling && typeof window.__clientDashboardPolling.stop === 'function') {
-                             window.__clientDashboardPolling.stop();
-                         }
-                     } catch (e) {}
-                     btn.disabled = true;
-                     btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Uploading...';
+                    window.__clientDashboardPolling.stop();
+                        }
+                    } catch (e) {}
+                    btn.disabled = true;
+                    btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Uploading...';
                  });
              }
-         });
+         }
+
+         window.__wireClientDashboardControls = wireUploadDashboardControls;
+         document.addEventListener('DOMContentLoaded', wireUploadDashboardControls);
         // ── End upload staging ───────────────────────────────────────
     </script>
 
@@ -943,16 +946,21 @@
 
                     const payload = await response.json();
 
-                    if (payload.signature && currentSignature && payload.signature !== currentSignature) {
-                        if (window.__clientUploadInProgress) {
-                            return;
-                        }
-                        window.location.reload();
-                        return;
-                    }
-
                     if (payload.signature) {
                         currentSignature = payload.signature;
+                    }
+
+                    if (payload.liveHtml) {
+                        const liveEl = document.getElementById('client-dashboard-live');
+                        if (liveEl) {
+                            liveEl.outerHTML = payload.liveHtml;
+                            if (window.lucide && lucide.createIcons) {
+                                lucide.createIcons();
+                            }
+                            if (typeof window.__wireClientDashboardControls === 'function') {
+                                window.__wireClientDashboardControls();
+                            }
+                        }
                     }
                 } catch (error) {
                     // Ignore transient network/session hiccups; next poll will retry.

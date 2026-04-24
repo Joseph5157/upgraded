@@ -105,9 +105,32 @@ class ClientDashboardController extends Controller
             ]);
         }
 
+        $signature = $this->buildDashboardSignature($user, $client);
+
+        if ((string) $request->query('signature', '') === $signature) {
+            return response()->json([
+                'signature' => $signature,
+                'checked_at' => now()->toIso8601String(),
+            ]);
+        }
+
+        $ordersQuery = Order::where('client_id', $client->id)
+            ->where('source', 'account');
+
+        if ($user->role === 'client') {
+            $ordersQuery->where('created_by_user_id', $user->id);
+        }
+
+        $orders = $ordersQuery->with(['report', 'files', 'client', 'refundRequest'])
+            ->latest()
+            ->get();
+        $consumed = (int) $client->fresh()->slots_consumed;
+        $remaining = max(0, (int) $client->total_slots - $consumed);
+
         return response()->json([
-            'signature' => $this->buildDashboardSignature($user, $client),
+            'signature' => $signature,
             'checked_at' => now()->toIso8601String(),
+            'liveHtml' => view('client.dashboard.partials.live', compact('client', 'orders', 'remaining', 'consumed'))->render(),
         ]);
     }
 
@@ -267,6 +290,7 @@ class ClientDashboardController extends Controller
             $ordersQuery->where('created_by_user_id', $user->id);
         }
 
+        $orderCount = (clone $ordersQuery)->count();
         $maxOrderUpdatedAt = (clone $ordersQuery)->max('updated_at');
         $deliveredCount = (clone $ordersQuery)->where('status', OrderStatus::Delivered)->count();
         $cancelledCount = (clone $ordersQuery)->where('status', OrderStatus::Cancelled)->count();
@@ -285,7 +309,7 @@ class ClientDashboardController extends Controller
         $orderTs = $maxOrderUpdatedAt ? strtotime((string) $maxOrderUpdatedAt) : 0;
         $reportTs = $maxReportUpdatedAt ? strtotime((string) $maxReportUpdatedAt) : 0;
 
-        return sha1($orderTs . '|' . $reportTs . '|' . $deliveredCount . '|' . $cancelledCount);
+        return sha1($orderCount . '|' . $orderTs . '|' . $reportTs . '|' . $deliveredCount . '|' . $cancelledCount);
     }
 
     protected function telegramColumnsReady(): bool
