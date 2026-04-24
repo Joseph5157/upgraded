@@ -974,7 +974,8 @@
                     return;
                 }
 
-                pollTimer = window.setInterval(checkForDashboardUpdates, 15000);
+                checkForDashboardUpdates();
+                pollTimer = window.setInterval(checkForDashboardUpdates, 10000);
             }
 
             function stopDashboardPolling() {
@@ -993,6 +994,10 @@
                  checkForDashboardUpdates();
                  startDashboardPolling();
              });
+
+             window.addEventListener('focus', checkForDashboardUpdates);
+             window.addEventListener('pageshow', checkForDashboardUpdates);
+             window.addEventListener('online', checkForDashboardUpdates);
 
              window.__clientDashboardPolling = {
                  start: startDashboardPolling,

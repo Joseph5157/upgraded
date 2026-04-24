@@ -62,7 +62,16 @@
                 });
         }
 
-        setInterval(refreshVendorDashboard, 20000);
+        function startVendorPolling() {
+            refreshVendorDashboard();
+            window.setInterval(refreshVendorDashboard, 10000);
+        }
+
+        window.addEventListener('focus', refreshVendorDashboard);
+        window.addEventListener('pageshow', refreshVendorDashboard);
+        window.addEventListener('online', refreshVendorDashboard);
+
+        startVendorPolling();
 
 
         function getUploadModalFromEl(orderId, el) {
