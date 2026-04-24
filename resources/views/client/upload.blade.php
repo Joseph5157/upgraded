@@ -119,6 +119,7 @@
             const countEl = document.getElementById('selected-file-count');
             const preview = document.getElementById('file-preview');
             if (count === 0) { resetUpload(); return; }
+            window.__guestLinkUploadDirty = true;
             countEl.textContent = count + ' file' + (count > 1 ? 's' : '') + ' selected';
             countEl.classList.remove('hidden');
             stage.classList.remove('hidden');
@@ -149,6 +150,12 @@
             if (preview) {
                 preview.innerHTML = '';
             }
+            window.__guestLinkUploadDirty = false;
+        }
+
+        function guestLinkUploadHasPendingSelection() {
+            const input = document.getElementById('files');
+            return !!(input && input.files && input.files.length > 0);
         }
 
         window.__wireGuestLinkUploadControls = function () {
@@ -174,6 +181,7 @@
             if (form && form.dataset.guestLinkSubmitWired !== '1') {
                 form.dataset.guestLinkSubmitWired = '1';
                 form.addEventListener('submit', function () {
+                    window.__guestLinkUploadDirty = false;
                     const btn = document.getElementById('upload-submit-btn');
                     if (btn) {
                         btn.disabled = true;
@@ -224,6 +232,10 @@
 
                 const liveEl = document.getElementById('guest-link-live');
                 if (!liveEl) {
+                    return;
+                }
+
+                if (window.__guestLinkUploadDirty || guestLinkUploadHasPendingSelection()) {
                     return;
                 }
 

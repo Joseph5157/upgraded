@@ -795,6 +795,8 @@
             const files = Array.from(input.files);
             if (!files.length) return;
 
+            window.__clientUploadDirty = true;
+
             const errorText = document.getElementById('multi-file-error');
             const countText = document.getElementById('selected-file-count');
 
@@ -846,6 +848,12 @@
             document.getElementById('drop-zone').classList.remove('opacity-60', 'pointer-events-none');
             document.getElementById('notes-input').value = '';
             document.getElementById('notes-counter').textContent = '0 / 1000';
+            window.__clientUploadDirty = false;
+        }
+
+        function clientUploadHasPendingSelection() {
+            const input = document.getElementById('files');
+            return !!(input && input.files && input.files.length > 0);
         }
 
         function wireUploadDashboardControls() {
@@ -856,14 +864,15 @@
                  });
              }
 
-             const form = document.getElementById('upload-form');
-             const btn = document.getElementById('upload-submit-btn');
-             if (form && btn) {
-                 form.addEventListener('submit', function () {
-                     window.__clientUploadInProgress = true;
-                     try {
-                         if (window.__clientDashboardPolling && typeof window.__clientDashboardPolling.stop === 'function') {
-                    window.__clientDashboardPolling.stop();
+            const form = document.getElementById('upload-form');
+            const btn = document.getElementById('upload-submit-btn');
+            if (form && btn) {
+                form.addEventListener('submit', function () {
+                    window.__clientUploadInProgress = true;
+                    window.__clientUploadDirty = false;
+                    try {
+                        if (window.__clientDashboardPolling && typeof window.__clientDashboardPolling.stop === 'function') {
+                   window.__clientDashboardPolling.stop();
                         }
                     } catch (e) {}
                     btn.disabled = true;
@@ -915,12 +924,16 @@
 
              async function checkForDashboardUpdates() {
                  if (window.__clientUploadInProgress) {
-                     return;
-                 }
+                    return;
+                }
 
-                 if (inFlight || document.hidden) {
-                     return;
-                 }
+                if (window.__clientUploadDirty || clientUploadHasPendingSelection()) {
+                    return;
+                }
+
+                if (inFlight || document.hidden) {
+                    return;
+                }
 
                 inFlight = true;
 
