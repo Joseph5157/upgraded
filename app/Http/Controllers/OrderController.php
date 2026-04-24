@@ -9,6 +9,7 @@ use App\Services\CreateClientOrderService;
 use App\Services\AuditLogger;
 use App\Support\LogContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -115,6 +116,76 @@ class OrderController extends Controller
         return max(0, (int) $client->slots - (int) $client->slots_consumed);
     }
 
+    /**
+     * @return Collection<int, Order>
+     */
+    protected function guestVisibleOrders(ClientLink $link): Collection
+    {
+        return Order::where('client_link_id', $link->id)
+            ->where('created_at', '>=', now()->subDay())
+            ->with(['report', 'files'])
+            ->latest()
+            ->get();
+    }
+
+    protected function guestUploadSignature(ClientLink $link, Collection $orders): string
+    {
+        $payload = [
+            'scope' => 'upload',
+            'link' => [
+                'id' => $link->id,
+                'is_active' => (bool) $link->is_active,
+                'revoked_at' => $link->revoked_at?->timestamp,
+                'expires_at' => $link->expires_at?->timestamp,
+            ],
+            'credits_remaining' => $this->guestCreditsRemaining($link),
+            'orders' => $orders->map(static function (Order $order): array {
+                return [
+                    'id' => $order->id,
+                    'status' => $order->status->value,
+                    'updated_at' => $order->updated_at?->timestamp,
+                    'is_downloaded' => (bool) $order->is_downloaded,
+                    'report_updated_at' => $order->report?->updated_at?->timestamp,
+                    'ai_report_path' => $order->report?->ai_report_path,
+                    'plag_report_path' => $order->report?->plag_report_path,
+                    'ai_skip_reason' => $order->report?->ai_skip_reason,
+                ];
+            })->values()->all(),
+        ];
+
+        return hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE));
+    }
+
+    protected function guestTrackSignature(ClientLink $link, Order $order): string
+    {
+        $payload = [
+            'scope' => 'track',
+            'link' => [
+                'id' => $link->id,
+                'is_active' => (bool) $link->is_active,
+                'revoked_at' => $link->revoked_at?->timestamp,
+                'expires_at' => $link->expires_at?->timestamp,
+            ],
+            'order' => [
+                'id' => $order->id,
+                'status' => $order->status->value,
+                'updated_at' => $order->updated_at?->timestamp,
+                'is_downloaded' => (bool) $order->is_downloaded,
+                'report_updated_at' => $order->report?->updated_at?->timestamp,
+                'ai_report_path' => $order->report?->ai_report_path,
+                'plag_report_path' => $order->report?->plag_report_path,
+                'ai_skip_reason' => $order->report?->ai_skip_reason,
+            ],
+        ];
+
+        return hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE));
+    }
+
+    protected function renderGuestLiveFragment(string $view, array $data): string
+    {
+        return view($view, $data)->render();
+    }
+
     protected function touchGuestLinkUsage(ClientLink $link): void
     {
         if (! Schema::hasColumn('client_links', 'last_used_at')) {
@@ -172,11 +243,9 @@ class OrderController extends Controller
     {
         $link = $this->resolveGuestLinkOrFail($token);
         $client = $link->client;
-        $orders = Order::where('client_link_id', $link->id)
-            ->where('created_at', '>=', now()->subDay())
-            ->with(['report', 'files'])
-            ->latest()
-            ->get();
+        $orders = $this->guestVisibleOrders($link);
+        $pulseUrl = route('client.link.pulse', $link->token);
+        $signature = $this->guestUploadSignature($link, $orders);
 
         $this->touchGuestLinkUsage($link);
 
@@ -185,7 +254,7 @@ class OrderController extends Controller
             'orders_visible' => $orders->count(),
         ]);
 
-        return view('client.upload', compact('link', 'client', 'orders'));
+        return view('client.upload', compact('link', 'client', 'orders', 'pulseUrl', 'signature'));
     }
 
     public function store(Request $request, $token)
@@ -248,13 +317,66 @@ class OrderController extends Controller
         $link = $this->resolveGuestLinkOrFail($token);
         $this->assertGuestOrderScope($link, $order);
 
-        $order->load(['report', 'client']);
+        $order->load(['report', 'client', 'files']);
+        $pulseUrl = route('client.link.track.pulse', [$link->token, $order->token_view]);
+        $signature = $this->guestTrackSignature($link, $order);
         $this->touchGuestLinkUsage($link);
         app(AuditLogger::class)->record('client_link.order_viewed', $order, [
             'client_link_id' => $link->id,
         ]);
 
-        return view('client.track', compact('order', 'link'));
+        return view('client.track', compact('order', 'link', 'pulseUrl', 'signature'));
+    }
+
+    public function guestPulse(Request $request, string $token, ?Order $order = null)
+    {
+        $link = $this->resolveGuestLinkOrFail($token);
+
+        if ($order !== null) {
+            $this->assertGuestOrderScope($link, $order);
+            $order->loadMissing(['report', 'files']);
+
+            $signature = $this->guestTrackSignature($link, $order);
+            if ($request->query('signature') === $signature) {
+                return response()->json([
+                    'signature' => $signature,
+                    'checked_at' => now()->toIso8601String(),
+                ]);
+            }
+
+            return response()->json([
+                'signature' => $signature,
+                'checked_at' => now()->toIso8601String(),
+                'liveHtml' => $this->renderGuestLiveFragment('client.track.partials.live', [
+                    'link' => $link,
+                    'order' => $order,
+                    'pulseUrl' => route('client.link.track.pulse', [$link->token, $order->token_view]),
+                    'signature' => $signature,
+                ]),
+            ]);
+        }
+
+        $orders = $this->guestVisibleOrders($link);
+        $signature = $this->guestUploadSignature($link, $orders);
+
+        if ($request->query('signature') === $signature) {
+            return response()->json([
+                'signature' => $signature,
+                'checked_at' => now()->toIso8601String(),
+            ]);
+        }
+
+        return response()->json([
+            'signature' => $signature,
+            'checked_at' => now()->toIso8601String(),
+            'liveHtml' => $this->renderGuestLiveFragment('client.upload.partials.live', [
+                'link' => $link,
+                'client' => $link->client,
+                'orders' => $orders,
+                'pulseUrl' => route('client.link.pulse', $link->token),
+                'signature' => $signature,
+            ]),
+        ]);
     }
 
     public function downloadGuest($token, Order $order, Request $request)

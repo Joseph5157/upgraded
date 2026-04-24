@@ -63,6 +63,8 @@ Route::middleware('guest')->group(function () {
 // Client Public Routes — throttled to prevent abuse
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/u/{token}', [OrderController::class, 'showUpload'])->name('client.upload');
+    Route::get('/u/{token}/pulse', [OrderController::class, 'guestPulse'])->name('client.link.pulse');
+    Route::get('/u/{token}/orders/{order:token_view}/pulse', [OrderController::class, 'guestPulse'])->name('client.link.track.pulse');
     Route::post('/u/{token}', [OrderController::class, 'store'])->name('client.store');
     Route::get('/u/{token}/orders/{order:token_view}', [OrderController::class, 'trackGuest'])->name('client.link.track');
     Route::get('/u/{token}/orders/{order:token_view}/download', [OrderController::class, 'downloadGuest'])->name('client.link.download');

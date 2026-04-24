@@ -237,6 +237,125 @@ class GuestLinkTest extends TestCase
         $this->assertDatabaseCount('orders', 0);
     }
 
+    public function test_guest_link_upload_pulse_returns_same_signature_when_nothing_changes(): void
+    {
+        $this->prepareR2Disk();
+        Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
+        $this->fakeTelegramAlerts();
+
+        $client = $this->makeClient(slots: 5);
+        $link = $this->makeLink($client, ['token' => 'pulse-link']);
+        $this->uploadGuestOrder($client, $link, 'pulse.pdf');
+
+        $firstPulse = $this->getJson(route('client.link.pulse', ['token' => 'pulse-link']));
+
+        $firstPulse->assertOk()
+            ->assertJsonStructure(['signature', 'checked_at', 'liveHtml']);
+
+        $signature = (string) $firstPulse->json('signature');
+
+        $secondPulse = $this->getJson(route('client.link.pulse', [
+            'token' => 'pulse-link',
+            'signature' => $signature,
+        ]));
+
+        $secondPulse->assertOk()
+            ->assertJsonStructure(['signature', 'checked_at'])
+            ->assertJsonMissingPath('liveHtml');
+
+        $this->assertSame($signature, (string) $secondPulse->json('signature'));
+    }
+
+    public function test_guest_link_upload_pulse_updates_only_for_its_own_link_scoped_orders(): void
+    {
+        $this->fakeTelegramAlerts();
+
+        $client = $this->makeClient(slots: 6);
+        $linkA = $this->makeLink($client, ['token' => 'pulse-a']);
+        $linkB = $this->makeLink($client, ['token' => 'pulse-b']);
+
+        $initialPulse = $this->getJson(route('client.link.pulse', ['token' => 'pulse-a']));
+        $signature = (string) $initialPulse->json('signature');
+
+        $orderB = Order::create([
+            'client_id' => $client->id,
+            'token_view' => Str::random(32),
+            'files_count' => 1,
+            'status' => OrderStatus::Pending,
+            'due_at' => now()->addMinutes(20),
+            'source' => 'link',
+            'client_link_id' => $linkB->id,
+        ]);
+        OrderFile::create([
+            'order_id' => $orderB->id,
+            'file_path' => 'orders/' . $orderB->id . '/beta.pdf',
+            'original_name' => 'beta.pdf',
+        ]);
+
+        $followUp = $this->getJson(route('client.link.pulse', [
+            'token' => 'pulse-a',
+            'signature' => $signature,
+        ]));
+
+        $followUp->assertOk()
+            ->assertJsonStructure(['signature', 'checked_at'])
+            ->assertJsonMissingPath('liveHtml');
+
+        $this->assertSame($signature, (string) $followUp->json('signature'));
+    }
+
+    public function test_guest_link_track_pulse_shows_report_availability_without_manual_refresh(): void
+    {
+        $this->fakeTelegramAlerts();
+
+        $client = $this->makeClient(slots: 4);
+        $link = $this->makeLink($client, ['token' => 'track-pulse']);
+
+        $order = Order::create([
+            'client_id' => $client->id,
+            'token_view' => Str::random(32),
+            'files_count' => 1,
+            'status' => OrderStatus::Pending,
+            'due_at' => now()->addMinutes(20),
+            'source' => 'link',
+            'client_link_id' => $link->id,
+        ]);
+        OrderFile::create([
+            'order_id' => $order->id,
+            'file_path' => 'track.pdf',
+            'original_name' => 'track.pdf',
+        ]);
+
+        $initial = $this->getJson(route('client.link.track.pulse', ['track-pulse', $order->token_view]));
+        $signature = (string) $initial->json('signature');
+
+        $report = OrderReport::create([
+            'order_id' => $order->id,
+            'ai_report_path' => 'reports/' . $order->id . '/ai.pdf',
+            'ai_report_original_name' => 'ai.pdf',
+            'plag_report_path' => 'reports/' . $order->id . '/plag.pdf',
+            'plag_report_original_name' => 'plag.pdf',
+        ]);
+
+        $order->update([
+            'status' => OrderStatus::Delivered,
+            'delivered_at' => now(),
+        ]);
+        $report->refresh();
+
+        $updated = $this->getJson(route('client.link.track.pulse', [
+            'track-pulse',
+            $order->token_view,
+            'signature' => $signature,
+        ]));
+
+        $updated->assertOk()
+            ->assertJsonStructure(['signature', 'checked_at', 'liveHtml']);
+
+        $this->assertNotSame($signature, (string) $updated->json('signature'));
+        $this->assertStringContainsString('Download Report Bundle', (string) $updated->json('liveHtml'));
+    }
+
     public function test_guest_view_and_download_still_work_after_credits_are_zero_before_expiry(): void
     {
         $this->fakeTelegramAlerts();
@@ -321,6 +440,7 @@ class GuestLinkTest extends TestCase
 
         $this->get(route('client.link.track', ['expired-link', $order->token_view]))->assertNotFound();
         $this->get(route('client.link.download', ['expired-link', $order->token_view]))->assertNotFound();
+        $this->getJson(route('client.link.pulse', ['token' => 'expired-link']))->assertNotFound();
     }
 
     public function test_guest_link_still_opens_when_new_lifecycle_columns_are_unavailable(): void
@@ -384,6 +504,7 @@ class GuestLinkTest extends TestCase
         $this->assertSame($admin->id, (int) $link->revoked_by_user_id);
 
         $this->get(route('client.upload', 'revoke-link'))->assertNotFound();
+        $this->getJson(route('client.link.pulse', ['token' => 'revoke-link']))->assertNotFound();
 
         $this->assertDatabaseHas('audit_logs', [
             'event_type' => 'client_link.revoked',
@@ -403,6 +524,30 @@ class GuestLinkTest extends TestCase
 
         $this->delete(route('client.link.track', ['no-delete-link', $order->token_view]))
             ->assertStatus(405);
+    }
+
+    public function test_guest_upload_fragment_retains_upload_form_after_replacement(): void
+    {
+        $this->prepareR2Disk();
+        Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
+        $this->fakeTelegramAlerts();
+
+        $client = $this->makeClient(slots: 3);
+        $link = $this->makeLink($client, ['token' => 'fragment-link']);
+        $this->uploadGuestOrder($client, $link, 'fragment.pdf');
+
+        $pulse = $this->getJson(route('client.link.pulse', ['token' => 'fragment-link']));
+
+        $pulse->assertOk()
+            ->assertJsonStructure(['signature', 'checked_at', 'liveHtml']);
+
+        $html = (string) $pulse->json('liveHtml');
+
+        $this->assertStringContainsString('id="guest-link-live"', $html);
+        $this->assertStringContainsString('id="upload-form"', $html);
+        $this->assertStringContainsString('id="drop-zone"', $html);
+        $this->assertStringContainsString('id="upload-submit-btn"', $html);
+        $this->assertStringContainsString(route('client.store', 'fragment-link'), $html);
     }
 
     public function test_partial_finished_outputs_can_be_downloaded_individually(): void
