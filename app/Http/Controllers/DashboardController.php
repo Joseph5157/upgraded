@@ -94,15 +94,17 @@ class DashboardController extends Controller
             $this->forgetVendorStatsCache(auth()->id());
 
             if ($request->expectsJson()) {
-                $claimedOrder = Order::with(['client', 'files', 'report', 'vendor'])->find($orderToUse->id);
-                $rowHtml  = view('partials.workspace-row',  ['order' => $claimedOrder])->render();
-                $cardHtml = view('partials.workspace-card', ['order' => $claimedOrder])->render();
+                $myWorkspace = Order::with(['client', 'files', 'report', 'vendor'])
+                    ->where('claimed_by', auth()->id())
+                    ->whereIn('status', [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing])
+                    ->latest()
+                    ->get();
+                $workspaceHtml = view('dashboard.partials.workspace', compact('myWorkspace'))->render();
 
                 return response()->json([
-                    'success'  => true,
-                    'message'  => 'Order claimed.',
-                    'rowHtml'  => $rowHtml,
-                    'cardHtml' => $cardHtml,
+                    'success'       => true,
+                    'message'       => 'Order claimed.',
+                    'workspaceHtml' => $workspaceHtml,
                 ]);
             }
 

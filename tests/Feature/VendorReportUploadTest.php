@@ -9,9 +9,13 @@ use App\Models\Client;
 use App\Models\Order;
 use App\Models\OrderReport;
 use App\Models\User;
+use App\Jobs\SendOrderCompletedTelegramNotification;
 use App\Services\UploadVendorReportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -27,6 +31,8 @@ class VendorReportUploadTest extends TestCase
         config(['filesystems.default' => 'local']);
         Storage::fake('local');
 
+        Queue::fake();
+
         $claimResponse = $this->actingAs($vendor)->post(route('orders.claim', $order), [], [
             'X-Requested-With' => 'XMLHttpRequest',
             'Accept' => 'application/json',
@@ -35,8 +41,8 @@ class VendorReportUploadTest extends TestCase
         $claimResponse->assertOk()->assertJsonFragment(['success' => true]);
 
         $payload = $claimResponse->json();
-        $this->assertStringContainsString('upload-modal-' . $order->id, (string) ($payload['rowHtml'] ?? ''));
-        $this->assertStringContainsString('submit-btn-' . $order->id, (string) ($payload['rowHtml'] ?? ''));
+        $this->assertStringContainsString('upload-modal-' . $order->id, (string) ($payload['workspaceHtml'] ?? ''));
+        $this->assertStringContainsString('submit-btn-' . $order->id, (string) ($payload['workspaceHtml'] ?? ''));
 
         $uploadResponse = $this->actingAs($vendor)->post(route('orders.report', $order), [
             'ai_skipped' => '1',
@@ -53,6 +59,10 @@ class VendorReportUploadTest extends TestCase
                 'success' => 'Reports uploaded. Order delivered successfully.',
             ]);
 
+        Queue::assertPushed(SendOrderCompletedTelegramNotification::class, function (SendOrderCompletedTelegramNotification $job) use ($order): bool {
+            return (int) $job->order->getKey() === (int) $order->getKey();
+        });
+
         $order->refresh();
         $this->assertSame(OrderStatus::Delivered, $order->status);
         $this->assertDatabaseHas('order_reports', [
@@ -62,6 +72,45 @@ class VendorReportUploadTest extends TestCase
 
         $report = OrderReport::where('order_id', $order->id)->firstOrFail();
         $this->assertSame('plag-report.pdf', $report->plag_report_original_name);
+    }
+
+    public function test_order_completed_telegram_job_retries_when_send_fails(): void
+    {
+        [$vendor, $order] = $this->createVendorOrder();
+        $creator = User::factory()->create([
+            'role' => 'vendor',
+            'status' => 'active',
+            'email_verified_at' => now(),
+            'telegram_chat_id' => '777123456',
+        ]);
+
+        $order->update([
+            'created_by_user_id' => $creator->id,
+        ]);
+
+        config([
+            'services.telegram.bot_token' => 'bot-token',
+            'services.telegram.vendor_chat_id' => 'vendor-chat-id',
+            'services.telegram.testing_fake' => false,
+        ]);
+
+        Http::fake([
+            'api.telegram.org/*' => Http::response(['ok' => false], 500),
+        ]);
+        Log::shouldReceive('warning')
+            ->once()
+            ->with(
+                'Telegram send failed.',
+                \Mockery::on(function (array $context): bool {
+                    return ($context['chat_id'] ?? null) === '777123456'
+                        && ($context['status'] ?? null) === 500;
+                })
+            );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Failed to send the order-completed Telegram notification.');
+
+        (new SendOrderCompletedTelegramNotification($order))->handle(app(\App\Services\TelegramService::class));
     }
 
     public function test_upload_flow_rejects_state_change_and_cleans_up_files(): void

@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderLog;
 use App\Models\OrderReport;
 use App\Models\User;
+use App\Jobs\SendOrderCompletedTelegramNotification;
 use App\Support\LogContext;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -287,13 +288,7 @@ class OrderWorkflowService
 
         Cache::forget('admin_dashboard_stats');
 
-        try {
-            /** @var \App\Services\PortalTelegramAlertService $telegramAlerts */
-            $telegramAlerts = app(\App\Services\PortalTelegramAlertService::class);
-            $telegramAlerts->notifyOrderCompleted(Order::findOrFail($order->id));
-        } catch (\Throwable $e) {
-            report($e);
-        }
+        SendOrderCompletedTelegramNotification::dispatch(Order::findOrFail($order->id));
 
         try {
             $this->notificationService->notifyOrderStatusChange(
