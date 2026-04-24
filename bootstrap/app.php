@@ -6,7 +6,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Session\TokenMismatchException;
+use App\Support\SessionExpiryResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -35,27 +36,11 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {
-            $message = 'Your session expired. Please sign in again.';
-            $loginUrl = route('login', ['expired' => 1]);
+            return SessionExpiryResponse::make($request);
+        });
 
-            if ($request->expectsJson()) {
-                return response()
-                    ->json([
-                        'message' => $message,
-                        'redirect' => $loginUrl,
-                    ], 401)
-                    ->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
-            }
-
-            if (Auth::check()) {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-            }
-
-            return redirect()->route('login', ['expired' => 1])
-                ->with('error', $message)
-                ->header('X-Request-Id', (string) $request->attributes->get('request_id', ''));
+        $exceptions->render(function (TokenMismatchException $e, Request $request) {
+            return SessionExpiryResponse::make($request);
         });
 
         $exceptions->render(function (AuthorizationException $e, Request $request) {
@@ -73,17 +58,20 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (Throwable $e, Request $request) {
+            $status = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
+
+            if ($status === 419) {
+                return SessionExpiryResponse::make($request, 419);
+            }
+
             if (! $request->expectsJson()) {
                 return null;
             }
-
-            $status = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
 
             $messages = [
                 401 => 'Authentication is required to continue.',
                 403 => 'You do not have permission to do that.',
                 404 => 'We could not find what you were looking for.',
-                419 => 'Your session has expired. Please refresh and try again.',
                 422 => 'Some submitted data is invalid.',
                 429 => 'Too many requests. Please wait and try again.',
                 500 => 'Something went wrong on our side. Please try again.',

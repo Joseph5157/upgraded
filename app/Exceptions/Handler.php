@@ -8,6 +8,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use App\Support\SessionExpiryResponse;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -47,9 +48,8 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
-        // 419 Session Expired - show nice custom page
         if ($e instanceof TokenMismatchException || $e->getCode() === 419) {
-            return response()->view('errors.419', [], 419);
+            return SessionExpiryResponse::make($request);
         }
 
         // 500 Internal Server Error in production - show friendly page

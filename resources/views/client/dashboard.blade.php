@@ -919,7 +919,7 @@
             let inFlight = false;
 
             function redirectToLogin() {
-                window.location.href = loginUrl;
+                window.location.replace(loginUrl);
             }
 
              async function checkForDashboardUpdates() {

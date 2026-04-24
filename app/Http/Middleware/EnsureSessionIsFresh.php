@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Support\SessionExpiry;
+use App\Support\SessionExpiryResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,21 +25,7 @@ class EnsureSessionIsFresh
                 'session_expires_at' => SessionExpiry::nextMidnight($now->toImmutable()),
             ])->save();
         } elseif ($now->greaterThanOrEqualTo($user->session_expires_at)) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
-            $message = 'Your session expired. Please sign in again.';
-            $loginUrl = route('login', ['expired' => 1]);
-
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => $message,
-                    'redirect' => $loginUrl,
-                ], 401);
-            }
-
-            return redirect()->route('login', ['expired' => 1])->with('error', $message);
+            return SessionExpiryResponse::make($request);
         }
 
         return $next($request);

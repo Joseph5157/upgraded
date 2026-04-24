@@ -17,7 +17,7 @@
         let refreshInProgress = false;
 
         function redirectToLogin(message = 'Your session expired. Please sign in again.') {
-            window.location.href = LOGIN_URL;
+            window.location.replace(LOGIN_URL);
         }
 
         function refreshVendorDashboard() {
@@ -352,6 +352,13 @@
                     };
 
                     xhr.onload = function () {
+                        if (xhr.status === 419) {
+                            let payload = null;
+                            try { payload = JSON.parse(xhr.responseText); } catch (e) {}
+                            window.location.replace((payload && payload.redirect) || LOGIN_URL);
+                            return;
+                        }
+
                         if (xhr.status >= 200 && xhr.status < 300) {
                             // Try to parse as JSON (our AJAX handler response)
                             try {

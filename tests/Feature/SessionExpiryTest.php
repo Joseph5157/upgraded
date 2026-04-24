@@ -9,6 +9,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -75,7 +77,7 @@ class SessionExpiryTest extends TestCase
             'HTTP_ACCEPT' => 'application/json',
         ]);
 
-        $response->assertStatus(401);
+        $response->assertStatus(419);
         $response->assertJson([
             'message' => 'Your session expired. Please sign in again.',
             'redirect' => route('login', ['expired' => 1]),
@@ -83,6 +85,38 @@ class SessionExpiryTest extends TestCase
         $this->assertGuest();
 
         Carbon::setTestNow();
+    }
+
+    public function test_browser_token_mismatch_redirects_to_login_with_friendly_message(): void
+    {
+        Route::middleware('web')->post('/__session-expiry-browser', function (): never {
+            throw new TokenMismatchException();
+        });
+
+        $response = $this->post('/__session-expiry-browser');
+
+        $response->assertRedirect(route('login', ['expired' => 1]));
+        $response->assertSessionHas('error', 'Your session expired. Please sign in again.');
+        $this->assertGuest();
+    }
+
+    public function test_ajax_token_mismatch_returns_419_json_and_login_redirect(): void
+    {
+        Route::middleware('web')->post('/__session-expiry-ajax', function (): never {
+            throw new TokenMismatchException();
+        });
+
+        $response = $this->withHeaders([
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+            'HTTP_ACCEPT' => 'application/json',
+        ])->post('/__session-expiry-ajax');
+
+        $response->assertStatus(419);
+        $response->assertJson([
+            'message' => 'Your session expired. Please sign in again.',
+            'redirect' => route('login', ['expired' => 1]),
+        ]);
+        $this->assertGuest();
     }
 
     public static function dashboardRoutes(): array
