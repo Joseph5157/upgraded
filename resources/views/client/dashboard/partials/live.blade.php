@@ -93,37 +93,55 @@
         </div>
     </div>
 
-    <div class="card rounded-3xl p-4 sm:p-5 xl:p-6 flex flex-col gap-4">
-        <div class="flex justify-between items-start gap-3">
-            <div>
-                <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">New Order</p>
-                <h2 class="text-[15px] sm:text-[17px] font-bold text-white tracking-tight mt-2">Secure Upload</h2>
-                <p class="text-[11px] text-slate-400 mt-1">Submit your document for non-repository scanning</p>
-            </div>
-            <div class="w-10 h-10 sm:w-11 sm:h-11 bg-white/[0.03] rounded-2xl flex items-center justify-center border border-white/[0.06] flex-shrink-0">
-                <i data-lucide="shield" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400"></i>
-            </div>
-        </div>
+    {{-- UPLOAD CARD --}}
+    <div class="rounded-3xl overflow-hidden"
+         style="background:#0f0f14; border:1px solid rgba(99,102,241,0.2); box-shadow:0 0 0 1px rgba(99,102,241,0.07), 0 8px 32px -8px rgba(99,102,241,0.15);">
 
-        <button onclick="openClientUploadModal()"
-            class="w-full flex items-center justify-center gap-2.5 py-5 rounded-2xl border-2 border-dashed border-indigo-500/[0.2] bg-indigo-500/[0.03] hover:border-indigo-400/50 hover:bg-indigo-500/[0.06] text-indigo-400 font-bold text-[13px] transition-all active:scale-[0.98]">
-            <i data-lucide="plus-circle" class="w-5 h-5"></i>
-            New Order
-        </button>
+        {{-- Gradient top strip --}}
+        <div class="h-1 w-full" style="background:linear-gradient(90deg,#6366f1,#8b5cf6,#6366f1);"></div>
 
-        <div class="grid grid-cols-2 gap-2 sm:gap-3">
-            <div class="p-3 sm:p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.06] flex items-center gap-2 sm:gap-3">
-                <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
-                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+        <div class="p-4 sm:p-5 xl:p-6 flex flex-col gap-4">
+
+            {{-- Header --}}
+            <div class="flex justify-between items-start gap-3">
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-[0.22em] text-indigo-400/70">New Order</p>
+                    <h2 class="text-[15px] sm:text-[17px] font-bold text-white tracking-tight mt-2">Secure Upload</h2>
+                    <p class="text-[11px] text-slate-400 mt-1">Submit your document for non-repository scanning</p>
                 </div>
-                <span class="text-[9px] sm:text-[10px] font-bold text-slate-300 uppercase tracking-[0.14em] sm:tracking-widest leading-tight">AI Detection<br>Enabled</span>
-            </div>
-            <div class="p-3 sm:p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.06] flex items-center gap-2 sm:gap-3">
-                <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
-                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                <div class="w-10 h-10 sm:w-11 sm:h-11 bg-indigo-500/[0.12] rounded-2xl flex items-center justify-center border border-indigo-500/[0.2] flex-shrink-0">
+                    <i data-lucide="shield" class="w-4 h-4 sm:w-5 sm:h-5 text-indigo-400"></i>
                 </div>
-                <span class="text-[9px] sm:text-[10px] font-bold text-slate-300 uppercase tracking-[0.14em] sm:tracking-widest leading-tight">No Repo<br>Mode</span>
             </div>
+
+            {{-- Upload button — inner card --}}
+            <div class="rounded-2xl" style="background:rgba(99,102,241,0.04); border:1px solid rgba(99,102,241,0.12);">
+                <button onclick="openClientUploadModal()"
+                    class="w-full flex flex-col items-center justify-center gap-2 py-7 text-indigo-400 font-bold text-[13px] transition-all active:scale-[0.98] hover:bg-indigo-500/[0.05] rounded-2xl">
+                    <span class="w-11 h-11 rounded-xl bg-indigo-500/[0.12] border border-indigo-500/[0.2] flex items-center justify-center mb-1">
+                        <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                    </span>
+                    <span class="text-[14px] font-bold text-white">New Order</span>
+                    <span class="text-[10px] text-slate-500 font-medium normal-case tracking-normal">PDF · DOCX · ZIP · up to 100MB</span>
+                </button>
+            </div>
+
+            {{-- Feature badges --}}
+            <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                <div class="p-3 sm:p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.06] flex items-center gap-2 sm:gap-3">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <span class="text-[9px] sm:text-[10px] font-bold text-slate-300 uppercase tracking-[0.14em] sm:tracking-widest leading-tight">AI Detection<br>Enabled</span>
+                </div>
+                <div class="p-3 sm:p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.06] flex items-center gap-2 sm:gap-3">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                    </div>
+                    <span class="text-[9px] sm:text-[10px] font-bold text-slate-300 uppercase tracking-[0.14em] sm:tracking-widest leading-tight">No Repo<br>Mode</span>
+                </div>
+            </div>
+
         </div>
     </div>
 
