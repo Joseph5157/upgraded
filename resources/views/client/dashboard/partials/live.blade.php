@@ -100,8 +100,8 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
         <div class="lg:col-span-7">
-            <div class="card rounded-3xl p-4 sm:p-5 xl:p-6">
-                <div class="flex justify-between items-start gap-3 mb-4 sm:mb-5">
+            <div class="card rounded-3xl p-4 sm:p-5 xl:p-6 flex flex-col gap-4">
+                <div class="flex justify-between items-start gap-3">
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">New Order</p>
                         <h2 class="text-[15px] sm:text-[17px] font-bold text-white tracking-tight mt-2">Secure Upload</h2>
@@ -112,53 +112,13 @@
                     </div>
                 </div>
 
-                <form id="upload-form" action="{{ route('client.dashboard.upload') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
+                <button onclick="openClientUploadModal()"
+                    class="w-full flex items-center justify-center gap-2.5 py-5 rounded-2xl border-2 border-dashed border-indigo-500/[0.2] bg-indigo-500/[0.03] hover:border-indigo-400/50 hover:bg-indigo-500/[0.06] text-indigo-400 font-bold text-[13px] transition-all active:scale-[0.98]">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    New Order
+                </button>
 
-                    <label for="files" id="drop-zone" class="group block rounded-[1.25rem] sm:rounded-[1.5rem] px-4 sm:px-8 py-6 sm:py-7 text-center cursor-pointer transition-all border border-dashed border-indigo-500/[0.16] bg-indigo-500/[0.03] hover:border-indigo-400/40 hover:bg-indigo-500/[0.05]">
-                        <input type="file" name="files[]" id="files" required class="sr-only"
-                            accept=".pdf,.doc,.docx,.zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip"
-                            onchange="handleFileSelect(this)">
-                        <div id="drop-icon" class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
-                            <i data-lucide="file-plus" class="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400"></i>
-                        </div>
-                        <h3 class="text-[13px] sm:text-[15px] font-bold text-white/90 mb-1.5">Drop a file here or click</h3>
-                        <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em] sm:tracking-widest">PDF, DOCX, DOC, ZIP up to 100MB · One file per order</p>
-                        <p id="selected-file-count" class="hidden text-[10px] text-emerald-400 font-bold mt-2 uppercase tracking-[0.18em]"></p>
-                        <p id="multi-file-error" class="hidden text-[10px] text-red-400 font-bold mt-2 uppercase tracking-[0.18em]">Only 1 file allowed per order</p>
-                        <p class="text-[9px] text-indigo-400/50 mt-1 sm:hidden">Tap to browse</p>
-                    </label>
-
-                    <div id="upload-stage" class="hidden mt-3 space-y-3">
-                        <div id="file-preview" class="bg-white/[0.03] border border-white/[0.06] rounded-2xl divide-y divide-white/[0.04]"></div>
-
-                        <div class="space-y-1.5">
-                            <label class="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                                <i data-lucide="message-square" class="w-3 h-3 text-indigo-400"></i>
-                                Instructions for Vendor
-                                <span class="text-slate-600 font-medium normal-case tracking-normal">(optional)</span>
-                            </label>
-                            <textarea name="notes" id="notes-input" rows="2"
-                                placeholder="e.g. Please check for AI content in Chapter 2, priority is plagiarism scan..."
-                                class="w-full bg-white/[0.03] border border-white/[0.07] hover:border-indigo-500/30 focus:border-indigo-500/50 rounded-xl px-4 py-3 text-[12px] text-white placeholder-slate-700 focus:outline-none transition-all resize-none leading-relaxed"></textarea>
-                            <p id="notes-counter" class="text-[9px] text-slate-700 text-right font-mono">0 / 1000</p>
-                        </div>
-
-                        <div class="flex items-center gap-3">
-                            <button type="button" onclick="resetUpload()"
-                                class="flex items-center gap-1.5 px-4 py-2.5 bg-white/[0.04] hover:bg-white/[0.07] text-slate-500 hover:text-slate-300 text-[11px] font-semibold rounded-xl border border-white/[0.06] transition-all">
-                                <i data-lucide="x" class="w-3.5 h-3.5"></i> Clear
-                            </button>
-                            <button type="submit" id="upload-submit-btn"
-                                class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
-                                <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                                Submit Order
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <div class="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+                <div class="grid grid-cols-2 gap-2 sm:gap-3">
                     <div class="p-3 sm:p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.06] flex items-center gap-2 sm:gap-3">
                         <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
                             <i data-lucide="check" class="w-3.5 h-3.5"></i>

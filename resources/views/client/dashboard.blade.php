@@ -342,13 +342,13 @@
                 </div>
             </div>
 
-            {{--  MAIN GRID: UPLOAD + ACTIVITY  --}}
+            {{--  MAIN GRID: UPLOAD BUTTON + ACTIVITY  --}}
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
 
-                {{-- UPLOAD SECTION --}}
+                {{-- NEW ORDER BUTTON --}}
                 <div class="lg:col-span-7">
-                    <div class="card rounded-3xl p-4 sm:p-5 xl:p-6">
-                        <div class="flex justify-between items-start gap-3 mb-4 sm:mb-5">
+                    <div class="card rounded-3xl p-4 sm:p-5 xl:p-6 flex flex-col gap-4">
+                        <div class="flex justify-between items-start gap-3">
                             <div>
                                 <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">New Order</p>
                                 <h2 class="text-[15px] sm:text-[17px] font-bold text-white tracking-tight mt-2">Secure Upload</h2>
@@ -359,59 +359,13 @@
                             </div>
                         </div>
 
-                        <form id="upload-form" action="{{ route('client.dashboard.upload') }}" method="POST" enctype="multipart/form-data">
-                            @csrf
+                        <button onclick="openClientUploadModal()"
+                            class="w-full flex items-center justify-center gap-2.5 py-5 rounded-2xl border-2 border-dashed border-indigo-500/[0.2] bg-indigo-500/[0.03] hover:border-indigo-400/50 hover:bg-indigo-500/[0.06] text-indigo-400 font-bold text-[13px] transition-all active:scale-[0.98]">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            New Order
+                        </button>
 
-                            {{-- STEP 1: Drop zone --}}
-                            <label for="files" id="drop-zone" class="group block rounded-[1.25rem] sm:rounded-[1.5rem] px-4 sm:px-8 py-6 sm:py-7 text-center cursor-pointer transition-all border border-dashed border-indigo-500/[0.16] bg-indigo-500/[0.03] hover:border-indigo-400/40 hover:bg-indigo-500/[0.05]">
-                                <input type="file" name="files[]" id="files" required class="sr-only"
-                                    accept=".pdf,.doc,.docx,.zip,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip"
-                                    onchange="handleFileSelect(this)">
-                                <div id="drop-icon" class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
-                                    <i data-lucide="file-plus" class="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400"></i>
-                                </div>
-                                <h3 class="text-[13px] sm:text-[15px] font-bold text-white/90 mb-1.5">Drop a file here or click</h3>
-                                <p class="text-[9px] sm:text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em] sm:tracking-widest">PDF, DOCX, DOC, ZIP up to 100MB · One file per order</p>
-                                <p id="selected-file-count" class="hidden text-[10px] text-emerald-400 font-bold mt-2 uppercase tracking-[0.18em]"></p>
-                                <p id="multi-file-error" class="hidden text-[10px] text-red-400 font-bold mt-2 uppercase tracking-[0.18em]">Only 1 file allowed per order</p>
-                                <p class="text-[9px] text-indigo-400/50 mt-1 sm:hidden">Tap to browse</p>
-                            </label>
-
-                            {{-- STEP 2: File preview + notes + submit (hidden until files selected) --}}
-                            <div id="upload-stage" class="hidden mt-3 space-y-3">
-
-                                {{-- Selected files preview --}}
-                                <div id="file-preview" class="bg-white/[0.03] border border-white/[0.06] rounded-2xl divide-y divide-white/[0.04]"></div>
-
-                                {{-- Notes box --}}
-                                <div class="space-y-1.5">
-                                    <label class="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                                        <i data-lucide="message-square" class="w-3 h-3 text-indigo-400"></i>
-                                        Instructions for Vendor
-                                        <span class="text-slate-600 font-medium normal-case tracking-normal">(optional)</span>
-                                    </label>
-                                    <textarea name="notes" id="notes-input" rows="2"
-                                        placeholder="e.g. Please check for AI content in Chapter 2, priority is plagiarism scan..."
-                                        class="w-full bg-white/[0.03] border border-white/[0.07] hover:border-indigo-500/30 focus:border-indigo-500/50 rounded-xl px-4 py-3 text-[12px] text-white placeholder-slate-700 focus:outline-none transition-all resize-none leading-relaxed"></textarea>
-                                    <p id="notes-counter" class="text-[9px] text-slate-700 text-right font-mono">0 / 1000</p>
-                                </div>
-
-                                {{-- Action row --}}
-                                <div class="flex items-center gap-3">
-                                    <button type="button" onclick="resetUpload()"
-                                        class="flex items-center gap-1.5 px-4 py-2.5 bg-white/[0.04] hover:bg-white/[0.07] text-slate-500 hover:text-slate-300 text-[11px] font-semibold rounded-xl border border-white/[0.06] transition-all">
-                                        <i data-lucide="x" class="w-3.5 h-3.5"></i> Clear
-                                    </button>
-                                    <button type="submit" id="upload-submit-btn"
-                                        class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
-                                        <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                                        Submit Order
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-
-                        <div class="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+                        <div class="grid grid-cols-2 gap-2 sm:gap-3">
                             <div class="p-3 sm:p-3.5 bg-white/[0.02] rounded-xl border border-white/[0.06] flex items-center gap-2 sm:gap-3">
                                 <div class="w-7 h-7 rounded-lg bg-emerald-500/[0.12] flex items-center justify-center text-emerald-500 flex-shrink-0">
                                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
@@ -766,9 +720,8 @@
         </div>
     </div>
 
-    {{--
-         UPLOAD STAGING
-     --}}
+    @include('partials.client-upload-modal')
+
     <script>
         function openSidebar() {
             document.getElementById('mobile-sidebar').classList.add('open');
@@ -788,100 +741,253 @@
     </script>
 
     <script>
-        // ── Upload staging ──────────────────────────────────────────
-        function handleFileSelect(input) {
+        // ── Client upload modal ─────────────────────────────────────
+        const CLIENT_UPLOAD_MAX_SIZE  = 100 * 1024 * 1024;
+        const CLIENT_CSRF_REFRESH_URL = @json(route('csrf.refresh'));
+        const CLIENT_LOGIN_URL        = @json(route('login', ['expired' => 1]));
+        const CLIENT_DASHBOARD_URL    = @json(route('client.dashboard'));
+
+        function openClientUploadModal() {
+            if (window.__clientDashboardPolling) window.__clientDashboardPolling.stop();
+            const modal = document.getElementById('client-upload-modal');
+            if (modal) modal.classList.remove('hidden');
+            if (window.lucide && lucide.createIcons) lucide.createIcons();
+            // wire notes counter each time modal opens
+            const notes = document.getElementById('client-upload-notes');
+            if (notes) {
+                notes.oninput = function () {
+                    const counter = document.getElementById('client-upload-notes-counter');
+                    if (counter) counter.textContent = this.value.length + ' / 1000';
+                };
+            }
+        }
+
+        function closeClientUploadModal() {
+            const modal = document.getElementById('client-upload-modal');
+            if (modal) modal.classList.add('hidden');
+            _resetClientUploadModal();
+            if (window.__clientDashboardPolling) window.__clientDashboardPolling.start();
+        }
+
+        function _resetClientUploadModal() {
+            const input = document.getElementById('client-upload-input');
+            if (input) input.value = '';
+
+            const preview = document.getElementById('client-upload-preview');
+            if (preview) {
+                preview.innerHTML = '<p class="text-[13px] font-semibold text-white/90">Drop a file or tap to browse</p>' +
+                    '<p class="text-[10px] text-slate-500 mt-0.5">PDF \u00b7 DOCX \u00b7 DOC \u00b7 ZIP \u00b7 up to 100MB</p>';
+            }
+
+            const label = document.getElementById('client-upload-label');
+            if (label) {
+                label.classList.add('border-dashed', 'border-indigo-500/[0.16]', 'bg-white/[0.03]');
+                label.classList.remove('border-indigo-500/30', 'bg-indigo-500/[0.05]');
+            }
+
+            const notes = document.getElementById('client-upload-notes');
+            if (notes) notes.value = '';
+            const counter = document.getElementById('client-upload-notes-counter');
+            if (counter) counter.textContent = '0 / 1000';
+
+            ['client-upload-ready', 'client-upload-progress', 'client-upload-error'].forEach(function (id) {
+                const el = document.getElementById(id);
+                if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+            });
+
+            const submitBtn = document.getElementById('client-upload-submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i> Select a file first';
+            }
+            const cancelBtn = document.getElementById('client-upload-cancel-btn');
+            if (cancelBtn) cancelBtn.disabled = false;
+
+            const fill = document.getElementById('client-upload-progress-fill');
+            if (fill) fill.style.width = '0%';
+            const pct = document.getElementById('client-upload-progress-text');
+            if (pct) pct.textContent = '0%';
+
+            if (window.lucide && lucide.createIcons) lucide.createIcons();
+        }
+
+        function handleClientFileSelect(input) {
             const files = Array.from(input.files);
             if (!files.length) return;
 
-            window.__clientUploadDirty = true;
-
-            const errorText = document.getElementById('multi-file-error');
-            const countText = document.getElementById('selected-file-count');
+            _clientUploadClearError();
 
             if (files.length > 1) {
                 input.value = '';
-                errorText.classList.remove('hidden');
-                countText.classList.add('hidden');
-                document.getElementById('upload-stage').classList.add('hidden');
-                document.getElementById('drop-zone').classList.remove('opacity-60', 'pointer-events-none');
+                _clientUploadShowError('Only 1 file allowed per order.');
                 return;
             }
 
-            errorText.classList.add('hidden');
-
-            const preview = document.getElementById('file-preview');
-            preview.innerHTML = '';
-
             const file = files[0];
+
+            if (file.size > CLIENT_UPLOAD_MAX_SIZE) {
+                input.value = '';
+                _clientUploadShowError('File must be 100MB or smaller.');
+                return;
+            }
+
             const ext  = file.name.split('.').pop().toUpperCase();
             const size = file.size > 1048576
                 ? (file.size / 1048576).toFixed(1) + ' MB'
                 : (file.size / 1024).toFixed(0) + ' KB';
-            const colors = {
-                PDF:  'text-red-400 bg-red-500/[0.08] border-red-500/[0.12]',
-                DOCX: 'text-blue-400 bg-blue-500/[0.08] border-blue-500/[0.12]',
-                DOC:  'text-blue-400 bg-blue-500/[0.08] border-blue-500/[0.12]',
-                ZIP:  'text-amber-400 bg-amber-500/[0.08] border-amber-500/[0.12]'
-            };
-            const c = colors[ext] || 'text-slate-400 bg-slate-500/[0.08] border-slate-500/[0.12]';
-            preview.innerHTML = `
-                <div class="flex items-center gap-3 px-4 py-3">
-                    <span class="text-[8px] font-black px-1.5 py-0.5 rounded border ${c}">${ext}</span>
-                    <span class="text-[12px] font-semibold text-slate-200 truncate flex-1">${file.name}</span>
-                    <span class="text-[9px] text-slate-600 font-mono flex-shrink-0">${size}</span>
-                </div>`;
+            const name = file.name.length > 30 ? file.name.slice(0, 27) + '...' : file.name;
 
-            countText.textContent = '1 file selected';
-            countText.classList.remove('hidden');
-            document.getElementById('upload-stage').classList.remove('hidden');
-            document.getElementById('drop-zone').classList.add('opacity-60', 'pointer-events-none');
+            const preview = document.getElementById('client-upload-preview');
+            if (preview) {
+                preview.innerHTML = '<p class="text-[12px] font-bold text-indigo-300 truncate">' + name + '</p>' +
+                    '<p class="text-[10px] text-slate-400">' + ext + ' \u00b7 ' + size + ' \u00b7 Ready to submit</p>';
+            }
+
+            const label = document.getElementById('client-upload-label');
+            if (label) {
+                label.classList.remove('border-dashed', 'border-indigo-500/[0.16]', 'bg-white/[0.03]');
+                label.classList.add('border-indigo-500/30', 'bg-indigo-500/[0.05]');
+            }
+
+            const ready = document.getElementById('client-upload-ready');
+            if (ready) { ready.classList.remove('hidden'); ready.classList.add('flex'); }
+
+            const submitBtn = document.getElementById('client-upload-submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Submit Order';
+            }
+
+            if (window.lucide && lucide.createIcons) lucide.createIcons();
         }
 
-        function resetUpload() {
-            document.getElementById('files').value = '';
-            document.getElementById('file-preview').innerHTML = '';
-            document.getElementById('selected-file-count').textContent = '';
-            document.getElementById('selected-file-count').classList.add('hidden');
-            document.getElementById('upload-stage').classList.add('hidden');
-            document.getElementById('drop-zone').classList.remove('opacity-60', 'pointer-events-none');
-            document.getElementById('notes-input').value = '';
-            document.getElementById('notes-counter').textContent = '0 / 1000';
-            window.__clientUploadDirty = false;
-        }
+        function submitClientUploadForm() {
+            const form      = document.getElementById('client-upload-modal-form');
+            const submitBtn = document.getElementById('client-upload-submit-btn');
+            const cancelBtn = document.getElementById('client-upload-cancel-btn');
+            const ready     = document.getElementById('client-upload-ready');
+            const progress  = document.getElementById('client-upload-progress');
+            const fill      = document.getElementById('client-upload-progress-fill');
+            const pctText   = document.getElementById('client-upload-progress-text');
 
-        function clientUploadHasPendingSelection() {
-            const input = document.getElementById('files');
-            return !!(input && input.files && input.files.length > 0);
-        }
+            if (!form || submitBtn.disabled) return;
 
-        function wireUploadDashboardControls() {
-             const notesInput = document.getElementById('notes-input');
-             if (notesInput) {
-                 notesInput.addEventListener('input', function () {
-                     document.getElementById('notes-counter').textContent = this.value.length + ' / 1000';
-                 });
-             }
+            _clientUploadClearError();
 
-            const form = document.getElementById('upload-form');
-            const btn = document.getElementById('upload-submit-btn');
-            if (form && btn) {
-                form.addEventListener('submit', function () {
-                    window.__clientUploadInProgress = true;
-                    window.__clientUploadDirty = false;
-                    try {
-                        if (window.__clientDashboardPolling && typeof window.__clientDashboardPolling.stop === 'function') {
-                   window.__clientDashboardPolling.stop();
+            submitBtn.disabled = true;
+            cancelBtn.disabled = true;
+            submitBtn.innerHTML = 'Uploading...';
+            if (ready)    { ready.classList.add('hidden');    ready.classList.remove('flex'); }
+            if (progress) { progress.classList.remove('hidden'); progress.classList.add('flex'); }
+
+            let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+            fetch(CLIENT_CSRF_REFRESH_URL)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    csrfToken = data.token;
+                    const tokenField = form.querySelector('input[name="_token"]');
+                    if (tokenField) tokenField.value = csrfToken;
+                    const meta = document.querySelector('meta[name="csrf-token"]');
+                    if (meta) meta.setAttribute('content', csrfToken);
+                })
+                .catch(function () {})
+                .finally(function () {
+                    const xhr      = new XMLHttpRequest();
+                    const formData = new FormData(form);
+
+                    xhr.upload.onprogress = function (e) {
+                        if (!e.lengthComputable) return;
+                        const pct = Math.round((e.loaded / e.total) * 100);
+                        if (fill)    fill.style.width    = pct + '%';
+                        if (pctText) pctText.textContent = pct + '%';
+                    };
+
+                    xhr.onload = function () {
+                        if (xhr.status === 419) {
+                            window.location.replace(CLIENT_LOGIN_URL);
+                            return;
                         }
-                    } catch (e) {}
-                    btn.disabled = true;
-                    btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Uploading...';
-                 });
-             }
-         }
 
-         window.__wireClientDashboardControls = wireUploadDashboardControls;
-         document.addEventListener('DOMContentLoaded', wireUploadDashboardControls);
-        // ── End upload staging ───────────────────────────────────────
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                const data = JSON.parse(xhr.responseText);
+                                if (data.error) {
+                                    _clientUploadResetBtn();
+                                    _clientUploadShowError(data.error);
+                                    return;
+                                }
+                                try { if (data.success) sessionStorage.setItem('upload_success', data.success); } catch (_) {}
+                                window.location.href = data.redirect || CLIENT_DASHBOARD_URL;
+                                return;
+                            } catch (e) {}
+                            window.location.href = CLIENT_DASHBOARD_URL;
+                        } else {
+                            _clientUploadResetBtn();
+                            var msg = 'Upload failed. Please try again.';
+                            try {
+                                var payload = JSON.parse(xhr.responseText);
+                                msg = payload.error
+                                    || (payload.errors && Object.values(payload.errors).reduce(function (a, l) { return a.concat(l); }, []).find(Boolean))
+                                    || payload.message
+                                    || msg;
+                            } catch (e) {}
+                            if (xhr.status === 413) msg = 'File too large. Please upload a smaller file.';
+                            if (xhr.status >= 500) msg = 'Server error. Please try again in a moment.';
+                            _clientUploadShowError(msg);
+                        }
+                    };
+
+                    xhr.onerror = function () {
+                        _clientUploadResetBtn();
+                        _clientUploadShowError('Network error. Please check your connection and try again.');
+                    };
+
+                    xhr.open('POST', form.action);
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    xhr.setRequestHeader('Accept', 'application/json');
+                    xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+                    xhr.send(formData);
+                });
+        }
+
+        function _clientUploadShowError(msg) {
+            const errEl  = document.getElementById('client-upload-error');
+            const errMsg = document.getElementById('client-upload-error-msg');
+            if (errMsg) errMsg.textContent = msg;
+            if (errEl)  { errEl.classList.remove('hidden'); errEl.classList.add('flex'); }
+            const progress = document.getElementById('client-upload-progress');
+            if (progress) { progress.classList.add('hidden'); progress.classList.remove('flex'); }
+        }
+
+        function _clientUploadClearError() {
+            const errEl = document.getElementById('client-upload-error');
+            if (errEl) { errEl.classList.add('hidden'); errEl.classList.remove('flex'); }
+        }
+
+        function _clientUploadResetBtn() {
+            const submitBtn = document.getElementById('client-upload-submit-btn');
+            const cancelBtn = document.getElementById('client-upload-cancel-btn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i> Submit Order';
+            }
+            if (cancelBtn) cancelBtn.disabled = false;
+            const progress = document.getElementById('client-upload-progress');
+            if (progress) { progress.classList.add('hidden'); progress.classList.remove('flex'); }
+            const ready = document.getElementById('client-upload-ready');
+            if (ready) { ready.classList.remove('hidden'); ready.classList.add('flex'); }
+            if (window.lucide && lucide.createIcons) lucide.createIcons();
+        }
+
+        // Hoist modal to <body> so it is never clipped by a parent overflow
+        document.addEventListener('DOMContentLoaded', function () {
+            var modal = document.getElementById('client-upload-modal');
+            if (modal && modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+        });
+        // ── End client upload modal ──────────────────────────────────
     </script>
 
     <script>
@@ -921,14 +1027,6 @@
             }
 
              async function checkForDashboardUpdates() {
-                 if (window.__clientUploadInProgress) {
-                    return;
-                }
-
-                if (window.__clientUploadDirty || clientUploadHasPendingSelection()) {
-                    return;
-                }
-
                 if (inFlight || document.hidden) {
                     return;
                 }
@@ -962,19 +1060,11 @@
                     }
 
                     if (payload.liveHtml) {
-                        // Guard here too: the request may have been in-flight when the
-                        // user selected a file, so the entry-point check wasn't enough.
-                        if (window.__clientUploadDirty || clientUploadHasPendingSelection()) {
-                            return;
-                        }
                         const liveEl = document.getElementById('client-dashboard-live');
                         if (liveEl) {
                             liveEl.outerHTML = payload.liveHtml;
                             if (window.lucide && lucide.createIcons) {
                                 lucide.createIcons();
-                            }
-                            if (typeof window.__wireClientDashboardControls === 'function') {
-                                window.__wireClientDashboardControls();
                             }
                         }
                     }

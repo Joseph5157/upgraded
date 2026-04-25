@@ -175,10 +175,22 @@ class ClientDashboardController extends Controller
                     'message' => $e->getMessage(),
                 ]
             ));
+            if ($request->expectsJson()) {
+                return response()->json(['error' => $e->getMessage()], 422);
+            }
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('client.dashboard')->with('success', 'Order created successfully. Tracking ID: ' . $order->token_view);
+        $successMsg = 'Order created successfully. Tracking ID: ' . $order->token_view;
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success'  => $successMsg,
+                'redirect' => route('client.dashboard'),
+            ]);
+        }
+
+        return redirect()->route('client.dashboard')->with('success', $successMsg);
     }
 
     public function destroyFile(Order $order, OrderFile $file)
