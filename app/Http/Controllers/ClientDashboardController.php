@@ -292,6 +292,32 @@ class ClientDashboardController extends Controller
         return back()->with('success', 'Telegram test message sent successfully.');
     }
 
+    public function downloads(Request $request)
+    {
+        $user   = Auth::user();
+        $client = $user->client;
+
+        if (!$client) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return redirect()->route('login')->withErrors([
+                'link' => 'Your account is not fully configured. Please contact support.',
+            ]);
+        }
+
+        $orders = Order::where('client_id', $client->id)
+            ->where('source', 'account')
+            ->whereIn('status', [OrderStatus::Processing, OrderStatus::Delivered])
+            ->where('updated_at', '>=', now()->subHours(24))
+            ->when($user->role === 'client', fn ($q) => $q->where('created_by_user_id', $user->id))
+            ->with(['report', 'files'])
+            ->latest('updated_at')
+            ->get();
+
+        return view('client.downloads', compact('client', 'orders'));
+    }
+
     protected function buildDashboardSignature($user, Client $client): string
     {
         $ordersQuery = Order::query()

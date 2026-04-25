@@ -301,4 +301,112 @@
             </div>
         </div>
     </div>
+
+    {{-- DOWNLOADS SECTION --}}
+    @php
+        $downloadOrders = $orders->filter(
+            fn($o) => in_array($o->status->value, ['processing', 'delivered'])
+                   && $o->updated_at->gte(now()->subHours(24))
+        );
+    @endphp
+
+    <div>
+        <div class="flex items-center justify-between gap-3 px-1 mb-3">
+            <h2 class="text-[10px] sm:text-[11px] font-black text-white uppercase tracking-[0.18em] sm:tracking-[0.2em]">Downloads</h2>
+            <span class="text-[7px] font-black uppercase tracking-widest text-slate-600 bg-white/[0.03] border border-white/[0.06] px-2 py-0.5 rounded">Last 24h</span>
+        </div>
+
+        <div class="space-y-3">
+            @forelse($downloadOrders as $order)
+
+                {{-- PROCESSING --}}
+                @if($order->status->value === 'processing')
+                    <div class="card rounded-2xl overflow-hidden">
+                        <div class="flex items-start justify-between gap-3 p-4">
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <div class="w-10 h-10 bg-blue-500/[0.07] rounded-xl flex items-center justify-center text-blue-400 border border-blue-500/[0.12] flex-shrink-0">
+                                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-[13px] font-bold text-white truncate leading-snug">
+                                        {{ $order->files->first()
+                                            ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path))
+                                            : 'Document' }}
+                                    </h4>
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                                        #{{ strtoupper($order->token_view) }} &bull; {{ $order->updated_at->format('h:i A') }}
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="status-badge bg-blue-500/[0.1] text-blue-400 border border-blue-500/[0.15] flex-shrink-0">
+                                <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> Processing
+                            </span>
+                        </div>
+                        <div class="border-t border-white/[0.05] px-4 py-3 flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full pulse-dot flex-shrink-0"></span>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Report will appear here when ready</p>
+                        </div>
+                    </div>
+
+                {{-- DELIVERED --}}
+                @elseif($order->status->value === 'delivered')
+                    <div class="card rounded-2xl overflow-hidden">
+                        <div class="flex items-start justify-between gap-3 p-4">
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <div class="w-10 h-10 bg-emerald-500/[0.07] rounded-xl flex items-center justify-center text-emerald-400 border border-emerald-500/[0.12] flex-shrink-0">
+                                    <i data-lucide="file-check" class="w-5 h-5"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-[13px] font-bold text-white truncate leading-snug">
+                                        {{ $order->files->first()
+                                            ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path))
+                                            : 'Document' }}
+                                    </h4>
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                                        #{{ strtoupper($order->token_view) }} &bull; {{ $order->updated_at->format('h:i A') }}
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="status-badge bg-emerald-500/[0.1] text-emerald-400 border border-emerald-500/[0.15] flex-shrink-0">
+                                <span class="w-1 h-1 rounded-full bg-emerald-400"></span> Ready
+                            </span>
+                        </div>
+                        <div class="border-t border-white/[0.05] px-4 py-3">
+                            <div class="flex flex-wrap items-center gap-2">
+                                @if($order->report?->ai_report_path && $order->report?->plag_report_path)
+                                    <a href="{{ route('client.download', $order->token_view) }}"
+                                        class="flex items-center gap-1.5 px-3 py-2 bg-indigo-500/[0.12] hover:bg-indigo-500/[0.2] text-indigo-300 text-[10px] font-bold rounded-xl border border-indigo-500/[0.2] transition-all active:scale-95">
+                                        <i data-lucide="archive" class="w-3.5 h-3.5"></i> Download Both
+                                    </a>
+                                @endif
+                                @if($order->report?->ai_report_path)
+                                    <a href="{{ route('client.download', $order->token_view) }}?type=ai"
+                                        class="flex items-center gap-1.5 px-3 py-2 bg-white/[0.03] hover:bg-red-500/[0.1] text-red-300 text-[10px] font-bold rounded-xl border border-red-500/[0.12] transition-all active:scale-95">
+                                        <i data-lucide="download" class="w-3.5 h-3.5"></i> AI Report
+                                    </a>
+                                @endif
+                                @if($order->report?->plag_report_path)
+                                    <a href="{{ route('client.download', $order->token_view) }}?type=plag"
+                                        class="flex items-center gap-1.5 px-3 py-2 bg-white/[0.03] hover:bg-amber-500/[0.1] text-amber-300 text-[10px] font-bold rounded-xl border border-amber-500/[0.12] transition-all active:scale-95">
+                                        <i data-lucide="download" class="w-3.5 h-3.5"></i> Plag Report
+                                    </a>
+                                @endif
+                                @if(!$order->report?->ai_report_path && !$order->report?->plag_report_path)
+                                    <p class="text-[10px] text-slate-600 font-medium">Reports not yet attached by admin</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+            @empty
+                <div class="card rounded-2xl px-4 py-6 flex items-center gap-4">
+                    <div class="w-9 h-9 bg-white/[0.03] rounded-xl flex items-center justify-center border border-white/[0.05] flex-shrink-0">
+                        <i data-lucide="download" class="w-4 h-4 text-slate-700"></i>
+                    </div>
+                    <p class="text-[11px] text-slate-600 font-medium">No active downloads — reports ready in the last 24h will appear here</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
 </div>

@@ -571,12 +571,12 @@
                     <span class="text-[9px] font-bold uppercase tracking-widest">Home</span>
                 </a>
 
-                {{-- Orders --}}
-                <button onclick="showComingSoon()"
-                   class="flex-1 flex flex-col items-center gap-1 py-3 text-slate-600">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                    <span class="text-[9px] font-bold uppercase tracking-widest">Orders</span>
-                </button>
+                {{-- Downloads --}}
+                <a href="{{ route('client.downloads') }}"
+                   class="flex-1 flex flex-col items-center gap-1 py-3 text-slate-500 hover:text-slate-300 transition-colors">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Downloads</span>
+                </a>
 
                 {{-- Credits --}}
                 <a href="{{ route('client.subscription') }}"
@@ -592,24 +592,9 @@
                     <span class="text-[9px] font-bold uppercase tracking-widest">Profile</span>
                 </a>
 
-                {{-- Logout --}}
-                <form method="POST" action="{{ route('logout') }}" class="flex-1">
-                    @csrf
-                    <button type="submit"
-                       class="w-full flex flex-col items-center gap-1 py-3 text-slate-500 hover:text-red-400 transition-colors">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                        <span class="text-[9px] font-bold uppercase tracking-widest">Logout</span>
-                    </button>
-                </form>
-
             </div>
         </nav>
 
-        {{-- Coming Soon Toast --}}
-        <div id="coming-soon-toast"
-             class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 hidden md:hidden bg-[#1e1e2e] border border-indigo-500/20 text-indigo-300 text-xs font-semibold px-5 py-3 rounded-2xl shadow-xl">
-            Orders coming soon
-        </div>
     </main>
 
     {{-- 
@@ -987,13 +972,6 @@
 
     <script>
         lucide.createIcons();
-
-        function showComingSoon() {
-            const toast = document.getElementById('coming-soon-toast');
-            if (!toast) return;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2500);
-        }
 
         //  Top-up
         const pricePerSlot = {{ $client->price_per_file ?? 0 }};

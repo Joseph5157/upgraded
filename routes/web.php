@@ -101,6 +101,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
         Route::delete('/orders/{order}/files/{file}', [ClientDashboardController::class, 'destroyFile'])->name('orders.files.delete');
         Route::post('/topup', [TopupRequestController::class, 'store'])->name('topup.store');
         Route::get('/subscription', [ClientSubscriptionController::class, 'index'])->name('subscription');
+        Route::get('/downloads', [ClientDashboardController::class, 'downloads'])->name('downloads');
     });
 
     Route::post('/announcements/{announcement}/dismiss', [AnnouncementController::class, 'dismiss'])->name('announcements.dismiss');
