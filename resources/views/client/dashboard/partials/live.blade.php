@@ -183,47 +183,165 @@
 
             <div class="card rounded-3xl p-3 sm:p-4 overflow-y-auto scrollbar-thin max-h-[500px] space-y-2">
                 <div class="overflow-x-auto -mx-4 px-4">
-                    @forelse($orders as $order)
-                        <div class="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4 group">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="flex items-center gap-3 min-w-0 flex-1">
-                                    <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/[0.04] rounded-xl flex items-center justify-center text-slate-500 group-hover:bg-indigo-500/[0.12] group-hover:text-indigo-400 transition-all border border-white/[0.05] flex-shrink-0">
-                                        <i data-lucide="file-text" class="w-5 h-5"></i>
-                                    </div>
+                @forelse($orders as $order)
+                    <div class="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4 group">
+
+                        {{-- File row --}}
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/[0.04] rounded-xl flex items-center justify-center text-slate-500 group-hover:bg-indigo-500/[0.12] group-hover:text-indigo-400 transition-all border border-white/[0.05] flex-shrink-0">
+                                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                                </div>
+                                <div class="min-w-0">
                                     <div class="min-w-0">
-                                        <div class="min-w-0">
-                                            <h4 class="text-[12px] sm:text-[13px] font-bold text-white truncate leading-snug max-w-[170px] sm:max-w-none">
-                                                {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'Document' }}
-                                            </h4>
-                                            @if($order->files_count > 1)
-                                                <p class="text-[9px] text-indigo-300 font-bold uppercase tracking-widest mt-1">
-                                                    + {{ $order->files_count - 1 }} more file{{ $order->files_count - 1 > 1 ? 's' : '' }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                        <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
-                                            {{ $order->created_at->diffForHumans() }}
-                                        </p>
+                                        <h4 class="text-[12px] sm:text-[13px] font-bold text-white truncate leading-snug max-w-[170px] sm:max-w-none">
+                                            {{ $order->files->first() ? ($order->files->first()->original_name ?? basename($order->files->first()->file_path)) : 'Document' }}
+                                        </h4>
+                                        @if($order->files_count > 1)
+                                            <p class="text-[9px] text-indigo-300 font-bold uppercase tracking-widest mt-1">
+                                                + {{ $order->files_count - 1 }} more file{{ $order->files_count - 1 > 1 ? 's' : '' }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                                        {{ $order->created_at->format('d M, h:i A') }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {{-- Status badge --}}
+                            @if($order->status->value === 'delivered')
+                                <span class="status-badge bg-emerald-500/[0.1] text-emerald-400 border border-emerald-500/[0.15] flex-shrink-0">
+                                    <span class="w-1 h-1 rounded-full bg-emerald-400"></span> Ready
+                                </span>
+                            @elseif($order->status->value === 'cancelled')
+                                <span class="status-badge bg-slate-500/[0.1] text-slate-500 border border-slate-500/[0.15] flex-shrink-0">
+                                    <span class="w-1 h-1 rounded-full bg-slate-500"></span> Cancelled
+                                </span>
+                            @elseif($order->status->value === 'processing')
+                                <span class="status-badge bg-blue-500/[0.1] text-blue-400 border border-blue-500/[0.15] flex-shrink-0">
+                                    <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> In progress
+                                </span>
+                            @elseif($order->status->value === 'claimed')
+                                <span class="status-badge bg-amber-500/[0.1] text-amber-400 border border-amber-500/[0.15] flex-shrink-0">
+                                    <span class="w-1 h-1 rounded-full bg-amber-400"></span> Reserved
+                                </span>
+                            @else
+                                <span class="status-badge bg-slate-500/[0.08] text-slate-500 border border-slate-500/[0.1] flex-shrink-0">
+                                    <span class="w-1 h-1 rounded-full bg-slate-500 pulse-dot"></span> Queued
+                                </span>
+                            @endif
+                        </div>
+
+                        {{-- Divider --}}
+                        <div class="border-t border-white/[0.05] mt-3 pt-3">
+
+                            {{-- DELIVERED STATE --}}
+                            @if($order->status->value === 'delivered')
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        @if($order->report?->ai_report_path && $order->report?->plag_report_path)
+                                            <a href="{{ route('client.download', $order->token_view) }}"
+                                                class="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-500/[0.12] hover:bg-indigo-500/[0.2] text-indigo-300 text-[9px] font-bold rounded-lg border border-indigo-500/[0.2] transition-all active:scale-95">
+                                                <i data-lucide="archive" class="w-3 h-3"></i> Download Both
+                                            </a>
+                                        @endif
+                                        @if($order->report?->ai_report_path)
+                                            <a href="{{ route('client.download', $order->token_view) }}?type=ai"
+                                                class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-red-500/[0.12] text-red-300 text-[9px] font-bold rounded-lg border border-red-500/[0.12] transition-all active:scale-95">
+                                                <i data-lucide="download" class="w-3 h-3"></i> AI Report
+                                            </a>
+                                        @endif
+                                        @if($order->report?->plag_report_path)
+                                            <a href="{{ route('client.download', $order->token_view) }}?type=plag"
+                                                class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-amber-500/[0.12] text-amber-300 text-[9px] font-bold rounded-lg border border-amber-500/[0.12] transition-all active:scale-95">
+                                                <i data-lucide="download" class="w-3 h-3"></i> Plag Report
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
 
-                                <span class="flex-shrink-0 text-[8px] font-black uppercase tracking-[0.18em] px-2.5 py-1 rounded-full
-                                    @if($order->computed_status === 'pending') bg-amber-500/[0.08] text-amber-400 border border-amber-500/[0.12]
-                                    @elseif($order->computed_status === 'claimed') bg-blue-500/[0.08] text-blue-400 border border-blue-500/[0.12]
-                                    @elseif($order->computed_status === 'processing') bg-indigo-500/[0.08] text-indigo-400 border border-indigo-500/[0.12]
-                                    @elseif($order->computed_status === 'delivered') bg-emerald-500/[0.08] text-emerald-400 border border-emerald-500/[0.12]
-                                    @else bg-slate-500/[0.08] text-slate-400 border border-slate-500/[0.12] @endif">
-                                    {{ ucfirst($order->computed_status) }}
-                                </span>
-                            </div>
+                            {{-- CANCELLED STATE --}}
+                            @elseif($order->status->value === 'cancelled')
+                                @if($order->files->isNotEmpty())
+                                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                                        @foreach($order->files as $file)
+                                            <form method="POST" action="{{ route('client.orders.files.delete', [$order, $file]) }}"
+                                                onsubmit="return confirm('Permanently delete this file from our servers?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/[0.08] hover:bg-red-500/[0.15] text-red-400 text-[10px] font-bold rounded-lg border border-red-500/[0.15] transition-all">
+                                                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                                                    <span class="truncate max-w-[120px]">{{ $file->original_name ?? basename($file->file_path) }}</span>
+                                                </button>
+                                            </form>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                                        <i data-lucide="ban" class="w-3 h-3"></i> Order Cancelled
+                                    </p>
+                                    @php $existingRefund = $order->refundRequest ?? null; @endphp
+                                    @if($order->release_count > 0)
+                                        <span class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/[0.08] text-amber-400 text-[10px] font-bold rounded-lg border border-amber-500/[0.15]" title="A vendor processed this order in Turnitin. Contact admin for manual review.">
+                                            <i data-lucide="alert-circle" class="w-3 h-3"></i> Contact Admin
+                                        </span>
+                                    @elseif($existingRefund && $existingRefund->status === 'pending')
+                                        <span class="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/[0.08] text-amber-400 text-[10px] font-bold rounded-lg border border-amber-500/[0.15]">
+                                            <i data-lucide="clock" class="w-3 h-3"></i> Refund queued
+                                        </span>
+                                    @elseif($existingRefund && $existingRefund->status === 'approved')
+                                        <span class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/[0.08] text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-500/[0.15]">
+                                            <i data-lucide="check-circle" class="w-3 h-3"></i> Refund Approved
+                                        </span>
+                                    @else
+                                        <span class="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/[0.08] text-red-400 text-[10px] font-bold rounded-lg border border-red-500/[0.15]">
+                                            <i data-lucide="x-circle" class="w-3 h-3"></i> Refund Rejected
+                                        </span>
+                                    @endif
+                                </div>
+
+                            {{-- ACTIVE / PENDING STATE --}}
+                            @else
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2 text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                                        @if($order->status->value === 'processing')
+                                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full pulse-dot"></span>
+                                            In progress...
+                                        @elseif($order->status->value === 'claimed')
+                                            <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                                            Reserved...
+                                        @else
+                                            <span class="w-1.5 h-1.5 bg-slate-600 rounded-full pulse-dot"></span>
+                                            Queued...
+                                        @endif
+                                    </div>
+                                    @if($order->status->value === 'pending' && !$order->claimed_by)
+                                        <form action="{{ route('client.orders.delete', $order) }}" method="POST"
+                                            onsubmit="return confirm('Delete this order and all its files permanently?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-red-500/[0.12] text-red-300 text-[9px] font-bold rounded-lg border border-red-500/[0.12] transition-all active:scale-95">
+                                                <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
-                    @empty
-                        <div class="rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.015] px-4 py-8 text-center">
-                            <i data-lucide="inbox" class="w-6 h-6 text-slate-600 mx-auto mb-2"></i>
-                            <p class="text-[11px] text-slate-500 font-semibold">No orders yet</p>
-                            <p class="text-[10px] text-slate-600 mt-1">Uploads will appear here after the client submits files.</p>
+                    </div>
+                @empty
+                    <div class="py-14 text-center">
+                        <div class="w-14 h-14 bg-white/[0.03] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/[0.05]">
+                            <i data-lucide="inbox" class="w-6 h-6 text-slate-700"></i>
                         </div>
-                    @endforelse
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">No Recent Orders</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Upload a document to get started</p>
+                    </div>
+                @endforelse
                 </div>
             </div>
         </div>

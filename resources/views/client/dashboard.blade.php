@@ -514,18 +514,6 @@
                                                     </a>
                                                 @endif
                                             </div>
-                                            @if($order->status->value === 'pending' && !$order->claimed_by)
-                                                {{-- Delete button --}}
-                                                <form action="{{ route('client.orders.delete', $order) }}" method="POST"
-                                                    onsubmit="return confirm('Delete this order and all its files permanently?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-red-500/[0.12] text-red-300 text-[9px] font-bold rounded-lg border border-red-500/[0.12] transition-all active:scale-95">
-                                                        <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
-                                                    </button>
-                                                </form>
-                                            @endif
                                         </div>
 
                                     {{-- CANCELLED STATE --}}
@@ -588,7 +576,17 @@
                                                     Queued...
                                                 @endif
                                             </div>
-
+                                            @if($order->status->value === 'pending' && !$order->claimed_by)
+                                                <form action="{{ route('client.orders.delete', $order) }}" method="POST"
+                                                    onsubmit="return confirm('Delete this order and all its files permanently?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-red-500/[0.12] text-red-300 text-[9px] font-bold rounded-lg border border-red-500/[0.12] transition-all active:scale-95">
+                                                        <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     @endif
                                 </div>
@@ -964,6 +962,11 @@
                     }
 
                     if (payload.liveHtml) {
+                        // Guard here too: the request may have been in-flight when the
+                        // user selected a file, so the entry-point check wasn't enough.
+                        if (window.__clientUploadDirty || clientUploadHasPendingSelection()) {
+                            return;
+                        }
                         const liveEl = document.getElementById('client-dashboard-live');
                         if (liveEl) {
                             liveEl.outerHTML = payload.liveHtml;
