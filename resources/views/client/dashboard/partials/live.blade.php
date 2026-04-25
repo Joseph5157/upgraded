@@ -1,4 +1,4 @@
-<div id="client-dashboard-live" class="space-y-4 sm:space-y-5">
+<div id="client-dashboard-live" class="space-y-3 sm:space-y-4">
     @php
         $activeOrders = $orders->whereNotIn('status', ['delivered', 'cancelled'])->count();
         $planLabel = $client->plan_expiry && $client->plan_expiry->isPast() ? 'Expired' : 'Professional';
@@ -9,89 +9,94 @@
                 : 'border-red-500/[0.16] bg-red-500/[0.05] text-red-300');
     @endphp
 
-    <div class="card rounded-[1.75rem] p-4 sm:p-5">
-        <div class="flex items-start justify-between gap-3">
-            <div>
-                <p class="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Client Overview</p>
-                <h2 class="text-[1.2rem] sm:text-[1.5rem] font-semibold text-white mt-2 tracking-tight leading-tight">Upload. Track. Download.</h2>
+    {{-- SECTIONS 1 + 2 tight group --}}
+    <div class="space-y-2">
+
+        <div class="card rounded-2xl p-3 sm:p-4">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-[0.24em] text-slate-500">Client Overview</p>
+                    <h2 class="text-[1.1rem] sm:text-[1.3rem] font-semibold text-white mt-1 tracking-tight leading-tight">Upload. Track. Download.</h2>
+                </div>
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border flex-shrink-0 @if($client->plan_expiry && $client->plan_expiry->isPast()) border-red-500/[0.18] bg-red-500/[0.06] text-red-300 @else border-emerald-500/[0.18] bg-emerald-500/[0.06] text-emerald-300 @endif">
+                    <span class="w-1.5 h-1.5 rounded-full @if($client->plan_expiry && $client->plan_expiry->isPast()) bg-red-400 @else bg-emerald-400 @endif"></span>
+                    {{ $planLabel }}
+                </span>
             </div>
-            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] border @if($client->plan_expiry && $client->plan_expiry->isPast()) border-red-500/[0.18] bg-red-500/[0.06] text-red-300 @else border-emerald-500/[0.18] bg-emerald-500/[0.06] text-emerald-300 @endif">
-                <span class="w-1.5 h-1.5 rounded-full @if($client->plan_expiry && $client->plan_expiry->isPast()) bg-red-400 @else bg-emerald-400 @endif"></span>
-                {{ $planLabel }}
-            </span>
+
+            <div class="mt-2 space-y-2">
+                @if(session('success'))
+                    <div class="flex items-start gap-3 rounded-xl px-3 py-2 border border-emerald-500/[0.16] bg-emerald-500/[0.05]">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i>
+                        <p class="text-[12px] sm:text-[13px] font-medium text-emerald-200 leading-5">{{ session('success') }}</p>
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="flex items-start gap-3 rounded-xl px-3 py-2 border border-red-500/[0.16] bg-red-500/[0.05]">
+                        <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
+                        <p class="text-[12px] sm:text-[13px] font-medium text-red-200 leading-5">{{ session('error') }}</p>
+                    </div>
+                @endif
+                @if($errors->any())
+                    <div class="flex items-start gap-3 rounded-xl px-3 py-2 border border-amber-500/[0.16] bg-amber-500/[0.05]">
+                        <i data-lucide="alert-circle" class="w-4 h-4 text-amber-300 mt-0.5 flex-shrink-0"></i>
+                        <p class="text-[12px] sm:text-[13px] font-medium text-amber-100 leading-5">{{ $errors->first() }}</p>
+                    </div>
+                @endif
+
+                <div class="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 border {{ $creditTone }}">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-2 h-2 rounded-full flex-shrink-0 @if($remaining > 10) bg-emerald-400 @elseif($remaining > 0) bg-amber-400 @else bg-red-400 @endif"></span>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Credit Status</p>
+                            <p class="text-[12px] font-semibold mt-0.5">
+                                @if($remaining > 10)
+                                    {{ $remaining }} credits available
+                                @elseif($remaining > 0)
+                                    {{ $remaining }} credits remaining
+                                @else
+                                    0 credits, top up required
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('topup-modal').classList.remove('hidden')"
+                        class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold uppercase tracking-[0.18em] transition-colors flex-shrink-0">
+                        Top Up
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="mt-4 space-y-3">
-            @if(session('success'))
-                <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border border-emerald-500/[0.16] bg-emerald-500/[0.05]">
-                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i>
-                    <p class="text-[12px] sm:text-[13px] font-medium text-emerald-200 leading-6">{{ session('success') }}</p>
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border border-red-500/[0.16] bg-red-500/[0.05]">
-                    <i data-lucide="alert-triangle" class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0"></i>
-                    <p class="text-[12px] sm:text-[13px] font-medium text-red-200 leading-6">{{ session('error') }}</p>
-                </div>
-            @endif
-            @if($errors->any())
-                <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border border-amber-500/[0.16] bg-amber-500/[0.05]">
-                    <i data-lucide="alert-circle" class="w-4 h-4 text-amber-300 mt-0.5 flex-shrink-0"></i>
-                    <p class="text-[12px] sm:text-[13px] font-medium text-amber-100 leading-6">{{ $errors->first() }}</p>
-                </div>
-            @endif
-
-            <div class="flex items-center justify-between gap-3 rounded-2xl px-4 py-3 border {{ $creditTone }}">
-                <div class="flex items-center gap-3">
-                    <span class="w-2 h-2 rounded-full @if($remaining > 10) bg-emerald-400 @elseif($remaining > 0) bg-amber-400 @else bg-red-400 @endif"></span>
+        <div class="grid grid-cols-2 min-w-0 gap-2">
+            <div class="card rounded-2xl p-3 min-w-0">
+                <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Credits</p>
+                <div class="flex items-end justify-between mt-2 gap-2">
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Credit Status</p>
-                        <p class="text-[13px] font-semibold mt-1">
-                            @if($remaining > 10)
-                                {{ $remaining }} credits available
-                            @elseif($remaining > 0)
-                                {{ $remaining }} credits remaining
-                            @else
-                                0 credits, top up required
-                            @endif
-                        </p>
+                        <h3 class="text-[1.75rem] font-extrabold text-white leading-none font-mono">{{ $remaining }}</h3>
+                        <p class="text-[10px] text-slate-400 mt-1.5">Used: {{ $consumed }}</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/[0.08] border border-indigo-500/[0.12] flex items-center justify-center text-indigo-400 flex-shrink-0">
+                        <i data-lucide="coins" class="w-4 h-4"></i>
                     </div>
                 </div>
-                <button onclick="document.getElementById('topup-modal').classList.remove('hidden')"
-                    class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold uppercase tracking-[0.18em] transition-colors">
-                    Top Up
-                </button>
             </div>
-        </div>
-    </div>
 
-    <div class="grid grid-cols-2 min-w-0 gap-3">
-        <div class="card rounded-2xl p-4 min-w-0">
-            <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Credits</p>
-            <div class="flex items-end justify-between mt-3 gap-3">
-                <div>
-                    <h3 class="text-[2rem] font-extrabold text-white leading-none font-mono">{{ $remaining }}</h3>
-                    <p class="text-[11px] text-slate-400 mt-2">Used: {{ $consumed }}</p>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-indigo-500/[0.08] border border-indigo-500/[0.12] flex items-center justify-center text-indigo-400 flex-shrink-0">
-                    <i data-lucide="coins" class="w-4 h-4"></i>
+            <div class="card rounded-2xl p-3 min-w-0">
+                <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Orders</p>
+                <div class="flex items-end justify-between mt-2 gap-2">
+                    <div>
+                        <h3 class="text-[1.75rem] font-extrabold text-white leading-none font-mono">{{ $activeOrders }}</h3>
+                        <p class="text-[10px] text-slate-400 mt-1.5">Active in workflow</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-blue-500/[0.08] border border-blue-500/[0.12] flex items-center justify-center text-blue-400 flex-shrink-0">
+                        <i data-lucide="activity" class="w-4 h-4"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card rounded-2xl p-4 min-w-0">
-            <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Orders</p>
-            <div class="flex items-end justify-between mt-3 gap-3">
-                <div>
-                    <h3 class="text-[2rem] font-extrabold text-white leading-none font-mono">{{ $activeOrders }}</h3>
-                    <p class="text-[11px] text-slate-400 mt-2">Active in workflow</p>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-blue-500/[0.08] border border-blue-500/[0.12] flex items-center justify-center text-blue-400 flex-shrink-0">
-                    <i data-lucide="activity" class="w-4 h-4"></i>
-                </div>
-            </div>
-        </div>
-    </div>
+    </div>{{-- end tight group --}}
 
     {{-- UPLOAD CARD --}}
     <div class="rounded-3xl overflow-hidden"

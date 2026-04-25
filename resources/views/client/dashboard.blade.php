@@ -241,7 +241,7 @@
         {{--  ANNOUNCEMENTS BANNER  --}}
         <x-announcements-banner class="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-4 px-6 rounded-lg shadow-lg" />
 
-        <div id="client-dashboard-live" class="px-3 py-4 pb-24 md:pb-0 max-w-[1380px] mx-auto space-y-4 sm:px-6 sm:py-5 sm:space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
+        <div id="client-dashboard-live" class="px-3 pt-2 pb-24 md:pb-4 max-w-[1380px] mx-auto space-y-3 sm:px-6 sm:pt-3 sm:space-y-4 xl:px-8 xl:pt-4 xl:space-y-5">
 
             @php
                 $activeOrders = $orders->whereNotIn('status', ['delivered', 'cancelled'])->count();
