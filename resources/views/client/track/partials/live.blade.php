@@ -1,6 +1,8 @@
-<div id="guest-link-track-live" data-pulse-url="{{ $pulseUrl }}" data-pulse-signature="{{ $signature }}">
+<div id="guest-link-track-live" data-pulse-url="{{ $pulseUrl ?? '' }}" data-pulse-signature="{{ $signature ?? '' }}">
     @php
-        $downloadRoute = route('client.link.download', [$link->token, $order->token_view]);
+        $downloadRoute = $link
+            ? route('client.link.download', [$link->token, $order->token_view])
+            : route('client.download', $order->token_view);
 
         $statusClass = [
             'pending' => 'bg-yellow-500/10 text-yellow-400',
@@ -53,18 +55,30 @@
                     </button>
                 @endif
             </div>
+        @elseif($order->computed_status === 'cancelled')
+            <div class="glass p-8 rounded-3xl border-2 border-slate-500/30 text-center space-y-4">
+                <h2 class="text-xl font-bold text-slate-400">Order Cancelled</h2>
+                <p class="text-slate-500">This order has been cancelled and is no longer being processed.</p>
+            </div>
         @else
             <div class="glass p-8 rounded-3xl text-center space-y-4">
                 <div class="flex justify-center">
                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
                 </div>
                 <h2 class="text-xl font-bold">
-                    {{ $order->computed_status === 'claimed' ? 'Reserved' : 'In progress' }}
+                    @if($order->computed_status === 'claimed') Reserved
+                    @elseif($order->computed_status === 'processing') In Progress
+                    @else Queued
+                    @endif
                 </h2>
                 <p class="text-slate-400">
-                    {{ $order->computed_status === 'claimed'
-                        ? 'A vendor has reserved your order and will start work shortly.'
-                        : 'Your order is being worked on. This page refreshes automatically.' }}
+                    @if($order->computed_status === 'claimed')
+                        A vendor has reserved your order and will start work shortly.
+                    @elseif($order->computed_status === 'processing')
+                        Your order is being worked on. This page refreshes automatically.
+                    @else
+                        Your order is in the queue and will be picked up shortly.
+                    @endif
                 </p>
                 <div class="flex items-center justify-center gap-2 mt-1">
                     <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>

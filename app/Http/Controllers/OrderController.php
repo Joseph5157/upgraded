@@ -433,9 +433,14 @@ class OrderController extends Controller
 
     public function track($token_view)
     {
-        $order = Order::where('token_view', $token_view)->with(['report', 'client'])->firstOrFail();
+        $order = Order::where('token_view', $token_view)->with(['report', 'client', 'files'])->firstOrFail();
         abort_if($order->client_link_id !== null, 404);
-        return view('client.track', compact('order'));
+        return view('client.track', [
+            'order'     => $order,
+            'link'      => null,
+            'pulseUrl'  => null,
+            'signature' => null,
+        ]);
     }
 
     public function download($token_view, Request $request)

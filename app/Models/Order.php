@@ -45,6 +45,7 @@ class Order extends Model
     public function getComputedStatusAttribute()
     {
         if ($this->status === OrderStatus::Delivered)  return 'delivered';
+        if ($this->status === OrderStatus::Cancelled)  return 'cancelled';
         if ($this->status === OrderStatus::Claimed)    return 'claimed';
         if ($this->status === OrderStatus::Processing) return 'processing';
         return 'pending';

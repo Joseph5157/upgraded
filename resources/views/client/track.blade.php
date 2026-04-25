@@ -70,6 +70,9 @@
                         const current = document.getElementById('guest-link-track-live');
                         if (current) {
                             current.outerHTML = payload.liveHtml;
+                            if (window.lucide && lucide.createIcons) {
+                                lucide.createIcons();
+                            }
                         }
                     }
                 } catch (error) {

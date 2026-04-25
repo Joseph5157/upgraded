@@ -105,12 +105,14 @@ class OrderWorkflowService
     {
         $this->assertVendorOrAdmin($order, $user, 'unclaim');
 
-        if (!in_array($order->status, [OrderStatus::Claimed, OrderStatus::Processing])) {
-            throw new WorkflowException("Only reserved or in-progress orders can be released back to the queue.");
-        }
-
         DB::transaction(function () use ($order, $user) {
-            $oldStatus = $order->status->value;
+            $locked = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            if (!in_array($locked->status, [OrderStatus::Claimed, OrderStatus::Processing])) {
+                throw new WorkflowException("Only reserved or in-progress orders can be released back to the queue.");
+            }
+
+            $oldStatus = $locked->status->value;
 
             $update = [
                 'claimed_by' => null,
@@ -121,10 +123,10 @@ class OrderWorkflowService
                 $update['claimed_at'] = null;
             }
 
-            $order->update($update);
+            $locked->update($update);
 
             $this->logActivity(
-                $order,
+                $locked,
                 $user,
                 'unclaim',
                 'Order returned to the pending pool',
@@ -132,10 +134,10 @@ class OrderWorkflowService
                 OrderStatus::Pending->value
             );
 
-            $context = LogContext::forOrder($order, LogContext::forUser($user, LogContext::currentRequest()));
+            $context = LogContext::forOrder($locked, LogContext::forUser($user, LogContext::currentRequest()));
 
             Log::info('order.unclaimed', $context);
-            $this->auditLogger->record('order.unclaimed', $order, [
+            $this->auditLogger->record('order.unclaimed', $locked, [
                 'old_status' => $oldStatus,
                 'new_status' => OrderStatus::Pending->value,
             ], $user->id);
