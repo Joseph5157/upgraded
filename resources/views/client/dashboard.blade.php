@@ -266,11 +266,6 @@
                 </div>
 
                 <div class="mt-4 space-y-3">
-                    <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border border-white/[0.06] bg-white/[0.02]">
-                        <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0"></i>
-                        <p class="text-[12px] sm:text-[13px] font-medium text-slate-200 leading-6">This guest link is active for 24 hours. Download your reports before it expires.</p>
-                    </div>
-
                     @if(session('success'))
                         <div class="flex items-start gap-3 rounded-2xl px-4 py-3 border border-emerald-500/[0.16] bg-emerald-500/[0.05]">
                             <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"></i>
