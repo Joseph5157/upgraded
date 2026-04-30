@@ -25,8 +25,12 @@ Schedule::command(PurgeOrderFilesCommand::class)->dailyAt('02:00');
 // Clean up link-based orders older than 24 hours — runs every hour
 Schedule::command(CleanupLinkOrdersCommand::class)->hourly();
 
-// Prune expired sessions from the database nightly at 3:00 AM
+// Prune expired sessions from the database nightly when the database session driver is enabled
 Schedule::call(function () {
+    if (config('session.driver') !== 'database') {
+        return;
+    }
+
     $lifetime = config('session.lifetime');
     DB::table('sessions')
         ->where('last_activity', '<', now()->subMinutes($lifetime)->timestamp)

@@ -2,34 +2,56 @@
 
 This document summarizes recent updates to PlagExpert (Portal), a plagiarism checking and document processing service, along with known edge cases and considerations for ongoing development and operations. It serves as a changelog for significant features and improvements, ensuring stakeholders are aware of the system's evolution.
 
+## Today's Executive Summary
+
+- Added queued delivery for vendor order-completed Telegram notifications so uploads return faster.
+- Added live polling for vendor, logged-in client, and guest-link dashboards so workspace and status sections refresh without manual reload.
+- Added token-scoped guest-link polling for upload and track pages so public link clients only see their own order/report updates.
+- Kept guest-link access fail-closed for revoked and expired tokens, and rebound guest upload controls after fragment replacement.
+
 ## Recent Changes
 
-The following updates have been implemented to enhance functionality, improve user experience, and address operational needs. These changes reflect the latest improvements to the codebase as of the documentation date.
+The following updates reflect the current project state, newest first.
+
+### Guest-Link Live Updates
+
+- Guest-link upload and track pages now poll token-scoped pulse endpoints instead of relying on manual refresh.
+- The upload page swaps a server-rendered fragment in place and rebinds upload/drop listeners after replacement.
+- The track page also swaps a live fragment in place, so report availability and download state update without a full reload.
+- Revoked or expired guest links fail closed and do not reveal another link's state.
+
+### Dashboard Polling
+
+- Vendor and logged-in client dashboards now use signature-based polling and server-rendered fragments for live updates.
+- Available orders, workspace sections, and client order status panels update across sessions without a full page refresh.
+- Fragment replacement is followed by listener rebinds so existing AJAX actions keep working.
+
+### Queue and Notifications
+
+- Vendor order-completed Telegram notifications now run through the queue instead of blocking the upload request.
+- The request path keeps file storage, transaction, and report persistence synchronous, but notification delivery is asynchronous.
+- Queue dispatch is covered by upload tests so the behavior stays correct when Telegram fails later.
+
+## Older Changes
+
+These are still valid historical notes from earlier work, but they are no longer the most recent project changes.
 
 ### AI Report Skip Feature
 
-- **Description**: Clients or vendors can now opt to skip the AI report generation for an order, providing a reason for skipping.
-- **Implementation**: A checkbox and `ai_skip_reason` field have been added to the order report upload form. This allows flexibility in cases where AI analysis is not required or relevant.
-- **Database Impact**: The `order_reports.ai_report_path` field is now nullable, accommodating orders without an AI report.
-- **User Impact**: Vendors see a simplified workflow when AI reports are not needed, and clients receive faster delivery in such cases.
-- **Audit Logging**: Skipping an AI report is logged with `event_type = order.report_ai_skipped` in `audit_logs`, including the provided reason for traceability.
-- **Deployment Note**: Ensure existing database migrations reflect the nullable `ai_report_path` column; if not, apply the relevant migration.
+- **Description**: Clients or vendors can opt to skip AI report generation for an order by providing a reason.
+- **Implementation**: The report upload flow supports `ai_skip_reason`, and AI report storage can be omitted when skipped.
+- **Operational Impact**: Orders marked as `delivered` do not require an AI report if the skip path is used.
 
 ### Enhanced Validation in Report Upload Flow
 
-- **Description**: Improved validation and error handling during the vendor report upload process to prevent incomplete or incorrect submissions.
-- **Implementation**: The `UploadVendorReportService` now includes stricter checks for file types, sizes, and required fields. Error messages are more descriptive, guiding vendors to correct issues.
-- **User Impact**: Vendors receive clearer feedback if uploads fail (e.g., missing plagiarism report when required), reducing support tickets.
-- **Logging**: Failed uploads log detailed errors to application logs (not `audit_logs`) under `report.upload_failed` for debugging without exposing sensitive file contents.
-- **Testing**: Feature tests have been updated to cover edge cases like invalid file formats or missing required reports.
+- **Description**: Report upload validation was tightened to prevent incomplete or incorrect submissions.
+- **Implementation**: `UploadVendorReportService` checks file types, sizes, and required fields more strictly.
+- **User Impact**: Vendors get clearer feedback when uploads fail.
 
 ### Nullable AI Report Path
 
-- **Description**: As part of the AI skip feature, the database schema now explicitly allows `order_reports.ai_report_path` to be null.
-- **Implementation**: Migration updated to set `ai_report_path` as nullable, with application logic adjusted to handle cases where no AI report is uploaded.
-- **Operational Impact**: Orders marked as `delivered` no longer require an AI report if skipped, preventing false incompleteness flags.
-- **Backward Compatibility**: Existing orders with AI reports remain unaffected; new orders can skip without database errors.
-- **Maintenance Note**: The `orders:repair-missing-reports` command now respects the skip flag when checking for missing reports.
+- **Description**: The report schema supports missing AI output when the skip path is used.
+- **Operational Impact**: Existing AI-backed orders remain unaffected, and skipped orders do not fail validation.
 
 ## Known Edge Cases
 
@@ -79,9 +101,10 @@ Below are identified edge cases and areas of potential concern that may require 
 
 For a quick reference, below is a summarized timeline of notable changes:
 
-- **AI Report Skip Feature**: Added checkbox and `ai_skip_reason` field to allow skipping AI reports, with `order_reports.ai_report_path` made nullable.
-- **Enhanced Report Upload Validation**: Improved error handling in `UploadVendorReportService` for clearer feedback on upload failures.
-- **Nullable AI Report Path**: Schema update to support orders without AI reports, ensuring `delivered` status isn't blocked by missing AI files.
+- **Guest-Link Live Updates**: Added token-scoped polling for guest upload and track pages with fragment replacement and listener rebinds.
+- **Dashboard Polling**: Added live polling for vendor and logged-in client dashboards with server-rendered fragments.
+- **Queue and Notifications**: Moved vendor completion Telegram notifications off the request path into a queue job.
+- **AI Report Skip Feature**: Historical behavior retained for skipped AI uploads and nullable report paths.
 
 ## Best Practices for Handling Edge Cases
 

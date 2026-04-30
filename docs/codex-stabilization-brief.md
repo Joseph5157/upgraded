@@ -2,6 +2,12 @@
 
 Stabilize this Laravel project for rollout. Do not add product features. Focus only on observability, reproducibility, regression coverage, and critical-flow hardening.
 
+## Latest Status Snapshot
+
+- Core dashboard refresh paths are now fragment-based and polling-driven for vendor, logged-in client, and guest-link views.
+- Vendor order-completed Telegram notifications now run through the queue instead of blocking the upload response.
+- Guest-link polling is token-scoped and fail-closed, so public clients only see updates for their own link and expired/revoked links do not leak state.
+
 ## Scope
 
 Implement a stabilization layer with:
