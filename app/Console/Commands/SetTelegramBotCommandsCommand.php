@@ -8,50 +8,62 @@ use Illuminate\Support\Facades\Log;
 
 class SetTelegramBotCommandsCommand extends Command
 {
-    protected $signature = 'app:set-telegram-bot-commands';
-    protected $description = 'Register the bot command list with Telegram via setMyCommands';
+    protected $signature   = 'app:set-telegram-bot-commands';
+    protected $description = 'Registers scoped bot commands with Telegram.';
 
     public function handle(): int
     {
         $token = config('services.telegram.bot_token');
 
-        if (! $token) {
-            $this->error('TELEGRAM_BOT_TOKEN is not configured.');
+        if (empty($token)) {
+            $this->error('TELEGRAM_BOT_TOKEN not set.');
             return Command::FAILURE;
         }
 
-        $commands = [
+        $set = function (array $commands, array $scope) use ($token): bool {
+            $response = Http::post("https://api.telegram.org/bot{$token}/setMyCommands", [
+                'commands' => $commands,
+                'scope'    => $scope,
+            ]);
+            return $response->json('ok') === true;
+        };
+
+        $privateCommands = [
             ['command' => 'login', 'description' => 'Get a login link for the portal'],
             ['command' => 'myid',  'description' => 'See your Portal ID'],
-            ['command' => 'help',  'description' => 'How to use this bot'],
+            ['command' => 'help',  'description' => 'See available commands'],
         ];
 
-        $url = "https://api.telegram.org/bot{$token}/setMyCommands";
+        $groupCommands = [
+            ['command' => 'jobs',       'description' => 'View your active jobs'],
+            ['command' => 'earnings',   'description' => 'See your earnings summary'],
+            ['command' => 'stats',      'description' => 'Live portal snapshot'],
+            ['command' => 'pending',    'description' => 'Pending topup requests'],
+            ['command' => 'cleartoday', 'description' => "Delete todays bot messages"],
+            ['command' => 'help',       'description' => 'See available commands'],
+        ];
 
-        try {
-            $response = Http::timeout(15)->post($url, [
-                'commands' => $commands,
-                'scope'    => ['type' => 'default'],
-            ]);
-        } catch (\Throwable $e) {
-            Log::error('telegram.bot_commands.exception', ['message' => $e->getMessage()]);
-            $this->error('Request failed: ' . $e->getMessage());
-            return Command::FAILURE;
-        }
+        $adminCommands = [
+            ['command' => 'stats',      'description' => 'Live portal snapshot'],
+            ['command' => 'pending',    'description' => 'Pending topup requests'],
+            ['command' => 'cleartoday', 'description' => "Delete todays bot messages"],
+            ['command' => 'help',       'description' => 'See available commands'],
+        ];
 
-        if ($response->successful() && $response->json('ok')) {
-            Log::info('telegram.bot_commands.registered', [
-                'commands' => array_column($commands, 'command'),
-            ]);
-            $this->info('Bot commands registered successfully.');
+        $results = [
+            $set($privateCommands, ['type' => 'default']),
+            $set($privateCommands, ['type' => 'all_private_chats']),
+            $set($groupCommands,   ['type' => 'all_group_chats']),
+            $set($adminCommands,   ['type' => 'all_chat_administrators']),
+        ];
+
+        if (! in_array(false, $results, true)) {
+            $this->info('All scoped commands registered successfully.');
+            Log::info('Telegram bot commands registered.');
             return Command::SUCCESS;
         }
 
-        Log::warning('telegram.bot_commands.failed', [
-            'status' => $response->status(),
-            'body'   => $response->body(),
-        ]);
-        $this->error('Failed to register bot commands: ' . $response->body());
+        $this->warn('Some scopes failed — check logs.');
         return Command::FAILURE;
     }
 }

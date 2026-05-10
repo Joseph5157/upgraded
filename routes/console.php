@@ -29,7 +29,9 @@ Schedule::command(PurgeOrderFilesCommand::class)->dailyAt('02:00');
 Schedule::command(CleanupLinkOrdersCommand::class)->hourly();
 
 // Keep Telegram bot command list registered — runs once daily at 06:00
-Schedule::command(SetTelegramBotCommandsCommand::class)->dailyAt('06:00');
+Schedule::command(SetTelegramBotCommandsCommand::class)
+    ->dailyAt('06:00')
+    ->withoutOverlapping();
 
 // Delete all bot messages sent today at 23:55 before the midnight session expiry
 Schedule::command(DeleteTelegramMessagesCommand::class)
