@@ -13,8 +13,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Release orders that have exceeded their claim windows — runs every minute
-Schedule::command(AutoReleaseOrdersCommand::class)->everyMinute();
+// Release orders that have exceeded their claim windows — runs every minute.
+// withoutOverlapping() prevents concurrent runs on multi-worker deployments.
+Schedule::command(AutoReleaseOrdersCommand::class)->everyMinute()->withoutOverlapping();
 
 // Close-of-day ledger snapshot at 11:59 PM every night
 Schedule::command(CloseDayCommand::class)->dailyAt('23:59');

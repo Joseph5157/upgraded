@@ -19,6 +19,7 @@ class PurgeOrderFilesCommand extends Command
 
         $orders = Order::where('status', OrderStatus::Delivered)
             ->where('delivered_at', '<', now()->subDays($days))
+            ->where('is_downloaded', true)
             ->with(['files', 'report'])
             ->get();
 

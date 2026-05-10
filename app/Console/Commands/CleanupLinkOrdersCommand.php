@@ -31,11 +31,8 @@ class CleanupLinkOrdersCommand extends Command
         $deletedOrders = 0;
         $deletedFiles  = 0;
 
-        // Group by client to batch-update slots_consumed
-        $slotDeductions = [];
-
         foreach ($orders as $order) {
-            DB::transaction(function () use ($order, &$deletedFiles, &$slotDeductions) {
+            DB::transaction(function () use ($order, &$deletedFiles) {
                 // Delete uploaded files from storage
                 foreach ($order->files as $file) {
                     StorageLifecycle::deleteStoredFileIfPresent($file->disk ?: 'r2', $file->file_path);
@@ -54,8 +51,15 @@ class CleanupLinkOrdersCommand extends Command
                     $order->report->delete();
                 }
 
-                // Track slots to restore per client
-                $slotDeductions[$order->client_id] = ($slotDeductions[$order->client_id] ?? 0) + $order->files_count;
+                // Restore the slot credit atomically inside this transaction so a
+                // mid-loop crash cannot leave the order deleted but its slot unreturned.
+                $fileCount = $order->files_count;
+                if ($fileCount > 0) {
+                    Client::where('id', $order->client_id)
+                        ->lockForUpdate()
+                        ->first()
+                        ?->decrement('slots_consumed', $fileCount);
+                }
 
                 $order->delete();
             });
@@ -63,15 +67,9 @@ class CleanupLinkOrdersCommand extends Command
             $deletedOrders++;
         }
 
-        // Restore slots_consumed on each client so links are reusable
-        foreach ($slotDeductions as $clientId => $fileCount) {
-            Client::where('id', $clientId)->decrement('slots_consumed', $fileCount);
-        }
-
         $this->info("Cleaned up {$deletedOrders} link order(s) and {$deletedFiles} file(s) older than {$hours} hour(s).");
         Log::info("CleanupLinkOrders: removed {$deletedOrders} orders, {$deletedFiles} files.", [
-            'hours'  => $hours,
-            'client_ids' => array_keys($slotDeductions),
+            'hours' => $hours,
         ]);
 
         return self::SUCCESS;

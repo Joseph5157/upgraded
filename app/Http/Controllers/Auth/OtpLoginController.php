@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 
 class OtpLoginController extends Controller
 {
@@ -53,8 +54,11 @@ class OtpLoginController extends Controller
 
         $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
+        // Clear any existing failure counter so a fresh OTP gives a clean slate.
+        RateLimiter::clear('otp:' . $user->portal_number);
+
         $user->forceFill([
-            'otp' => $otp,
+            'otp'            => hash('sha256', $otp),
             'otp_expires_at' => now()->addMinutes(5),
         ])->save();
 
@@ -102,9 +106,19 @@ class OtpLoginController extends Controller
             'otp' => ['required', 'string', 'size:6'],
         ]);
 
+        $rateLimiterKey = 'otp:' . $request->portal_number;
+
+        // If the portal number has already burned through its attempt allowance,
+        // reject immediately without touching the database.
+        if (RateLimiter::tooManyAttempts($rateLimiterKey, 3)) {
+            return back()
+                ->withErrors(['otp' => 'Too many incorrect attempts. Request a new login code.'])
+                ->withInput(['portal_number' => $request->portal_number]);
+        }
+
         $user = DB::transaction(function () use ($request) {
             $user = User::where('portal_number', $request->portal_number)
-                ->where('otp', $request->otp)
+                ->where('otp', hash('sha256', $request->otp))
                 ->where('otp_expires_at', '>', now())
                 ->whereNotNull('activated_at')
                 ->lockForUpdate()
@@ -115,7 +129,7 @@ class OtpLoginController extends Controller
             }
 
             $user->forceFill([
-                'otp' => null,
+                'otp'            => null,
                 'otp_expires_at' => null,
             ])->save();
 
@@ -123,6 +137,18 @@ class OtpLoginController extends Controller
         });
 
         if (! $user) {
+            // Count this failure against the per-portal-number budget (3 attempts,
+            // decays after 10 minutes — long enough to outlast IP rotation).
+            RateLimiter::hit($rateLimiterKey, 600);
+
+            // If the budget is now exhausted, immediately null the OTP so the
+            // remaining window cannot be brute-forced from a fresh IP.
+            if (RateLimiter::tooManyAttempts($rateLimiterKey, 3)) {
+                User::where('portal_number', $request->portal_number)
+                    ->whereNotNull('otp')
+                    ->update(['otp' => null, 'otp_expires_at' => null]);
+            }
+
             Log::warning('auth.otp.verify_failed', array_merge(
                 LogContext::currentRequest(),
                 ['portal_number' => $request->portal_number]
@@ -132,6 +158,8 @@ class OtpLoginController extends Controller
                 ->withErrors(['otp' => 'Invalid or expired code. Please try again.'])
                 ->withInput(['portal_number' => $request->portal_number]);
         }
+
+        RateLimiter::clear($rateLimiterKey);
 
         Log::info('auth.otp.used', array_merge(
             LogContext::currentRequest(),

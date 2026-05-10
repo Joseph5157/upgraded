@@ -34,7 +34,8 @@ class CloseDayCommand extends Command
 
         // Revenue: sum each client's price_per_file
         $totalRevenue      = $orders->sum(fn($o) => $o->client?->price_per_file ?? $defaultPrice);
-        $vendorPayouts     = $orders->count() * $payoutRate;
+        // Payouts: use each order's vendor's individual rate, not a global flat rate
+        $vendorPayouts     = $orders->sum(fn($o) => $o->vendor?->payout_rate ?? $payoutRate);
         $operationalCosts  = 0; // placeholder for future overhead costs
         $netProfit         = $totalRevenue - $vendorPayouts - $operationalCosts;
 
@@ -51,14 +52,17 @@ class CloseDayCommand extends Command
             ];
         })->values()->toArray();
 
-        // Vendor breakdown
+        // Vendor breakdown — each vendor's individual rate is recorded so the
+        // snapshot remains accurate even if the global default changes later.
         $vendorBreakdown = $orders->whereNotNull('claimed_by')->groupBy('claimed_by')->map(function ($vendorOrders) use ($payoutRate) {
-            $vendor = $vendorOrders->first()->vendor;
+            $vendor     = $vendorOrders->first()->vendor;
+            $vendorRate = $vendor?->payout_rate ?? $payoutRate;
             return [
                 'id'     => $vendor?->id,
                 'name'   => $vendor?->name ?? 'Unknown',
                 'orders' => $vendorOrders->count(),
-                'payout' => $vendorOrders->count() * $payoutRate,
+                'rate'   => $vendorRate,
+                'payout' => $vendorOrders->count() * $vendorRate,
             ];
         })->values()->toArray();
 

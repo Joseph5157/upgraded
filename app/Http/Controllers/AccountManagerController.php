@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\RefundRequest;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Support\LogContext;
@@ -105,76 +106,53 @@ class AccountManagerController extends Controller
     {
         $this->authorize('delete', $user);
 
-        $creditsRestored = 0;
+        DB::transaction(function () use ($request, $user) {
 
-        if ($user->role === 'client' && $user->client) {
-            $client = $user->client;
+            if ($user->role === 'client' && $user->client) {
+                $client = $user->client;
 
-            $unfinishedStatuses = [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing];
-            $refundableSlots = (int) Order::where('client_id', $client->id)
-                ->whereIn('status', $unfinishedStatuses)
-                ->sum('files_count');
+                // Cancel all active orders — credits are forfeited, no slot restoration.
+                $activeStatuses = [OrderStatus::Pending, OrderStatus::Claimed, OrderStatus::Processing];
+                $orderUpdate    = ['status' => OrderStatus::Cancelled, 'claimed_by' => null];
+                if (Order::hasColumn('claimed_at')) {
+                    $orderUpdate['claimed_at'] = null;
+                }
+                Order::where('client_id', $client->id)
+                    ->whereIn('status', $activeStatuses)
+                    ->update($orderUpdate);
 
-            $update = [
-                'status'     => OrderStatus::Cancelled,
-                'claimed_by' => null,
-            ];
-
-            if (Order::hasColumn('claimed_at')) {
-                $update['claimed_at'] = null;
-            }
-
-            Order::where('client_id', $client->id)
-                ->whereIn('status', $unfinishedStatuses)
-                ->update($update);
-
-            // Restore consumed slot counter for orders that never completed
-            if ($refundableSlots > 0) {
-                $client->update([
-                    'slots_consumed' => max(0, (int) $client->slots_consumed - $refundableSlots),
+                // Revoke all upload links so guests can no longer submit via them.
+                $client->links()->update([
+                    'is_active'          => false,
+                    'revoked_at'         => now(),
+                    'revoked_by_user_id' => $request->user()?->id,
                 ]);
 
-                $creditsRestored = $refundableSlots;
-
-                $clientContext = LogContext::forClient($client->fresh(), LogContext::forTargetUser($user, LogContext::forUser($request->user(), LogContext::currentRequest())));
-                Log::info('credits.restored', array_merge($clientContext, [
-                    'reason' => 'account_deleted',
-                    'credits_restored' => $refundableSlots,
-                ]));
-                $this->auditLogger->record('credits.restored', $client, [
-                    'reason' => 'account_deleted',
-                    'credits_restored' => $refundableSlots,
-                    'deleted_user_id' => $user->id,
-                ], (int) $request->user()?->id);
-            }
-        }
-
-        if ($user->role === 'vendor') {
-            $update = [
-                'claimed_by' => null,
-                'status'     => OrderStatus::Pending,
-            ];
-
-            if (Order::hasColumn('claimed_at')) {
-                $update['claimed_at'] = null;
+                // Auto-reject any pending refund requests — no point leaving them open.
+                RefundRequest::where('client_id', $client->id)
+                    ->where('status', 'pending')
+                    ->update(['status' => 'rejected', 'admin_note' => 'Account deleted.', 'resolved_at' => now()]);
             }
 
-            Order::where('claimed_by', $user->id)
-                ->whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
-                ->update($update);
-        }
+            if ($user->role === 'vendor') {
+                // Release claimed/processing orders back to the pending pool.
+                $orderUpdate = ['claimed_by' => null, 'status' => OrderStatus::Pending];
+                if (Order::hasColumn('claimed_at')) {
+                    $orderUpdate['claimed_at'] = null;
+                }
+                Order::where('claimed_by', $user->id)
+                    ->whereIn('status', [OrderStatus::Claimed, OrderStatus::Processing])
+                    ->update($orderUpdate);
+            }
 
-        $this->invalidateUserSessions($user);
+            $this->invalidateUserSessions($user);
 
-        $context = LogContext::forTargetUser($user, LogContext::forUser($request->user(), LogContext::currentRequest()));
-        Log::info('account.deleted', array_merge($context, [
-            'credits_restored' => $creditsRestored,
-        ]));
-        $this->auditLogger->record('account.deleted', $user, [
-            'credits_restored' => $creditsRestored,
-        ], (int) $request->user()?->id);
+            $context = LogContext::forTargetUser($user, LogContext::forUser($request->user(), LogContext::currentRequest()));
+            Log::info('account.deleted', $context);
+            $this->auditLogger->record('account.deleted', $user, [], (int) $request->user()?->id);
 
-        $user->delete();
+            $user->delete();
+        });
 
         return back()->with('success', 'Account deleted successfully.');
     }

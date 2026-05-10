@@ -9,6 +9,7 @@ use App\Services\TelegramService;
 use App\Support\LogContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -111,6 +112,7 @@ class BotController extends Controller
         $inviteToken = str_starts_with($token, 'invite_') ? substr($token, 7) : null;
 
         if ($inviteToken) {
+            try {
             $inviteOutcome = DB::transaction(function () use ($inviteToken, $chatId) {
                 $invite = PendingInvite::where('invite_token', $inviteToken)
                     ->where('expires_at', '>', now())
@@ -126,16 +128,20 @@ class BotController extends Controller
                     return ['status' => 'already_linked'];
                 }
 
-                $portalNumber = match ($invite->role) {
-                    'client' => (int) (User::where('role', 'client')->whereNotNull('portal_number')->max('portal_number') ?? 999) + 1,
-                    'vendor' => (int) (User::where('role', 'vendor')->whereNotNull('portal_number')->max('portal_number') ?? 4999) + 1,
-                    'admin' => (int) (User::where('role', 'admin')->whereNotNull('portal_number')->max('portal_number') ?? 8999) + 1,
-                    default => null,
-                };
+                $seq = DB::table('portal_number_sequences')
+                    ->where('role', $invite->role)
+                    ->lockForUpdate()
+                    ->first();
 
-                if ($portalNumber === null) {
+                if (! $seq) {
                     return ['status' => 'invalid_role'];
                 }
+
+                $portalNumber = $seq->next_number;
+
+                DB::table('portal_number_sequences')
+                    ->where('role', $invite->role)
+                    ->update(['next_number' => $portalNumber + 1]);
 
                 $userData = [
                     'name' => $invite->name,
@@ -171,12 +177,25 @@ class BotController extends Controller
                     'portal_number' => $portalNumber,
                 ];
             });
+            } catch (UniqueConstraintViolationException) {
+                $inviteOutcome = ['status' => 'duplicate_portal_number'];
+            }
 
             if ($inviteOutcome === null) {
                 $telegramService->sendMessage($chatId, 'This invite link is invalid or has expired. Ask your admin for a new one.');
                 Log::warning('telegram.invite_activation.failed', array_merge(
                     LogContext::currentRequest(),
                     ['chat_id' => $chatId, 'reason' => 'expired_or_missing']
+                ));
+
+                return response()->json(['ok' => true]);
+            }
+
+            if (($inviteOutcome['status'] ?? null) === 'duplicate_portal_number') {
+                $telegramService->sendMessage($chatId, 'Account activation failed due to a conflict. Please try again or contact your admin.');
+                Log::error('telegram.invite_activation.duplicate_portal_number', array_merge(
+                    LogContext::currentRequest(),
+                    ['chat_id' => $chatId]
                 ));
 
                 return response()->json(['ok' => true]);

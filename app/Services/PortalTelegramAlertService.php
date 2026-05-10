@@ -134,6 +134,39 @@ class PortalTelegramAlertService
         }
     }
 
+    public function notifyVendorPayoutRequested(User $vendor, float $balance): void
+    {
+        $message = implode("\n", [
+            '💸 Vendor Payout Request',
+            '',
+            'Vendor: ' . $vendor->name,
+            'Amount requested: ₹' . number_format($balance, 0),
+            '',
+            'Review it in the admin panel → Finance → Payouts.',
+        ]);
+
+        $envAdminChatId = trim((string) config('services.telegram.admin_chat_id'));
+        if ($envAdminChatId !== '') {
+            $this->telegramService->sendMessage($envAdminChatId, $message);
+            return;
+        }
+
+        $admins = User::where('role', 'admin')
+            ->whereNotNull('telegram_chat_id')
+            ->get();
+
+        if ($admins->isEmpty()) {
+            Log::warning('Vendor payout request Telegram alert skipped: ADMIN_TELEGRAM_CHAT_ID not set and no admin has a linked Telegram in DB.', [
+                'vendor_id' => $vendor->id,
+            ]);
+            return;
+        }
+
+        foreach ($admins as $admin) {
+            $this->telegramService->sendMessage((string) $admin->telegram_chat_id, $message);
+        }
+    }
+
     public function notifyTopupApproved(TopupRequest $topupRequest): void
     {
         $topupRequest->loadMissing('client.user');

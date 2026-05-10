@@ -264,28 +264,7 @@ class OrderWorkflowService
                 throw new WorkflowException("Both the AI report and Plagiarism report PDFs must be uploaded before delivery (or an AI skip reason provided).");
             }
 
-            $oldStatus = $lockedOrder->status->value;
-            $lockedOrder->update([
-                'status'       => OrderStatus::Delivered,
-                'delivered_at' => now(),
-            ]);
-
-            $creditedVendor = $lockedOrder->claimed_by
-                ? User::query()->lockForUpdate()->find($lockedOrder->claimed_by)
-                : null;
-
-            ($creditedVendor ?: $user)->increment('delivered_orders_count');
-            ($creditedVendor ?: $user)->increment('daily_delivered_count');
-
-            $this->logActivity($lockedOrder, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
-
-            $context = LogContext::forOrder($lockedOrder, LogContext::forUser($user, LogContext::currentRequest()));
-
-            Log::info('order.delivered', $context);
-            $this->auditLogger->record('order.delivered', $lockedOrder, [
-                'old_status' => $oldStatus,
-                'new_status' => OrderStatus::Delivered->value,
-            ], $user->id);
+            $this->markDelivered($lockedOrder, $user);
         });
 
         Cache::forget('admin_dashboard_stats');
@@ -304,7 +283,11 @@ class OrderWorkflowService
     }
 
     /**
-     * Mark an order as delivered.
+     * Mark a processing order as delivered (standalone path via DashboardController).
+     *
+     * Report uploads that auto-deliver go through uploadReport() → markDelivered().
+     * This method handles the separate manual "mark delivered" action. Both paths
+     * share markDelivered() so counter increments cannot be duplicated.
      */
     public function deliver(Order $order, User $user): void
     {
@@ -326,27 +309,9 @@ class OrderWorkflowService
                 throw new WorkflowException("Both the AI report and Plagiarism report PDFs must be uploaded before delivery (or an AI skip reason provided).");
             }
 
-            $oldStatus = $lockedOrder->status->value;
-            $lockedOrder->update([
-                'status'       => OrderStatus::Delivered,
-                'delivered_at' => now(),
-            ]);
-
-            // Permanently record this delivery on the vendor's profile.
-            // This count is NEVER decremented — even if client deletes the order later.
-            $creditedVendor = $lockedOrder->claimed_by
-                ? User::query()->lockForUpdate()->find($lockedOrder->claimed_by)
-                : null;
-
-            ($creditedVendor ?: $user)->increment('delivered_orders_count');
-            ($creditedVendor ?: $user)->increment('daily_delivered_count');
-
-            $this->logActivity($lockedOrder, $user, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
+            $this->markDelivered($lockedOrder, $user);
         });
 
-        // Delivery changes the admin dashboard's "processed today" and
-        // "active vendors" counts — bust the cached snapshot so the next
-        // page load reflects the new order immediately.
         Cache::forget('admin_dashboard_stats');
 
         try {
@@ -366,6 +331,40 @@ class OrderWorkflowService
         } catch (\Throwable $e) {
             report($e);
         }
+    }
+
+    /**
+     * Shared delivery kernel — must be called inside an open DB::transaction()
+     * with $order already locked via lockForUpdate().
+     *
+     * Extracting this prevents the counter-increment from being duplicated if
+     * uploadReport() and deliver() are ever both called on the same order.
+     */
+    private function markDelivered(Order $order, User $actor): void
+    {
+        $oldStatus = $order->status->value;
+
+        $order->update([
+            'status'       => OrderStatus::Delivered,
+            'delivered_at' => now(),
+        ]);
+
+        // Permanently record this delivery on the vendor's profile.
+        // This count is NEVER decremented — even if the client deletes the order later.
+        $creditedVendor = $order->claimed_by
+            ? User::query()->lockForUpdate()->find($order->claimed_by)
+            : null;
+
+        ($creditedVendor ?: $actor)->increment('delivered_orders_count');
+        ($creditedVendor ?: $actor)->increment('daily_delivered_count');
+
+        $this->logActivity($order, $actor, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
+
+        Log::info('order.delivered', LogContext::forOrder($order, LogContext::forUser($actor, LogContext::currentRequest())));
+        $this->auditLogger->record('order.delivered', $order, [
+            'old_status' => $oldStatus,
+            'new_status' => OrderStatus::Delivered->value,
+        ], $actor->id);
     }
 
     // ─── Private Helpers ────────────────────────────────────────────────────────

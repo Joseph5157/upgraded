@@ -36,6 +36,7 @@ class TopupRequestController extends Controller
     {
         $request->validate([
             'amount_requested' => 'required|integer|min:1|max:1000',
+            'amount_paid'      => 'nullable|numeric|min:0',
             'transaction_id'   => 'required|string|max:255|unique:topup_requests,transaction_id',
         ], [
             'transaction_id.unique' => 'This Transaction / UTR ID has already been submitted. If this is an error, please contact admin.',
@@ -56,6 +57,7 @@ class TopupRequestController extends Controller
         $topupRequest = TopupRequest::create([
             'client_id'        => $client->id,
             'amount_requested' => $request->amount_requested,
+            'amount_paid'      => $request->amount_paid,
             'transaction_id'   => $request->transaction_id,
             'status'           => 'pending',
         ]);

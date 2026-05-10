@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PendingInvite;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,9 @@ class InviteController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $role = $request->input('role');
+
+        // Delegates to UserPolicy::create() — only super-admins may invite other admins.
+        $this->authorize('create', [User::class, $role]);
 
         $rules = [
             'name' => ['required', 'string', 'max:255'],

@@ -9,6 +9,7 @@ class TopupRequest extends Model
     protected $fillable = [
         'client_id',
         'amount_requested',
+        'amount_paid',
         'transaction_id',
         'status',
         'notes',

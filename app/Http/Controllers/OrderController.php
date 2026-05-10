@@ -10,7 +10,6 @@ use App\Services\AuditLogger;
 use App\Support\LogContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -49,11 +48,19 @@ class OrderController extends Controller
 
     protected function bundleReports(Order $order)
     {
-        $zipPath = storage_path('app/tmp/order-' . $order->id . '-reports-' . now()->timestamp . '.zip');
-        File::ensureDirectoryExists(dirname($zipPath));
+        // Build the ZIP entirely in memory using a temp:// stream so no disk I/O
+        // is required — safe on ephemeral filesystems (Railway, Fly.io, etc.) and
+        // immune to leftover files if the response is interrupted.
+        $tmpStream = tmpfile();
+        if ($tmpStream === false) {
+            abort(500, 'Unable to prepare report bundle.');
+        }
+
+        $tmpPath = stream_get_meta_data($tmpStream)['uri'];
 
         $zip = new ZipArchive();
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        if ($zip->open($tmpPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            fclose($tmpStream);
             abort(500, 'Unable to prepare report bundle.');
         }
 
@@ -88,16 +95,22 @@ class OrderController extends Controller
         }
 
         if (! $hasRealArtifact) {
+            $zip->close();
+            fclose($tmpStream);
             abort(404, 'No report files are available for this order.');
         }
 
         $zip->close();
 
-        return response()->download(
-            $zipPath,
-            'order-' . $order->id . '-reports.zip',
-            ['Content-Type' => 'application/zip']
-        )->deleteFileAfterSend(true);
+        // Read the finished ZIP into memory, then release the temp file immediately.
+        $zipContents = file_get_contents($tmpPath);
+        fclose($tmpStream); // PHP deletes the tmpfile() handle on close
+
+        return response($zipContents, 200, [
+            'Content-Type'        => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="order-' . $order->id . '-reports.zip"',
+            'Content-Length'      => strlen($zipContents),
+        ]);
     }
 
     protected function resolveGuestLinkOrFail(string $token): ClientLink
@@ -122,7 +135,11 @@ class OrderController extends Controller
     protected function guestVisibleOrders(ClientLink $link): Collection
     {
         return Order::where('client_link_id', $link->id)
-            ->where('created_at', '>=', now()->subDay())
+            ->where(function ($q) {
+                // Always show recent orders; keep older ones visible until downloaded.
+                $q->where('created_at', '>=', now()->subDay())
+                  ->orWhere('is_downloaded', false);
+            })
             ->with(['report', 'files'])
             ->latest()
             ->get();
@@ -209,7 +226,11 @@ class OrderController extends Controller
     protected function assertGuestOrderScope(ClientLink $link, Order $order): void
     {
         abort_if($order->client_link_id !== $link->id, 404);
-        abort_if($order->created_at->lt(now()->subDay()), 404);
+        // Allow access if the order is recent OR not yet downloaded — mirrors guestVisibleOrders().
+        abort_if(
+            $order->created_at->lt(now()->subDay()) && $order->is_downloaded,
+            404
+        );
     }
 
     protected function orderHasDownloadableGuestOutput(Order $order, ?string $type = null): bool

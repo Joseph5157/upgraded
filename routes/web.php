@@ -88,6 +88,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
         Route::post('/orders/{order}/report', [DashboardController::class, 'uploadReport'])->name('orders.report');
         Route::get('/orders/{order}/files/{file}', [DashboardController::class, 'downloadFile'])->name('orders.files.download');
         Route::get('/earnings', [VendorEarningsController::class, 'index'])->name('vendor.earnings');
+        Route::post('/earnings/request-payout', [VendorPayoutController::class, 'requestPayout'])->name('earnings.request-payout');
     });
 
     // Client Dashboard Routes
@@ -100,6 +101,7 @@ Route::middleware(['auth', 'nocache'])->group(function () {
         Route::delete('/orders/{order}/delete', [ClientDashboardController::class, 'destroy'])->name('orders.delete');
         Route::delete('/orders/{order}/files/{file}', [ClientDashboardController::class, 'destroyFile'])->name('orders.files.delete');
         Route::post('/topup', [TopupRequestController::class, 'store'])->name('topup.store');
+        Route::post('/refunds', [RefundController::class, 'store'])->name('refunds.store');
         Route::get('/subscription', [ClientSubscriptionController::class, 'index'])->name('subscription');
         Route::get('/downloads', [ClientDashboardController::class, 'downloads'])->name('downloads');
     });
@@ -165,7 +167,7 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
         });
     });
 
-Route::middleware(['auth', 'nocache'])->group(function () {
+Route::middleware(['auth', 'nocache', 'account.status'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
