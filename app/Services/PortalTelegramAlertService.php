@@ -30,7 +30,7 @@ class PortalTelegramAlertService
             $sentToVendorGroup = $this->telegramService->sendMessage(
                 $vendorGroupChatId,
                 $vendorMessage,
-                ['remove_keyboard' => true]
+                ['reply_markup' => ['remove_keyboard' => true]]
             );
             if (! $sentToVendorGroup) {
                 Log::warning("Vendor Telegram alert failed for order #{$order->id}.", [

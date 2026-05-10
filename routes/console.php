@@ -4,6 +4,8 @@ use App\Console\Commands\AutoReleaseOrdersCommand;
 use App\Console\Commands\CleanupLinkOrdersCommand;
 use App\Console\Commands\CloseDayCommand;
 use App\Console\Commands\PurgeOrderFilesCommand;
+use App\Console\Commands\DeleteTelegramMessagesCommand;
+use App\Console\Commands\SetTelegramBotCommandsCommand;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +27,15 @@ Schedule::command(PurgeOrderFilesCommand::class)->dailyAt('02:00');
 
 // Clean up link-based orders older than 24 hours — runs every hour
 Schedule::command(CleanupLinkOrdersCommand::class)->hourly();
+
+// Keep Telegram bot command list registered — runs once daily at 06:00
+Schedule::command(SetTelegramBotCommandsCommand::class)->dailyAt('06:00');
+
+// Delete all bot messages sent today at 23:55 before the midnight session expiry
+Schedule::command(DeleteTelegramMessagesCommand::class)
+    ->dailyAt('23:55')
+    ->withoutOverlapping()
+    ->runInBackground();
 
 // Prune expired sessions from the database nightly when the database session driver is enabled
 Schedule::call(function () {

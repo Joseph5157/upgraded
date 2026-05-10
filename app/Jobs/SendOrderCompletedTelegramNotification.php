@@ -62,7 +62,6 @@ class SendOrderCompletedTelegramNotification implements ShouldQueue, ShouldBeUni
         $sent = $telegramService->sendMessage(
             $chatId,
             $this->buildMessage($order),
-            null,
             ['parse_mode' => 'Markdown']
         );
 

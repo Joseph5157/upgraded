@@ -4,15 +4,15 @@ This document details the security architecture of PlagExpert (Portal), a plagia
 
 ## Overview of Security Approach
 
-PlagExpert employs a multi-layered security model to protect against unauthorized access, data breaches, and operational disruptions. Key components include role-based access control (RBAC), comprehensive authorization policies, session management, audit logging, and external integrations for bot protection.
+PlagExpert employs a multi-layered security model to protect against unauthorized access, data breaches, and operational disruptions. Key components include role-based access control (RBAC), comprehensive authorization policies, session management, OTP hardening, audit logging, and external integrations for bot protection.
 
 ## Roles and Permissions
 
 The system defines three primary roles, each with distinct access levels and responsibilities:
 
 - **Admin**: Full control over the platform, including user management, billing, pricing, and system configuration.
-- **Vendor**: Can claim and process orders, upload reports, and view earnings.
-- **Client**: Can upload documents, track orders, manage credits, and download reports.
+- **Vendor**: Can claim and process orders, upload reports, view earnings, and request payouts.
+- **Client**: Can upload documents, track orders, manage credits, request top-ups, submit refund requests, and download reports.
 
 ### Role-Based Access Control (RBAC)
 
@@ -32,8 +32,8 @@ PlagExpert uses Laravel's policy system to define fine-grained access control ru
   - `deliver()`: Only the claiming vendor can mark an order as delivered.
   - `delete()`: Clients can delete unclaimed pending orders; admins can delete any order.
 - **`UserPolicy`**:
-  - `create()`: Admins with specific permissions can create users of certain roles.
-  - `freeze()`/`unfreeze()`: Admins can freeze or unfreeze accounts.
+  - `create()`: Enforces role-specific creation gates. Vendor and client creation requires `role === 'admin'`. **Admin creation requires `isSuperAdmin()`** — regular admins cannot create other admins. This is enforced via `$this->authorize('create', [User::class, $role])` in `InviteController::store()` before any validation runs.
+  - `freeze()`/`unfreeze()`: Admins can freeze or unfreeze accounts; only super-admins can freeze other admins.
   - `delete()`/`restore()`/`forceDelete()`: Admins can manage user deletion and restoration.
 - **`ClientPolicy`**:
   - `viewAny()`/`view()`: Admins can view client details.
@@ -48,23 +48,81 @@ PlagExpert uses Laravel's policy system to define fine-grained access control ru
 
 Policies are enforced via Laravel's Gate and middleware, ensuring that users can only perform actions they are authorized for. Unauthorized attempts are rejected with HTTP 403 responses and logged for audit purposes.
 
+## Authentication — OTP Login
+
+PlagExpert uses a custom OTP-based login flow (`OtpLoginController`) backed by Telegram delivery.
+
+### OTP Storage
+
+OTPs are **never stored in plaintext**. Before writing to the database, the 6-digit code is hashed:
+
+```php
+$user->forceFill(['otp' => hash('sha256', $otp)])->save();
+```
+
+Verification hashes the submitted input and compares:
+
+```php
+User::where('otp', hash('sha256', $request->otp))->...
+```
+
+This means a database dump, backup exposure, or SQL injection cannot be used to replay a stolen OTP.
+
+### OTP Brute-Force Protection
+
+Failed OTP attempts are tracked per portal number (not per IP) using `RateLimiter`:
+
+- **Limit**: 3 failures per portal number within a 10-minute window.
+- **On exhaustion**: The OTP is immediately nulled in the database, so rotating IPs cannot continue guessing against the same code.
+- **On fresh OTP**: The failure counter is cleared so a new code gives a clean slate.
+- The existing `throttle:5,1` middleware (IP-based) remains as a secondary layer.
+
+### Sensitive Fields Hidden from Serialisation
+
+`otp` and `login_token` are included in `User::$hidden`, so they are never exposed in JSON responses even if a controller inadvertently returns a User model directly.
+
 ## Session Security
 
 PlagExpert implements robust session management to prevent unauthorized access and session hijacking.
 
 - **Database Sessions**: Sessions are stored in the database (`SESSION_DRIVER=database`), ensuring persistence and scalability across requests.
-- **Custom Session Timeout**: Configurable absolute session timeout (`SESSION_TIMEOUT_MINUTES=480` by default, equating to 8 hours) logs users out after inactivity or a fixed duration.
-- **CSRF Protection**: Laravel's built-in CSRF protection is active on all forms, with public endpoints providing token refresh (`/csrf-token-public`) under throttling (20 requests/minute).
+- **Midnight Session Expiry**: Sessions expire at midnight of the login day, enforced by `EnsureSessionIsFresh` middleware and a `session_expires_at` column on the user record.
+- **CSRF Protection**: Laravel's built-in CSRF protection is active on all forms, with public endpoints providing token refresh (`/csrf-token-public`) under throttling (20 requests/minute). The Telegram webhook is excluded from CSRF.
 - **Secure Cookies**: Session cookies can be configured as secure (`SESSION_SECURE_COOKIE=true` in production) to ensure transmission over HTTPS only.
 - **No-Cache Middleware**: Applied to authenticated routes (`nocache` middleware) to prevent sensitive pages from being cached by browsers.
+
+## Account Deletion Security
+
+Account deletion is wrapped in a single `DB::transaction()` to prevent partial state on failure.
+
+### Client Account Deletion
+
+1. All active orders (pending/claimed/processing) are **cancelled**. Credits are **forfeited** — there is no slot restoration on account deletion.
+2. All upload links are revoked (`is_active=false`, `revoked_at`, `revoked_by_user_id` recorded).
+3. All pending refund requests are auto-rejected (`status=rejected`, `admin_note='Account deleted.'`).
+4. All sessions are invalidated.
+5. The user record is soft-deleted.
+
+### Vendor Account Deletion
+
+1. All claimed/processing orders are released back to pending (no orphaned work).
+2. All sessions are invalidated.
+3. The user record is soft-deleted.
+
+### Financial Record Preservation
+
+`vendor_payouts.user_id` and `vendor_payout_requests.user_id` use `nullOnDelete()` (not `cascadeOnDelete()`). A permanent `forceDelete()` sets these FKs to `NULL` rather than deleting the payout rows, preserving the financial audit trail.
+
+## Portal Number Atomicity
+
+Portal numbers are assigned via a dedicated `portal_number_sequences` table with a row per role. The sequence row is locked with `lockForUpdate()` inside the invite activation transaction, making concurrent activations serialise at the database level. A `UniqueConstraintViolationException` catch is also present as a last-resort safety net.
 
 ## Account Status Middleware
 
 A custom middleware checks account status on every authenticated request:
 
-- **Frozen Accounts**: Users with `isFrozen()` returning true are denied access and logged out with an appropriate error message.
+- **Frozen Accounts**: Users with `isFrozen()` returning `true` are denied access and logged out with an appropriate error message.
 - **Active Status**: `isActive()` ensures only active users can proceed, preventing access by unverified or suspended accounts.
-- **Audit Logging**: Access denials due to account status are logged for traceability.
 
 ## Cloudflare Turnstile Bot Protection
 
@@ -80,40 +138,29 @@ Audit logging ensures traceability of critical actions for security and operatio
 
 - **AuditLogger Service**: Logs events like order claims, status changes, account freezes, and deletion attempts to the `audit_logs` table.
 - **Request Correlation**: Every request carries an `X-Request-Id` header (UUID v4), logged with each audit entry for end-to-end traceability.
-- **Event Types**: Examples include `order.claimed`, `order.processing_started`, `account.frozen`, `credits.restored`, and denial events like `client_order.delete_denied`.
-- **Sensitive Data Protection**: Logs are sanitized to prevent leakage of sensitive information (e.g., file contents, passwords).
-
-### Key Audit Log Features
-
-- **Structured Data**: Logs include `user_id`, `subject_type`, `subject_id`, and a `meta` field for contextual data (e.g., status transitions).
-- **Denial Logging**: Failed authorization attempts (e.g., attempting to delete a claimed order) are logged with reasons for forensic analysis.
-- **Observability**: Application logs (non-audit) capture operational warnings like `order.create_failed` without sensitive data.
+- **Event Types**: Examples include `order.claimed`, `order.processing_started`, `account.frozen`, `account.deleted`, and denial events like `client_order.delete_denied`.
+- **Sensitive Data Protection**: Logs are sanitized to prevent leakage of sensitive information (e.g., file contents, passwords). OTPs are never logged.
 
 ## Data Protection
 
 - **File Storage**: Uploaded files and reports are stored on Cloudflare R2, with access restricted to authorized users only (via temporary signed URLs or direct download routes).
-- **Encryption**: Database fields are not encrypted at rest by default, but sensitive configuration (e.g., API keys) in `.env` should be protected at the environment level.
+- **OTP Hashing**: OTPs are hashed with SHA-256 before storage. The plaintext code is only held in memory long enough to send via Telegram.
 - **Input Validation**: Form requests and services validate input to prevent injection attacks; file uploads are sanitized for safe filenames.
-
-## Authentication
-
-- **OTP Login**: Custom OTP-based login (`OtpLoginController`) often integrated with Telegram for seamless authentication.
-- **Email Verification**: Configurable per user role (`requiresEmailVerification()` on `User` model).
-- **Password Security**: Bcrypt hashing with configurable rounds (`BCRYPT_ROUNDS=12`) for stored passwords.
 
 ## Best Practices Implemented
 
-- **Least Privilege**: Policies ensure users have minimal necessary permissions, reducing the attack surface.
+- **Least Privilege**: Policies ensure users have minimal necessary permissions, reducing the attack surface. Admin invite creation is super-admin gated.
+- **OTP Hardening**: SHA-256 hashing, per-user brute-force lockout, and immediate nulling on exhaustion.
+- **Transaction Atomicity**: Account deletion, refund approval, payout recording, and portal number assignment are all wrapped in database transactions.
 - **Comprehensive Logging**: Audit logs cover all significant actions, with request IDs enabling correlation for debugging and incident response.
-- **Session Hardening**: Custom timeouts and database storage prevent session fixation and improve user logout reliability.
+- **Session Hardening**: Midnight expiry and database storage prevent session fixation and improve user logout reliability.
 - **Bot Mitigation**: Cloudflare Turnstile and throttling protect public endpoints from automated abuse.
 - **Secure Defaults**: Environment variables encourage secure settings (e.g., `APP_DEBUG=false` in production).
-- **Middleware Protections**: Custom middleware for account status and no-cache headers adds additional security layers.
+- **Financial Record Integrity**: Vendor payout records survive account deletion via `nullOnDelete` FK behaviour.
 
 ## Known Security Considerations
 
 - **Email Configuration**: Default mailer is set to `log` in development; production deployments must configure a proper mailer for OTP and notifications.
 - **HTTPS Enforcement**: `SESSION_SECURE_COOKIE` should be enabled in production to ensure cookies are sent over secure connections.
 - **Regular Key Rotation**: API keys and tokens (e.g., Telegram, Cloudflare) should be rotated periodically to minimize exposure risk.
-
-This security model ensures that PlagExpert remains a robust, secure platform for document processing, protecting both user data and system integrity.
+- **OTP Migration Note**: Deployments upgrading from a version before OTP hashing was introduced will have any in-flight plaintext OTPs fail on first use. Users should simply request a new code — there is no data loss.

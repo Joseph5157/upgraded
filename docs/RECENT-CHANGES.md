@@ -1,124 +1,120 @@
 # Recent Changes & Known Edge Cases - PlagExpert (Portal)
 
-This document summarizes recent updates to PlagExpert (Portal), a plagiarism checking and document processing service, along with known edge cases and considerations for ongoing development and operations. It serves as a changelog for significant features and improvements, ensuring stakeholders are aware of the system's evolution.
+This document summarises recent updates to PlagExpert (Portal) and known edge cases for ongoing development and operations.
 
-## Today's Executive Summary
+## Latest Batch — Security Hardening & Business Logic Fixes (2026-05-10)
 
-- Added queued delivery for vendor order-completed Telegram notifications so uploads return faster.
-- Added live polling for vendor, logged-in client, and guest-link dashboards so workspace and status sections refresh without manual reload.
-- Added token-scoped guest-link polling for upload and track pages so public link clients only see their own order/report updates.
-- Kept guest-link access fail-closed for revoked and expired tokens, and rebound guest upload controls after fragment replacement.
+Commit `ca310da` on `main`. 22 files changed, 552 insertions, 180 deletions.
 
-## Recent Changes
+### Security Fixes
 
-The following updates reflect the current project state, newest first.
+**OTP plaintext eliminated**
+- OTPs are now hashed with `hash('sha256', $otp)` before being written to `users.otp`.
+- `OtpLoginController::verifyOtp()` compares `hash('sha256', $request->otp)` against the stored hash.
+- A database dump, backup exposure, or SQL injection can no longer be used to replay a stolen OTP.
+- `otp` and `login_token` added to `User::$hidden` — they no longer appear in JSON-serialised User responses.
 
-### Guest-Link Live Updates
+**OTP brute-force lockout**
+- Failed OTP attempts are counted per portal number (not just per IP) using Laravel's `RateLimiter`.
+- After 3 failures the OTP is immediately nulled in the database, preventing IP-rotation attacks.
+- The per-portal counter is cleared when a fresh OTP is issued.
 
-- Guest-link upload and track pages now poll token-scoped pulse endpoints instead of relying on manual refresh.
-- The upload page swaps a server-rendered fragment in place and rebinds upload/drop listeners after replacement.
-- The track page also swaps a live fragment in place, so report availability and download state update without a full reload.
-- Revoked or expired guest links fail closed and do not reveal another link's state.
+**Portal number race condition fixed**
+- Concurrent Telegram `/start invite_xxx` activations could previously race on `MAX(portal_number) + 1`, producing duplicate portal numbers and a 500 error.
+- Now uses a `portal_number_sequences` table (one row per role) locked with `lockForUpdate()` inside the activation transaction.
+- A `UniqueConstraintViolationException` catch is also present as a final safety net — the user receives a friendly Telegram message instead of an unhandled 500.
 
-### Dashboard Polling
+**InviteController admin-role gate**
+- Any admin could previously create another admin-level account.
+- `InviteController::store()` now calls `$this->authorize('create', [User::class, $role])` before validation, delegating to `UserPolicy::create()` which requires `isSuperAdmin()` for the admin role.
 
-- Vendor and logged-in client dashboards now use signature-based polling and server-rendered fragments for live updates.
-- Available orders, workspace sections, and client order status panels update across sessions without a full page refresh.
-- Fragment replacement is followed by listener rebinds so existing AJAX actions keep working.
+**Account deletion hardened**
+- The entire `AccountManagerController::destroy()` body is wrapped in a `DB::transaction()`.
+- Credit/slot restoration on deletion has been **removed** — credits are forfeited when an account is deleted. This eliminates a class of abuse where clients could recover credits by having their account deleted.
+- Client deletions now also: revoke all upload links (`is_active=false`, `revoked_at`, `revoked_by_user_id`); auto-reject pending refund requests (`status=rejected`, `admin_note='Account deleted.'`).
+- Vendor payout records survive permanent deletion: `vendor_payouts.user_id` and `vendor_payout_requests.user_id` FKs changed from `cascadeOnDelete` to `nullOnDelete` via a new migration.
 
-### Queue and Notifications
+### Business Logic Fixes
 
+**G1 — Client refund submission**
+- Clients can now submit refund requests directly from the portal.
+- `RefundController::store()` validates: order belongs to the client, order is in a refundable status (claimed/processing/delivered), no duplicate pending refund for the same order.
+- Route: `POST /client/refunds`.
+
+**G2 — Topup rupee amount field**
+- `topup_requests` table gains an `amount_paid decimal(10,2) nullable` column.
+- `TopupRequestController::store()` validates and saves `amount_paid` alongside the slot count.
+- `TopupRequest::$fillable` updated.
+
+**G3 — CloseDayCommand per-vendor payout rate**
+- The daily ledger previously calculated vendor payouts as `order count × global rate`, ignoring individual vendor rates.
+- Now sums each order's vendor's actual `payout_rate ?? $defaultPayoutRate`.
+- `vendor_breakdown` ledger entries now use the per-vendor rate and include a `rate` key recording which rate was applied.
+
+**G4 — Payout overpayment guard**
+- `VendorPayoutController::store()` calculates the vendor's current balance (`earned - paid`) before creating the record.
+- Returns an error with the vendor's name and actual balance if the requested amount exceeds it.
+
+**G5 — Vendor self-service payout requests**
+- New `vendor_payout_requests` table (`id`, `user_id FK nullOnDelete`, `amount_requested`, `status enum`, `notes`, `fulfilled_at`, `timestamps`).
+- New `VendorPayoutRequest` model.
+- `VendorPayoutController::requestPayout()`: prevents duplicate pending requests, calculates balance, creates request, fires `PortalTelegramAlertService::notifyVendorPayoutRequested()` to admin.
+- `VendorPayoutController::store()`: if `payout_request_id` is supplied, marks that request as `fulfilled` with `fulfilled_at=now()`.
+- `VendorPayoutController::index()` passes `pendingPayoutRequests` to the admin view.
+- Route: `POST /earnings/request-payout`.
+
+**G6 — RefundController::approve() atomicity**
+- Slot decrement, client status update, and refund request status update are now wrapped in `DB::transaction()`.
+- The `Log::warning` for the zero-slots edge case remains inside the transaction.
+- `reject()` is unchanged (single write, no transaction needed).
+
+### Reliability Fixes
+
+**PurgeOrderFilesCommand**
+- Added `->where('is_downloaded', true)` — delivered orders whose reports have not been downloaded are no longer purged. Clients who open the portal the morning after delivery now find their files intact.
+
+**CleanupLinkOrdersCommand**
+- Slot credit restoration moved inside each order's `DB::transaction()` with `lockForUpdate()`. A mid-loop crash can no longer leave an order deleted but its slot unreturned.
+
+**OrderWorkflowService — delivery deduplication**
+- Extracted `private markDelivered(Order, User)` shared by both `uploadReport()` and `deliver()`. Counter increments (`delivered_orders_count`, `daily_delivered_count`) now have a single code path, making double-increment structurally impossible.
+
+**AutoReleaseOrdersCommand overlap prevention**
+- Added `->withoutOverlapping()` to the scheduler definition. Prevents concurrent runs on multi-worker Railway deployments.
+
+**bundleReports() — no more disk I/O**
+- ZIP is now assembled via `tmpfile()` (OS-managed temp file) instead of `storage_path('app/tmp/...')`. Safe on ephemeral filesystems. Temp file is deleted immediately after the response bytes are read, regardless of whether the HTTP response completes.
+
+**guestVisibleOrders / assertGuestOrderScope — undownloaded orders stay visible**
+- Orders are now shown if they are recent (< 24h) **or** not yet downloaded, whichever is later.
+- Download access also follows the same rule, preventing a 404 on the morning after a late delivery.
+
+---
+
+## Previous Batch — Dashboard Polling & Queue Notifications
+
+- Guest-link upload and track pages poll token-scoped pulse endpoints instead of relying on manual refresh.
+- Vendor and logged-in client dashboards use signature-based polling with server-rendered fragment replacement.
 - Vendor order-completed Telegram notifications now run through the queue instead of blocking the upload request.
-- The request path keeps file storage, transaction, and report persistence synchronous, but notification delivery is asynchronous.
-- Queue dispatch is covered by upload tests so the behavior stays correct when Telegram fails later.
 
-## Older Changes
-
-These are still valid historical notes from earlier work, but they are no longer the most recent project changes.
-
-### AI Report Skip Feature
-
-- **Description**: Clients or vendors can opt to skip AI report generation for an order by providing a reason.
-- **Implementation**: The report upload flow supports `ai_skip_reason`, and AI report storage can be omitted when skipped.
-- **Operational Impact**: Orders marked as `delivered` do not require an AI report if the skip path is used.
-
-### Enhanced Validation in Report Upload Flow
-
-- **Description**: Report upload validation was tightened to prevent incomplete or incorrect submissions.
-- **Implementation**: `UploadVendorReportService` checks file types, sizes, and required fields more strictly.
-- **User Impact**: Vendors get clearer feedback when uploads fail.
-
-### Nullable AI Report Path
-
-- **Description**: The report schema supports missing AI output when the skip path is used.
-- **Operational Impact**: Existing AI-backed orders remain unaffected, and skipped orders do not fail validation.
+---
 
 ## Known Edge Cases
 
-Below are identified edge cases and areas of potential concern that may require attention during development, testing, or operations. These are not necessarily bugs but scenarios where the system behavior might be unexpected or require special handling.
+### OTP upgrade path
+Any user mid-login at the moment of deployment will have a plaintext OTP in the database that the new hashed comparison cannot match. They see "Invalid or expired code" and must request a fresh code. No data is lost, no account is locked.
 
-### Order Deletion with Credit Restoration
+### Credits are forfeited on account deletion
+This is now intentional. When an admin deletes a client account, any unconsumed slots are not returned. This prevents a pattern where clients could game the credit system by triggering account deletion. Operators should communicate this policy to clients before deletion.
 
-- **Scenario**: When a client deletes an unclaimed `pending` order, credits are restored based on `files_count`. If an admin deletes a client account with active orders, credits are restored for all cancelled orders.
-- **Edge Case**: If database transactions fail midway (e.g., due to a deadlock), there's a risk of credits being restored without order cancellation or vice versa.
-- **Mitigation**: The `DeleteClientOrderService` uses database transactions to ensure atomicity. However, monitor `audit_logs` for `credits.restored` events without corresponding `order.cancelled` or `order.deleted` events.
-- **Testing**: Stress-test deletion under high load to confirm transaction reliability.
-- **Operational Action**: If inconsistency is detected, manually adjust credits via admin dashboard and log the correction.
+### Pending refund auto-rejection on deletion
+When a client account is deleted, pending refund requests are rejected with `admin_note='Account deleted.'` rather than being left in limbo. The admin panel will reflect this immediately via the sidebar badge bust.
 
-### Public Upload Link Throttling
+### vendor_payouts and vendor_payout_requests — nullable user_id after forceDelete
+After a vendor account is permanently deleted (`forceDelete()`), the `user_id` column in `vendor_payouts` and `vendor_payout_requests` becomes `NULL`. Queries that join these tables must handle `NULL` user_id gracefully (e.g., use `LEFT JOIN` and display "Deleted vendor" in the UI).
 
-- **Scenario**: Public upload links (`/u/{token}`) are rate-limited to 30 requests per minute to prevent abuse.
-- **Edge Case**: Legitimate high-volume clients using a single link may hit the throttle limit during peak usage, resulting in 429 (Too Many Requests) errors.
-- **Mitigation**: Clients are advised to use dashboard uploads for bulk operations, or admins can issue multiple links to distribute load.
-- **User Impact**: Affected clients see a temporary block with a retry-after header; no data loss occurs.
-- **Future Improvement**: Consider configurable per-link throttle limits or CAPTCHA challenges for high-frequency users.
+### Guest link orders — extended visibility window
+Orders submitted via guest upload links are now visible until downloaded (no hard 24h cutoff). This means a client who never downloads their reports will see old orders accumulating in the list indefinitely. Consider adding a UI note or a longer-term archival grace period if this becomes noisy.
 
-### Session Expiry on Mobile Resume
-
-- **Scenario**: Mobile users resuming the app after backgrounding for extended periods (beyond `SESSION_TIMEOUT_MINUTES`) may encounter session expiry.
-- **Edge Case**: If the browser or app doesn't handle the 302 redirect to login gracefully, users might see a CSRF error loop or a blank page instead of a clean login prompt.
-- **Mitigation**: The system ensures a clean redirect to `/login` with a flash message. Mobile UI tests (see `docs/smoke-test-checklist.md`, Section D) verify this behavior.
-- **User Impact**: Minor inconvenience; users must re-authenticate but no data is lost.
-- **Monitoring**: Check logs for repeated 419 (CSRF token mismatch) errors with the same `X-Request-Id` to identify problematic clients.
-
-### Audit Log Growth
-
-- **Scenario**: The `audit_logs` table grows rapidly in high-traffic environments due to logging of all significant actions (order claims, deletions, account changes).
-- **Edge Case**: Without archiving, database performance may degrade over time for queries on `audit_logs` or backups may become slower.
-- **Mitigation**: No immediate action needed for small-to-medium deployments. For large-scale systems, plan to archive old logs (e.g., older than 6 months) to a separate table or external storage.
-- **Operational Action**: Monitor table size (`SELECT COUNT(*) FROM audit_logs;`) and query performance monthly. Do not truncate without archiving.
-- **Future Improvement**: Implement automated log archiving via a new Artisan command.
-
-### AI Report Skip Reason Logging
-
-- **Scenario**: When vendors skip AI reports, the `ai_skip_reason` is logged in `audit_logs.meta`.
-- **Edge Case**: If vendors input sensitive or inappropriate content in the reason field, it could be visible in logs, posing a privacy or compliance risk.
-- **Mitigation**: Current logs are sanitized to prevent file content leakage, but `ai_skip_reason` is stored as-is. Admin review of logs should be restricted to trusted personnel.
-- **User Impact**: No direct impact unless logs are exposed.
-- **Future Improvement**: Add input validation or sanitization for `ai_skip_reason` to prevent misuse, or mask sensitive parts in logs.
-
-## Changelog Summary
-
-For a quick reference, below is a summarized timeline of notable changes:
-
-- **Guest-Link Live Updates**: Added token-scoped polling for guest upload and track pages with fragment replacement and listener rebinds.
-- **Dashboard Polling**: Added live polling for vendor and logged-in client dashboards with server-rendered fragments.
-- **Queue and Notifications**: Moved vendor completion Telegram notifications off the request path into a queue job.
-- **AI Report Skip Feature**: Historical behavior retained for skipped AI uploads and nullable report paths.
-
-## Best Practices for Handling Edge Cases
-
-- **Proactive Monitoring**: Use `audit_logs` and application logs to detect anomalies early (e.g., credit inconsistencies, throttle hits).
-- **User Communication**: Inform clients about throttle limits on public links and provide alternatives (dashboard uploads, multiple links).
-- **Testing Coverage**: Expand test suites to cover edge cases like transaction failures during deletions or session expiry on mobile devices.
-- **Documentation**: Keep this document updated with new edge cases or changes as they are discovered or implemented.
-- **Feedback Loop**: Encourage users to report unexpected behavior with `X-Request-Id` headers for precise log correlation.
-
-## Support for Recent Changes
-
-If issues arise from recent updates (e.g., AI report skipping not reflecting correctly in order status), contact the development team with:
-- Specific order IDs or user IDs affected.
-- Relevant `X-Request-Id` headers from error responses.
-- Logs from `storage/logs/` or database entries from `audit_logs` if accessible.
-
-This document ensures transparency on the system's current state, helping developers, operators, and stakeholders understand recent enhancements and areas requiring attention.
+### Vendor payout request balance snapshot
+When a vendor submits a payout request, the requested amount is snapshotted from their balance at that moment. If they deliver more orders before the admin processes the request, the outstanding amount will be higher than what was requested. The admin sees the live balance in `VendorPayoutController::index()` — the request amount is informational, not a ceiling.
