@@ -133,12 +133,14 @@ export default {
         themes: [
             {
                 plagexpert: {
-                    primary: '#f97316',
-                    secondary: '#6366f1',
-                    accent: '#10b981',
-                    'base-100': '#0f1117',
-                    'base-200': '#13151c',
-                    'base-300': '#1e2030',
+                    "color-scheme": "dark",
+                    "primary":      "#f97316",
+                    "secondary":    "#6366f1",
+                    "accent":       "#10b981",
+                    "base-100":     "#0f1117",
+                    "base-200":     "#13151c",
+                    "base-300":     "#1e2030",
+                    "base-content": "#d4d4d8",
                 },
             },
         ],

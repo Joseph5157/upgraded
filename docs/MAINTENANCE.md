@@ -198,3 +198,4 @@ There is no credit restoration on deletion by design. If an operator needs to cr
 - Review the audit log regularly during the first few days after launch.
 - If you need to verify Telegram behavior in local testing, use the test fake setting instead of real network calls.
 - The `portal_number_sequences` table is the source of truth for next portal numbers. Do not manually edit it unless correcting a data issue, and only do so with the application stopped.
+
