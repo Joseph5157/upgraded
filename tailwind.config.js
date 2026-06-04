@@ -1,5 +1,6 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import daisyui from 'daisyui';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -126,5 +127,20 @@ export default {
         },
     },
 
-    plugins: [forms],
+    plugins: [forms, daisyui],
+
+    daisyui: {
+        themes: [
+            {
+                plagexpert: {
+                    primary: '#f97316',
+                    secondary: '#6366f1',
+                    accent: '#10b981',
+                    'base-100': '#0f1117',
+                    'base-200': '#13151c',
+                    'base-300': '#1e2030',
+                },
+            },
+        ],
+    },
 };

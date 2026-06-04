@@ -46,7 +46,26 @@
       "Bash(cat Procfile)",
       "Bash(find . -name \"php.ini\" -not -path \"*/vendor/*\")",
       "Bash(find . -name \".htaccess\" -not -path \"*/vendor/*\")",
-      "Bash(find . -name \"nginx*.conf\" -not -path \"*/vendor/*\")"
+      "Bash(find . -name \"nginx*.conf\" -not -path \"*/vendor/*\")",
+      "Bash(rm *)",
+      "Bash(php.exe artisan *)",
+      "Bash(/c/Herd/bin/php artisan *)",
+      "Bash(composer require *)",
+      "Bash(/c/Users/sikha/.config/herd/bin/php /c/ProgramData/ComposerSetup/bin/composer require predis/predis)",
+      "Read(//c/Herd/**)",
+      "Read(//c/Program Files/**)",
+      "Bash(\"/c/Users/sikha/AppData/Roaming/Local/lightning-services/php-8.2.27+1/bin/win64/php.exe\" /c/ProgramData/ComposerSetup/bin/composer require predis/predis --no-interaction)",
+      "Bash(\"/c/Users/sikha/AppData/Roaming/Local/lightning-services/php-8.2.27+1/bin/win64/php.exe\" /c/ProgramData/ComposerSetup/bin/composer.phar require predis/predis --no-interaction)",
+      "Bash(php -l \"/C/Mi_cam/portal/Portal-fixed/app/Http/Controllers/Auth/OtpLoginController.php\")",
+      "Bash(php -l \"/C/Mi_cam/portal/Portal-fixed/app/Http/Controllers/Admin/InviteController.php\")",
+      "Bash(php -l \"/C/Mi_cam/portal/Portal-fixed/app/Services/OrderWorkflowService.php\")",
+      "Bash(php -l \"/C/Mi_cam/portal/Portal-fixed/app/Console/Commands/CleanupLinkOrdersCommand.php\")",
+      "Bash(/c/Users/sikha/Herd/bin/php artisan *)",
+      "Bash(\"/c/Users/sikha/.config/herd/bin/php84/php.exe\" artisan *)",
+      "Bash(ls -lt /C/Mi_cam/portal/Portal-fixed/database/migrations/*.php)",
+      "Bash(ls \"/C/Mi_cam/portal/Portal-fixed/database/migrations/2026_05_10\"*)",
+      "Bash(/c/Users/sikha/.config/herd/bin/php84/php.exe artisan *)",
+      "Bash(/c/Users/sikha/.config/herd/bin/php84/php.exe *)"
     ]
   }
 }

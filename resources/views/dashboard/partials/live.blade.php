@@ -1,57 +1,49 @@
 <div id="vendor-dashboard-live" class="space-y-4 sm:space-y-5">
     <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-3 sm:p-5 hover:border-indigo-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
-            <div class="flex items-start justify-between mb-3 sm:mb-4">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-500/10 rounded-xl flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                </div>
-                <span class="text-[9px] font-bold text-indigo-400 bg-indigo-400/5 border border-indigo-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Pool</span>
+        <div class="stat bg-base-200 border border-base-300 rounded-2xl hover:border-indigo-500/30 transition-all">
+            <div class="stat-figure text-indigo-400">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
             </div>
-            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white" data-stat="available_pool">{{ $stats['available_pool'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Available Orders</p>
+            <div class="stat-title uppercase tracking-widest font-semibold text-[#6B7280]">Available Orders</div>
+            <div class="stat-value text-indigo-400 tabular-nums" data-stat="available_pool">{{ $stats['available_pool'] }}</div>
+            <div class="stat-desc text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold">Pool</div>
         </div>
 
-        <div class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-3 sm:p-5 hover:border-blue-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
-            <div class="flex items-start justify-between mb-3 sm:mb-4">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
-                <span class="text-[9px] font-bold text-blue-400 bg-blue-400/5 border border-blue-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Active</span>
+        <div class="stat bg-base-200 border border-base-300 rounded-2xl hover:border-indigo-500/30 transition-all">
+            <div class="stat-figure text-blue-400">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
             </div>
-            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white" data-stat="active_jobs">{{ $stats['active_jobs'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">In Progress</p>
+            <div class="stat-title uppercase tracking-widest font-semibold text-[#6B7280]">In Progress</div>
+            <div class="stat-value text-blue-400 tabular-nums" data-stat="active_jobs">{{ $stats['active_jobs'] }}</div>
+            <div class="stat-desc text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold">Active</div>
         </div>
 
-        <div class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-3 sm:p-5 hover:border-emerald-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
-            <div class="flex items-start justify-between mb-3 sm:mb-4">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <span class="text-[9px] font-bold text-emerald-400 bg-emerald-400/5 border border-emerald-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">Today</span>
+        <div class="stat bg-base-200 border border-base-300 rounded-2xl hover:border-indigo-500/30 transition-all">
+            <div class="stat-figure text-emerald-400">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
             </div>
-            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white" data-stat="total_checked_today">{{ $stats['total_checked_today'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Delivered Today</p>
+            <div class="stat-title uppercase tracking-widest font-semibold text-[#6B7280]">Delivered Today</div>
+            <div class="stat-value text-emerald-400 tabular-nums" data-stat="total_checked_today">{{ $stats['total_checked_today'] }}</div>
+            <div class="stat-desc text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold">Today</div>
         </div>
 
-        <div class="group bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl p-3 sm:p-5 hover:border-purple-500/30 transition-all duration-200 dark:bg-[#13151c] dark:border-white/[0.06]">
-            <div class="flex items-start justify-between mb-3 sm:mb-4">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 bg-purple-500/10 rounded-xl flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                </div>
-                <span class="text-[9px] font-bold text-purple-400 bg-purple-400/5 border border-purple-400/10 px-1.5 py-0.5 rounded-lg uppercase tracking-wider">All Time</span>
+        <div class="stat bg-base-200 border border-base-300 rounded-2xl hover:border-indigo-500/30 transition-all">
+            <div class="stat-figure text-purple-400">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
             </div>
-            <p class="text-2xl sm:text-3xl font-bold text-[#1A1D23] tabular-nums dark:text-white">{{ $stats['total_delivered'] }}</p>
-            <p class="text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold mt-1 dark:text-slate-500 hidden sm:block">Total Delivered</p>
+            <div class="stat-title uppercase tracking-widest font-semibold text-[#6B7280]">Total Delivered</div>
+            <div class="stat-value text-purple-400 tabular-nums">{{ $stats['total_delivered'] }}</div>
+            <div class="stat-desc text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold">All Time</div>
         </div>
     </div>
 
