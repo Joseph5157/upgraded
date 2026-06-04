@@ -92,7 +92,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('admin.finance.matrix') }}" class="{{ request()->routeIs('admin.matrix.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.matrix.index') }}" class="{{ request()->routeIs('admin.matrix.*') ? 'active' : '' }}">
                         <i data-lucide="credit-card" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         <span class="flex-1">Clients & Credits</span>
                         @if($lowCreditClients > 0)
@@ -249,5 +249,4 @@
 @stack('scripts')
 </body>
 </html>
-
 
