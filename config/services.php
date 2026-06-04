@@ -50,5 +50,15 @@ return [
         'testing_fake'    => env('TELEGRAM_FAKE_IN_TESTS', true),
     ],
 
+    'razorpay' => [
+        'key_id'         => env('RAZORPAY_KEY_ID'),
+        'key_secret'     => env('RAZORPAY_KEY_SECRET'),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
+    ],
+
+    'aisensy' => [
+        'api_key'   => env('AISENSY_API_KEY'),
+        'user_name' => env('AISENSY_USER_NAME', 'PlagExpert'),
+    ],
 
 ];

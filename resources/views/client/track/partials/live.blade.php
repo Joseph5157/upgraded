@@ -5,11 +5,11 @@
             : route('client.download', $order->token_view);
 
         $statusClass = [
-            'pending' => 'bg-yellow-500/10 text-yellow-400',
-            'claimed' => 'bg-amber-500/10 text-amber-400',
-            'processing' => 'bg-blue-500/10 text-blue-400',
-            'delivered' => 'bg-green-500/10 text-green-400',
-        ][$order->computed_status] ?? 'bg-slate-500/10 text-slate-400';
+            'pending' => 'badge-neutral badge-outline',
+            'claimed' => 'badge-warning badge-outline',
+            'processing' => 'badge-info badge-outline',
+            'delivered' => 'badge-success badge-outline',
+        ][$order->computed_status] ?? 'badge-neutral badge-outline';
 
         $statusLabel = [
             'pending' => 'Queued',
@@ -31,7 +31,7 @@
                 @endif
                 <p class="text-slate-400">
                     Status:
-                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $statusClass }}">
+                    <span class="badge badge-sm {{ $statusClass }} gap-1.5 text-[9px] font-bold uppercase tracking-[0.12em]">
                         {{ $statusLabel }}
                     </span>
                 </p>
@@ -62,28 +62,12 @@
             </div>
         @else
             <div class="glass p-8 rounded-3xl text-center space-y-4">
-                <div class="flex justify-center">
-                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                </div>
-                <h2 class="text-xl font-bold">
-                    @if($order->computed_status === 'claimed') Reserved
-                    @elseif($order->computed_status === 'processing') In Progress
-                    @else Queued
-                    @endif
-                </h2>
-                <p class="text-slate-400">
-                    @if($order->computed_status === 'claimed')
-                        A vendor has reserved your order and will start work shortly.
-                    @elseif($order->computed_status === 'processing')
-                        Your order is being worked on. This page refreshes automatically.
-                    @else
-                        Your order is in the queue and will be picked up shortly.
-                    @endif
-                </p>
-                <div class="flex items-center justify-center gap-2 mt-1">
-                    <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
-                    <span id="refresh-badge" class="text-[11px] font-semibold text-blue-400 tracking-wide">Checking for updates...</span>
-                </div>
+                <ul class="steps steps-horizontal w-full mb-6">
+                    <li class="step step-primary">Submitted</li>
+                    <li class="step {{ $order->claimed_by ? 'step-primary' : '' }}">Claimed</li>
+                    <li class="step {{ in_array($order->status->value, ['processing','delivered']) ? 'step-primary' : '' }}">Processing</li>
+                    <li class="step {{ $order->status->value === 'delivered' ? 'step-primary' : '' }}">Ready</li>
+                </ul>
             </div>
         @endif
 

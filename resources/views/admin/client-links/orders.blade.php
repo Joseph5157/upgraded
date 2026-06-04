@@ -27,9 +27,9 @@
 
         {{-- Link status badge --}}
         @if($clientLink->is_active)
-            <span class="px-3 py-1.5 bg-green-500/10 text-green-400 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-green-500/20">Active</span>
+            <span class="badge badge-sm badge-success badge-outline font-mono text-[9px] uppercase tracking-[0.14em]">Active</span>
         @else
-            <span class="px-3 py-1.5 bg-gray-100 dark:bg-white/[0.05] text-gray-400 dark:text-slate-500 rounded-xl text-[9px] font-bold uppercase tracking-widest border border-gray-200 dark:border-white/[0.08]">Inactive</span>
+            <span class="badge badge-sm badge-neutral badge-outline font-mono text-[9px] uppercase tracking-[0.14em]">Inactive</span>
         @endif
     </div>
 
@@ -89,15 +89,15 @@
                                 <td class="px-4 py-3 text-center">
                                     @php
                                         $statusMap = [
-                                            'pending'    => ['bg-yellow-500/10 text-yellow-400 border-yellow-500/20', 'Queued'],
-                                            'claimed'    => ['bg-blue-500/10 text-blue-400 border-blue-500/20', 'Reserved'],
-                                            'processing' => ['bg-indigo-500/10 text-indigo-400 border-indigo-500/20', 'In progress'],
-                                            'delivered'  => ['bg-green-500/10 text-green-400 border-green-500/20', 'Delivered'],
+                                            'pending'    => ['badge-warning badge-outline', 'Queued'],
+                                            'claimed'    => ['badge-info badge-outline', 'Reserved'],
+                                            'processing' => ['badge-primary badge-outline', 'In progress'],
+                                            'delivered'  => ['badge-success badge-outline', 'Delivered'],
                                         ];
                                         $s = $order->computed_status ?? 'pending';
-                                        [$cls, $label] = $statusMap[$s] ?? ['bg-gray-100 dark:bg-white/[0.05] text-gray-400 border-gray-200 dark:border-white/[0.08]', ucfirst($s)];
+                                        [$cls, $label] = $statusMap[$s] ?? ['badge-neutral badge-outline', ucfirst($s)];
                                     @endphp
-                                    <span class="px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border {{ $cls }}">{{ $label }}</span>
+                                    <span class="badge badge-sm {{ $cls }} font-mono text-[9px] uppercase tracking-[0.14em]">{{ $label }}</span>
                                 </td>
 
                                 {{-- Submitted --}}

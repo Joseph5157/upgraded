@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track Order #{{ $order->id }} - {{ config('app.name') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -26,89 +27,5 @@
         'pulseUrl' => $pulseUrl,
         'signature' => $signature,
     ])
-
-    <script>
-        (function () {
-            const pollIntervalMs = 12000;
-            let pollTimer = null;
-            let inFlight = false;
-
-            async function checkForTrackUpdates() {
-                if (inFlight) {
-                    return;
-                }
-
-                const liveEl = document.getElementById('guest-link-track-live');
-                if (!liveEl) {
-                    return;
-                }
-
-                const pulseUrl = liveEl.dataset.pulseUrl;
-                const signature = liveEl.dataset.pulseSignature || '';
-                inFlight = true;
-
-                try {
-                    const response = await fetch(`${pulseUrl}?signature=${encodeURIComponent(signature)}`, {
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    });
-
-                    if (response.status === 404) {
-                        stopTrackPolling();
-                        window.location.reload();
-                        return;
-                    }
-
-                    if (!response.ok) {
-                        return;
-                    }
-
-                    const payload = await response.json();
-                    if (payload.liveHtml) {
-                        const current = document.getElementById('guest-link-track-live');
-                        if (current) {
-                            current.outerHTML = payload.liveHtml;
-                            if (window.lucide && lucide.createIcons) {
-                                lucide.createIcons();
-                            }
-                        }
-                    }
-                } catch (error) {
-                    // Ignore transient polling failures; the next tick will retry.
-                } finally {
-                    inFlight = false;
-                }
-            }
-
-            function startTrackPolling() {
-                if (pollTimer !== null) {
-                    return;
-                }
-
-                checkForTrackUpdates();
-                pollTimer = window.setInterval(checkForTrackUpdates, pollIntervalMs);
-            }
-
-            function stopTrackPolling() {
-                if (pollTimer !== null) {
-                    window.clearInterval(pollTimer);
-                    pollTimer = null;
-                }
-            }
-
-            window.__guestLinkTrackPolling = {
-                start: startTrackPolling,
-                stop: stopTrackPolling,
-            };
-
-            window.addEventListener('focus', checkForTrackUpdates);
-            window.addEventListener('pageshow', checkForTrackUpdates);
-            window.addEventListener('online', checkForTrackUpdates);
-
-            startTrackPolling();
-        })();
-    </script>
 </body>
 </html>

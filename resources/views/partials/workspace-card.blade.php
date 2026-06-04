@@ -7,19 +7,7 @@
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
         </div>
-        @if($order->status->value === 'processing')
-            <span class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full flex-shrink-0">
-                <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> In progress
-            </span>
-        @elseif($order->status->value === 'claimed')
-            <span class="inline-flex items-center gap-1 text-[9px] font-bold text-amber-400 bg-amber-500/5 border border-amber-500/10 px-2 py-1 rounded-full flex-shrink-0">
-                <span class="w-1 h-1 bg-amber-400 rounded-full"></span> Reserved
-            </span>
-        @else
-            <span class="inline-flex items-center gap-1 text-[9px] font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] px-2 py-1 rounded-full flex-shrink-0">
-                <span class="w-1 h-1 bg-slate-500 rounded-full"></span> Queued
-            </span>
-        @endif
+        <x-order-status-badge :order="$order" />
     </div>
 
     <div class="mt-3 min-w-0">

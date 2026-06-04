@@ -5,13 +5,9 @@
     $_pendingPayout = max(0, $_totalEarned - $_totalPaid);
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="plagexpert">
 
 <head>
-    <script>
-        // Force dark mode as default
-        document.documentElement.classList.add('dark');
-    </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">

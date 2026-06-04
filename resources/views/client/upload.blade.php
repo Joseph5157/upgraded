@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -143,6 +143,7 @@
             const input = document.getElementById('files');
             if (input) {
                 input.value = '';
+                input.dispatchEvent(new Event('change', { bubbles: true }));
             }
             document.getElementById('upload-stage')?.classList.add('hidden');
             document.getElementById('selected-file-count')?.classList.add('hidden');
@@ -172,6 +173,7 @@
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(e.dataTransfer.files[0]);
                         input.files = dataTransfer.files;
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
                         handleFileSelect(input);
                     }
                 });
@@ -218,91 +220,16 @@
 
         window.__wireGuestLinkUploadControls();
         syncGuestLinkCreditDisplays();
-
-        window.__guestLinkPolling = window.__guestLinkPolling || {};
-        (function () {
-            const pollIntervalMs = 12000;
-            let pollTimer = null;
-            let inFlight = false;
-
-            async function checkForGuestLinkUpdates() {
-                if (inFlight) {
-                    return;
-                }
-
-                const liveEl = document.getElementById('guest-link-live');
-                if (!liveEl) {
-                    return;
-                }
-
-                if (window.__guestLinkUploadDirty || guestLinkUploadHasPendingSelection()) {
-                    return;
-                }
-
-                const pulseUrl = liveEl.dataset.pulseUrl;
-                const signature = liveEl.dataset.pulseSignature || '';
-                inFlight = true;
-
-                try {
-                    const response = await fetch(`${pulseUrl}?signature=${encodeURIComponent(signature)}`, {
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                    });
-
-                    if (response.status === 404) {
-                        stopGuestLinkPolling();
-                        window.location.reload();
-                        return;
-                    }
-
-                    if (!response.ok) {
-                        return;
-                    }
-
-                    const payload = await response.json();
-                    if (payload.liveHtml) {
-                        const current = document.getElementById('guest-link-live');
-                        if (current) {
-                            current.outerHTML = payload.liveHtml;
-                            lucide.createIcons();
-                            window.__wireGuestLinkUploadControls();
-                            syncGuestLinkCreditDisplays();
-                        }
-                    }
-                } catch (error) {
-                    // Ignore transient polling failures; the next tick will retry.
-                } finally {
-                    inFlight = false;
-                }
+    </script>
+    <script>
+        function creditCounter(initial) {
+            return {
+                initial,
+                fileCount: 0,
+                get remaining() { return this.initial - this.fileCount; },
+                get overLimit() { return this.fileCount > this.initial; }
             }
-
-            function startGuestLinkPolling() {
-                if (pollTimer !== null) {
-                    return;
-                }
-
-                checkForGuestLinkUpdates();
-                pollTimer = window.setInterval(checkForGuestLinkUpdates, pollIntervalMs);
-            }
-
-            function stopGuestLinkPolling() {
-                if (pollTimer !== null) {
-                    window.clearInterval(pollTimer);
-                    pollTimer = null;
-                }
-            }
-
-            window.__guestLinkPolling.start = startGuestLinkPolling;
-            window.__guestLinkPolling.stop = stopGuestLinkPolling;
-
-            window.addEventListener('focus', checkForGuestLinkUpdates);
-            window.addEventListener('pageshow', checkForGuestLinkUpdates);
-            window.addEventListener('online', checkForGuestLinkUpdates);
-
-            startGuestLinkPolling();
-        })();
+        }
     </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
-@php
+﻿@php
     $consumed = (int) $client->slots_consumed;
     $remaining = max(0, (int) $client->slots - $consumed);
+    $remainingCredits = $remaining;
     $creditTone = $remaining > 10
         ? 'border-emerald-500/[0.16] bg-emerald-500/[0.05] text-emerald-300'
         : ($remaining > 0
@@ -8,7 +9,7 @@
             : 'border-red-500/[0.16] bg-red-500/[0.05] text-red-300');
 @endphp
 
-<div id="guest-link-live" data-pulse-url="{{ $pulseUrl }}" data-pulse-signature="{{ $signature }}" data-guest-link-remaining="{{ $remaining }}" data-guest-link-consumed="{{ $consumed }}" class="px-3 py-4 pb-16 md:pb-8 max-w-[1380px] mx-auto space-y-4 sm:px-6 sm:py-5 sm:space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
+<div id="guest-link-live" x-data="creditCounter({{ $remainingCredits }})" data-pulse-url="{{ $pulseUrl }}" data-pulse-signature="{{ $signature }}" data-guest-link-remaining="{{ $remaining }}" data-guest-link-consumed="{{ $consumed }}" class="px-3 py-4 pb-16 md:pb-8 max-w-[1380px] mx-auto space-y-4 sm:px-6 sm:py-5 sm:space-y-5 xl:px-8 xl:py-6 xl:space-y-6">
 
     {{-- Overview card --}}
     <div class="card rounded-[1.75rem] p-4 sm:p-5">
@@ -47,19 +48,14 @@
                 </div>
             @endif
 
-            <div class="flex items-center gap-3 rounded-2xl px-4 py-3 border {{ $creditTone }}">
-                <span class="w-2 h-2 rounded-full {{ $remaining > 10 ? 'bg-emerald-400' : ($remaining > 0 ? 'bg-amber-400' : 'bg-red-400') }} flex-shrink-0"></span>
-                <div>
-                    <p class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Credit Status</p>
-                    <p class="text-[13px] font-semibold mt-1">
-                        @if($remaining > 10) {{ $remaining }} credits available
-                        @elseif($remaining > 0) {{ $remaining }} credits remaining
-                        @else No credits â€” contact admin
-                        @endif
-                    </p>
+            <div class="rounded-2xl px-4 py-3 border {{ $creditTone }} space-y-2">
+                <div class="flex items-center justify-between gap-3">
+                    <span class="text-[10px] font-black uppercase tracking-[0.22em] text-slate-500">Credits Remaining</span>
+                    <span class="text-[13px] font-semibold text-white" x-text="remaining"></span>
                 </div>
+                <progress class="progress w-full" :class="overLimit ? 'progress-error' : 'progress-primary'" :value="fileCount" :max="initial"></progress>
+                <span x-show="overLimit" class="label-text-alt text-error font-semibold">Not enough credits — deselect some files</span>
             </div>
-
             <div class="flex items-center gap-3 rounded-2xl px-4 py-3 border border-white/[0.06] bg-white/[0.02]">
                 <span class="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0"></span>
                 <div>
@@ -130,6 +126,7 @@
                             class="group block rounded-[1.25rem] sm:rounded-[1.5rem] px-4 sm:px-8 py-6 sm:py-7 text-center cursor-pointer transition-all border border-dashed border-indigo-500/[0.16] bg-indigo-500/[0.03] hover:border-indigo-400/40 hover:bg-indigo-500/[0.05]">
                             <input type="file" name="file" id="files" required class="sr-only"
                                 accept=".pdf,.doc,.docx,.zip"
+                                @change="fileCount = $event.target.files.length"
                                 onchange="handleFileSelect(this)">
                             <div class="w-12 h-12 sm:w-14 sm:h-14 bg-indigo-500/[0.08] rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-105 transition-all border border-indigo-500/[0.12]">
                                 <i data-lucide="file-plus" class="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400"></i>
@@ -158,9 +155,10 @@
                                     <i data-lucide="x" class="w-3.5 h-3.5"></i> Clear
                                 </button>
                                 <button type="submit" id="upload-submit-btn"
-                                    class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
+                                    :disabled="overLimit || fileCount === 0"
+                                    class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
                                     <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                                    Submit Order
+                                    <span x-text="overLimit ? 'Not enough credits' : `Submit ${fileCount} file${fileCount === 1 ? '' : 's'}`"></span>
                                 </button>
                             </div>
                         </div>
@@ -212,23 +210,7 @@
                                 </div>
                             </div>
 
-                            @if($order->status->value === 'delivered')
-                                <span class="status-badge bg-emerald-500/[0.1] text-emerald-400 border border-emerald-500/[0.15] flex-shrink-0">
-                                    <span class="w-1 h-1 rounded-full bg-emerald-400"></span> Ready
-                                </span>
-                            @elseif($order->status->value === 'processing')
-                                <span class="status-badge bg-blue-500/[0.1] text-blue-400 border border-blue-500/[0.15] flex-shrink-0">
-                                    <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> In progress
-                                </span>
-                            @elseif($order->status->value === 'claimed')
-                                <span class="status-badge bg-amber-500/[0.1] text-amber-400 border border-amber-500/[0.15] flex-shrink-0">
-                                    <span class="w-1 h-1 rounded-full bg-amber-400"></span> Reserved
-                                </span>
-                            @else
-                                <span class="status-badge bg-slate-500/[0.08] text-slate-500 border border-slate-500/[0.1] flex-shrink-0">
-                                    <span class="w-1 h-1 rounded-full bg-slate-500 pulse-dot"></span> Queued
-                                </span>
-                            @endif
+                            <x-order-status-badge :order="$order" />
                         </div>
 
                         <div class="border-t border-white/[0.05] mt-3 pt-3">
@@ -289,3 +271,5 @@
         </div>
     </div>
 </div>
+
+

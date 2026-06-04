@@ -62,7 +62,7 @@
                 <p class="stat-label">Processed today</p>
                 <p class="stat-number">{{ $stats['total_processed_today'] }}</p>
                 <p class="stat-sub">files delivered</p>
-                <span class="stat-badge badge-purple">Today</span>
+                <span class="badge badge-sm badge-primary badge-outline font-mono text-[10px] uppercase tracking-[0.14em]">Today</span>
             </div>
         </a>
 
@@ -74,7 +74,7 @@
                 <p class="stat-label">Queued pool</p>
                 <p class="stat-number">{{ $stats['pending_pool'] }}</p>
                 <p class="stat-sub">awaiting claim</p>
-                <span class="stat-badge badge-amber">Queued</span>
+                <span class="badge badge-sm badge-warning badge-outline font-mono text-[10px] uppercase tracking-[0.14em]">Queued</span>
             </div>
         </a>
 
@@ -86,7 +86,7 @@
                 <p class="stat-label">Active now</p>
                 <p class="stat-number">{{ $stats['working_vendors_now'] }}</p>
                 <p class="stat-sub">{{ $stats['active_vendors_today'] }} active today</p>
-                <span class="stat-badge" style="background:#FCE7F3;color:#831843;">Live</span>
+                <span class="badge badge-sm badge-secondary badge-outline font-mono text-[10px] uppercase tracking-[0.14em]">Live</span>
             </div>
         </a>
 
@@ -98,7 +98,7 @@
                 <p class="stat-label">New clients</p>
                 <p class="stat-number">{{ $stats['new_clients_today'] }}</p>
                 <p class="stat-sub">{{ $stats['total_clients'] }} total</p>
-                <span class="stat-badge badge-cyan">Today</span>
+                <span class="badge badge-sm badge-info badge-outline font-mono text-[10px] uppercase tracking-[0.14em]">Today</span>
             </div>
         </a>
 
@@ -231,7 +231,7 @@
                     Active orders
                 </span>
                 @if($activeOrders->count() > 0)
-                    <span class="stat-badge badge-amber">{{ $activeOrders->count() }} in progress</span>
+                    <span class="badge badge-sm badge-warning badge-outline font-mono text-[10px] uppercase tracking-[0.14em]">{{ $activeOrders->count() }} in progress</span>
                 @endif
             </div>
 
@@ -279,15 +279,15 @@
                                     </td>
                                     <td class="py-3.5 pr-5 text-right" style="border-bottom:1px solid #DDD6FE;">
                                         @if($isStalled)
-                                            <span class="stat-badge badge-red">
+                                            <span class="badge badge-sm badge-error badge-outline font-mono text-[10px] uppercase tracking-[0.14em]">
                                                 <i data-lucide="alert-triangle" class="w-2.5 h-2.5 mr-1"></i> Stalled
                                             </span>
                                         @elseif($order->status->value === 'claimed')
-                                            <span class="stat-badge" style="background:#FEF3C7;color:#92400E;">
+                                            <span class="badge badge-sm badge-warning badge-outline font-mono text-[10px] uppercase tracking-[0.14em]">
                                                 <span class="w-1.5 h-1.5 rounded-full mr-1" style="background:#D97706;display:inline-block;"></span> Reserved
                                             </span>
                                         @else
-                                            <span class="stat-badge badge-green">
+                                            <span class="badge badge-sm badge-success badge-outline font-mono text-[10px] uppercase tracking-[0.14em]">
                                                 <span class="w-1.5 h-1.5 rounded-full animate-pulse mr-1" style="background:#059669;display:inline-block;"></span> Working
                                             </span>
                                         @endif

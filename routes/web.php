@@ -23,6 +23,7 @@ use App\Http\Controllers\VendorEarningsController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\ClientLinkController;
 use App\Http\Controllers\Admin\PricingController;
+use App\Http\Controllers\SignupController;
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -45,6 +46,16 @@ Route::get('/csrf-token-public', function () {
 Route::post('/telegram/webhook/{secret}', [BotController::class, 'webhook'])
     ->middleware('throttle:60,1')
     ->name('telegram.webhook');
+
+Route::middleware('throttle:20,1')->group(function () {
+    Route::get('/signup', [SignupController::class, 'show'])->name('signup.show');
+    Route::post('/signup/initiate', [SignupController::class, 'initiate'])->name('signup.initiate');
+    Route::get('/signup/success', [SignupController::class, 'success'])->name('signup.success');
+});
+
+Route::post('/webhooks/razorpay', [SignupController::class, 'webhook'])
+    ->middleware('throttle:60,1')
+    ->name('webhooks.razorpay');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [OtpLoginController::class, 'showLogin'])

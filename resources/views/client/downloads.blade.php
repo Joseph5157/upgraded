@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
@@ -21,18 +22,6 @@
             background: rgba(99,102,241,0.12);
             color: #fff;
             border-left: 2px solid #818cf8;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 999px;
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
         }
 
         .scrollbar-thin::-webkit-scrollbar { width: 4px; }
@@ -153,7 +142,7 @@
                                     </p>
                                 </div>
                             </div>
-                            <span class="status-badge bg-blue-500/[0.1] text-blue-400 border border-blue-500/[0.15] flex-shrink-0">
+                            <span class="badge badge-sm badge-info badge-outline gap-1.5 flex-shrink-0 text-[9px] font-bold uppercase tracking-[0.12em]">
                                 <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> Processing
                             </span>
                         </div>
@@ -182,7 +171,7 @@
                                     </p>
                                 </div>
                             </div>
-                            <span class="status-badge bg-emerald-500/[0.1] text-emerald-400 border border-emerald-500/[0.15] flex-shrink-0">
+                            <span class="badge badge-sm badge-success badge-outline gap-1.5 flex-shrink-0 text-[9px] font-bold uppercase tracking-[0.12em]">
                                 <span class="w-1 h-1 rounded-full bg-emerald-400"></span> Ready
                             </span>
                         </div>

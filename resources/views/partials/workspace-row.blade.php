@@ -29,22 +29,7 @@
         </div>
     </td>
     <td class="px-2 sm:px-4 py-3 sm:py-4 text-center hidden sm:table-cell">
-        @if($order->status->value === 'processing')
-                <span
-                    class="inline-flex items-center gap-1 text-[9px] font-bold text-blue-400 bg-blue-500/5 border border-blue-500/10 px-2 py-1 rounded-full">
-                <span class="w-1 h-1 bg-blue-400 rounded-full animate-pulse"></span> In progress
-            </span>
-        @elseif($order->status->value === 'claimed')
-            <span
-                class="inline-flex items-center gap-1 text-[9px] font-bold text-amber-400 bg-amber-500/5 border border-amber-500/10 px-2 py-1 rounded-full">
-                <span class="w-1 h-1 bg-amber-400 rounded-full"></span> Reserved
-            </span>
-        @else
-            <span
-                class="inline-flex items-center gap-1 text-[9px] font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-white/[0.05] border border-gray-200 dark:border-white/[0.08] px-2 py-1 rounded-full">
-                <span class="w-1 h-1 bg-slate-500 rounded-full"></span> Queued
-            </span>
-        @endif
+        <x-order-status-badge :order="$order" />
     </td>
     <td class="px-3 sm:px-6 py-3 sm:py-4 text-right">
         <div class="flex items-center justify-end gap-1.5 sm:gap-2">

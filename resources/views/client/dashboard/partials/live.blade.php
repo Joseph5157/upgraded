@@ -186,7 +186,7 @@
                                     </p>
                                 </div>
                             </div>
-                            <span class="status-badge bg-blue-500/[0.1] text-blue-400 border border-blue-500/[0.15] flex-shrink-0">
+                            <span class="badge badge-sm badge-info badge-outline gap-1.5 flex-shrink-0 text-[9px] font-bold uppercase tracking-[0.12em]">
                                 <span class="w-1 h-1 rounded-full bg-blue-400 pulse-dot"></span> Processing
                             </span>
                         </div>
@@ -215,7 +215,7 @@
                                     </p>
                                 </div>
                             </div>
-                            <span class="status-badge bg-emerald-500/[0.1] text-emerald-400 border border-emerald-500/[0.15] flex-shrink-0">
+                            <span class="badge badge-sm badge-success badge-outline gap-1.5 flex-shrink-0 text-[9px] font-bold uppercase tracking-[0.12em]">
                                 <span class="w-1 h-1 rounded-full bg-emerald-400"></span> Ready
                             </span>
                         </div>
