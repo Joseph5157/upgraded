@@ -51,7 +51,7 @@
     </style>
 </head>
 
-<body class="bg-[#0f1117] text-slate-300 antialiased dark:bg-[#0f1117] overflow-x-hidden">
+<body class="bg-[#0f1117] text-slate-300 antialiased overflow-x-hidden">
 
     {{-- ===== MOBILE SIDEBAR OVERLAY ===== --}}
     <div id="sidebar-overlay"
@@ -241,5 +241,4 @@
 </body>
 
 </html>
-
 

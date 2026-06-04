@@ -1,6 +1,6 @@
 <div id="vendor-dashboard-live" class="space-y-4 sm:space-y-5">
     <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="stat bg-base-200 border border-base-300 rounded-2xl hover:border-indigo-500/30 transition-all">
+        <div class="stat bg-[#13151c] border border-white/[0.06] rounded-2xl hover:border-indigo-500/30 transition-all">
             <div class="stat-figure text-indigo-400">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -12,7 +12,7 @@
             <div class="stat-desc text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold">Pool</div>
         </div>
 
-        <div class="stat bg-base-200 border border-base-300 rounded-2xl hover:border-indigo-500/30 transition-all">
+        <div class="stat bg-[#13151c] border border-white/[0.06] rounded-2xl hover:border-indigo-500/30 transition-all">
             <div class="stat-figure text-blue-400">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -23,7 +23,7 @@
             <div class="stat-desc text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold">Active</div>
         </div>
 
-        <div class="stat bg-base-200 border border-base-300 rounded-2xl hover:border-indigo-500/30 transition-all">
+        <div class="stat bg-[#13151c] border border-white/[0.06] rounded-2xl hover:border-indigo-500/30 transition-all">
             <div class="stat-figure text-emerald-400">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -35,7 +35,7 @@
             <div class="stat-desc text-[10px] text-[#6B7280] uppercase tracking-widest font-semibold">Today</div>
         </div>
 
-        <div class="stat bg-base-200 border border-base-300 rounded-2xl hover:border-indigo-500/30 transition-all">
+        <div class="stat bg-[#13151c] border border-white/[0.06] rounded-2xl hover:border-indigo-500/30 transition-all">
             <div class="stat-figure text-purple-400">
                 <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
