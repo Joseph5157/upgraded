@@ -54,7 +54,7 @@
         </div>
 
         <div class="space-y-4 sm:space-y-5 min-w-0">
-            <div id="history" class="bg-[#FAFBFC] border border-[#E2E6EA] rounded-2xl overflow-hidden dark:bg-[#13151c] dark:border-white/[0.06]">
+            <div id="history" class="bg-base-200 border border-base-300 rounded-2xl overflow-hidden">
                 <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-white/[0.04]">
                     <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Recent Deliveries</h2>
                     @if($recentHistory->count() > 0)
