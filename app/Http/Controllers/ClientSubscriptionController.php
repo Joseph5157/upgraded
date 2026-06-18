@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClientPayment;
 use App\Models\Order;
 use App\Enums\OrderStatus;
 use Illuminate\Support\Facades\Auth;
@@ -17,11 +18,18 @@ class ClientSubscriptionController extends Controller
             abort(403, 'No client account linked.');
         }
 
-        $slotsUsed = (int) $client->slots_consumed;
-        $slotsRemaining = max(0, (int) $client->slots - $slotsUsed);
+        $creditsRemaining = max(0, (int) $client->credit_balance);
 
-        $topupHistory = $client->topupRequests()
-            ->latest()
+        // Credits used = total debits from the credit ledger
+        $creditsUsed = (int) abs(
+            $client->creditTransactions()
+                ->where('type', 'order_debit')
+                ->sum('credits_delta')
+        );
+
+        $paymentHistory = $client->clientPayments()
+            ->with('createdBy')
+            ->latest('received_at')
             ->get();
 
         $refundHistory = $client->refundRequests()
@@ -29,15 +37,15 @@ class ClientSubscriptionController extends Controller
             ->latest()
             ->get();
 
-        $lastTopup = $topupHistory->where('status', 'approved')->first();
+        $lastPayment = $paymentHistory->where('status', 'confirmed')->first();
 
         return view('client.subscription', compact(
             'client',
-            'slotsUsed',
-            'slotsRemaining',
-            'topupHistory',
+            'creditsUsed',
+            'creditsRemaining',
+            'paymentHistory',
             'refundHistory',
-            'lastTopup'
+            'lastPayment'
         ));
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Client;
+use App\Models\ClientCreditTransaction;
 use App\Models\Order;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -14,17 +15,23 @@ class ClientOrderServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function makeClient(array $attrs = []): Client
+    {
+        return Client::create(array_merge([
+            'name'           => 'Test Client',
+            'slots'          => 10,
+            'slots_consumed' => 0,
+            'credit_balance' => 10,
+            'status'         => 'active',
+        ], $attrs));
+    }
+
     #[Test]
     public function test_uploading_three_files_consumes_three_credits(): void
     {
         Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
 
-        $client = Client::create([
-            'name' => 'Test Client',
-            'slots' => 10,
-            'slots_consumed' => 0,
-            'status' => 'active',
-        ]);
+        $client = $this->makeClient(['credit_balance' => 10]);
 
         $service = app(\App\Services\CreateClientOrderService::class);
 
@@ -37,7 +44,10 @@ class ClientOrderServiceTest extends TestCase
         $client->refresh();
 
         $this->assertEquals(3, $order->files_count);
-        $this->assertEquals(3, $client->slots_consumed);
+        // New system: credit_balance decremented, NOT slots_consumed
+        $this->assertEquals(7, $client->credit_balance);
+        // Old slots column must not be touched
+        $this->assertEquals(0, $client->slots_consumed);
     }
 
     #[Test]
@@ -45,12 +55,8 @@ class ClientOrderServiceTest extends TestCase
     {
         Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
 
-        $client = Client::create([
-            'name' => 'Test Client',
-            'slots' => 5,
-            'slots_consumed' => 4,
-            'status' => 'active',
-        ]);
+        // Only 1 credit — trying to upload 2 files should fail
+        $client = $this->makeClient(['credit_balance' => 1]);
 
         $service = app(\App\Services\CreateClientOrderService::class);
 
@@ -63,32 +69,47 @@ class ClientOrderServiceTest extends TestCase
     }
 
     #[Test]
-    public function test_deleting_undelivered_order_restores_file_credits(): void
+    public function test_upload_fails_when_credit_balance_is_zero(): void
     {
         Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
 
-        $client = Client::create([
-            'name' => 'Test Client',
-            'slots' => 10,
-            'slots_consumed' => 6,
-            'status' => 'active',
-        ]);
+        $client = $this->makeClient(['credit_balance' => 0]);
+
+        $service = app(\App\Services\CreateClientOrderService::class);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('No upload credits remaining');
+
+        $service->execute($client, [
+            UploadedFile::fake()->create('a.pdf', 100),
+        ], 'account');
+    }
+
+    #[Test]
+    public function test_deleting_pre_phase4_order_does_not_touch_credit_balance(): void
+    {
+        Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
+
+        // Pre-Phase-4 order: created manually, no ORDER_DEBIT transaction exists
+        $client = $this->makeClient(['credit_balance' => 5]);
 
         $order = Order::create([
-            'client_id' => $client->id,
+            'client_id'  => $client->id,
             'token_view' => 'abc123',
             'files_count' => 3,
-            'status' => \App\Enums\OrderStatus::Pending,
-            'due_at' => now(),
-            'source' => 'account',
+            'status'     => \App\Enums\OrderStatus::Pending,
+            'due_at'     => now(),
+            'source'     => 'account',
         ]);
 
         $service = app(\App\Services\DeleteClientOrderService::class);
-        $service->execute($order, $client);
+        $creditsRefunded = $service->execute($order, $client);
 
         $client->refresh();
 
-        $this->assertEquals(3, $client->slots_consumed);
+        // No debit tx → no refund → credit_balance unchanged
+        $this->assertEquals(5, $client->credit_balance);
+        $this->assertFalse($creditsRefunded);
     }
 
     #[Test]
@@ -96,20 +117,15 @@ class ClientOrderServiceTest extends TestCase
     {
         Storage::fake('r2', ['root' => storage_path('app/testing-disks/r2')]);
 
-        $client = Client::create([
-            'name' => 'Test Client',
-            'slots' => 10,
-            'slots_consumed' => 6,
-            'status' => 'active',
-        ]);
+        $client = $this->makeClient(['credit_balance' => 5]);
 
         $order = Order::create([
-            'client_id' => $client->id,
+            'client_id'  => $client->id,
             'token_view' => 'abc123',
             'files_count' => 3,
-            'status' => \App\Enums\OrderStatus::Delivered,
-            'due_at' => now(),
-            'source' => 'account',
+            'status'     => \App\Enums\OrderStatus::Delivered,
+            'due_at'     => now(),
+            'source'     => 'account',
         ]);
 
         $service = app(\App\Services\DeleteClientOrderService::class);
@@ -122,6 +138,7 @@ class ClientOrderServiceTest extends TestCase
 
         $client->refresh();
 
-        $this->assertEquals(6, $client->slots_consumed);
+        // credit_balance must be untouched
+        $this->assertEquals(5, $client->credit_balance);
     }
 }

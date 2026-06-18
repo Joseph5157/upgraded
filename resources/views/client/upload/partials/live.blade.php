@@ -1,6 +1,6 @@
 ﻿@php
-    $consumed = (int) $client->slots_consumed;
-    $remaining = max(0, (int) $client->slots - $consumed);
+    $remaining = max(0, (int) $client->credit_balance);
+    $consumed = 0; // legacy variable kept for view compatibility
     $remainingCredits = $remaining;
     $creditTone = $remaining > 10
         ? 'border-emerald-500/[0.16] bg-emerald-500/[0.05] text-emerald-300'
@@ -117,7 +117,7 @@
                             <i data-lucide="alert-triangle" class="w-7 h-7 text-amber-500/60"></i>
                         </div>
                         <h3 class="text-amber-400 font-bold mb-1">No credits remaining</h3>
-                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Contact admin for more slots</p>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Contact admin for more credits</p>
                     </div>
                 @else
                     <form id="upload-form" action="{{ route('client.store', $link->token) }}" method="POST" enctype="multipart/form-data">

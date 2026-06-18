@@ -9,6 +9,7 @@ use App\Models\OrderLog;
 use App\Models\OrderReport;
 use App\Models\User;
 use App\Jobs\SendOrderCompletedTelegramNotification;
+use App\Services\Finance\VendorEarningService;
 use App\Support\LogContext;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ class OrderWorkflowService
     public function __construct(
         protected AuditLogger $auditLogger,
         protected \App\Services\NotificationService $notificationService,
+        protected VendorEarningService $vendorEarningService,
     ) {
     }
 
@@ -357,6 +359,11 @@ class OrderWorkflowService
 
         ($creditedVendor ?: $actor)->increment('delivered_orders_count');
         ($creditedVendor ?: $actor)->increment('daily_delivered_count');
+
+        // Phase 5: create a pending vendor earning transaction.
+        // Must be called inside this transaction so delivery + earning are atomic.
+        // Returns null silently if: no vendor assigned, or already earned (idempotent).
+        $this->vendorEarningService->createPendingForOrder($order, $actor);
 
         $this->logActivity($order, $actor, 'deliver', 'Order delivered to client', $oldStatus, OrderStatus::Delivered->value);
 

@@ -137,7 +137,7 @@
                     </div>
                 </div>
 
-                {{-- Slots Remaining --}}
+                {{-- Credits Remaining --}}
                 <div class="premium-card p-6 rounded-3xl">
                     <div class="flex justify-between items-start mb-4">
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Credits remaining</p>
@@ -145,15 +145,11 @@
                             <i data-lucide="coins" class="w-4 h-4"></i>
                         </div>
                     </div>
-                    <h3 class="text-4xl font-bold text-white font-mono">{{ $slotsRemaining }}</h3>
-                    <p class="text-xs text-slate-400 mt-1">of {{ $client->slots }} total credits</p>
-                    <div class="mt-4 w-full bg-white/[0.06] rounded-full h-1.5">
-                        <div class="h-1.5 rounded-full {{ $slotsRemaining > 10 ? 'bg-indigo-500' : ($slotsRemaining > 0 ? 'bg-amber-500' : 'bg-red-500') }}"
-                            style="width: {{ $client->slots > 0 ? min(100, ($slotsRemaining / $client->slots) * 100) : 0 }}%"></div>
-                    </div>
+                    <h3 class="text-4xl font-bold text-white font-mono">{{ $creditsRemaining }}</h3>
+                    <p class="text-xs text-slate-400 mt-1">available for uploads</p>
                 </div>
 
-                {{-- Slots Used --}}
+                {{-- Credits Used --}}
                 <div class="premium-card p-6 rounded-3xl">
                     <div class="flex justify-between items-start mb-4">
                         <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Credits used</p>
@@ -161,126 +157,87 @@
                             <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
                         </div>
                     </div>
-                    <h3 class="text-4xl font-bold text-white font-mono">{{ $slotsUsed }}</h3>
+                    <h3 class="text-4xl font-bold text-white font-mono">{{ $creditsUsed }}</h3>
                     <p class="text-xs text-slate-400 mt-1">files processed</p>
-                    @if($lastTopup)
+                    @if($lastPayment)
                         <div class="mt-4 pt-4 border-t border-white/5">
-                            <p class="text-[10px] text-slate-500 uppercase tracking-widest">Last top-up</p>
-                            <p class="text-xs text-slate-400 mt-0.5 font-mono">+{{ $lastTopup->amount_requested }} slots · {{ $lastTopup->created_at->format('d M Y') }}</p>
+                            <p class="text-[10px] text-slate-500 uppercase tracking-widest">Last payment</p>
+                            <p class="text-xs text-slate-400 mt-0.5 font-mono">+{{ $lastPayment->credits_added }} credits · {{ $lastPayment->received_at->format('d M Y') }}</p>
                         </div>
                     @endif
                 </div>
             </div>
 
-            {{-- ── Top-up Request ─────────────────────────────────────────── --}}
+            {{-- ── Need More Credits ─────────────────────────────────────── --}}
             <div class="premium-card p-8 rounded-3xl">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h2 class="text-lg font-bold text-white">Request credit top-up</h2>
-                        <p class="text-xs text-slate-400 mt-0.5">Add more credits to your account</p>
+                        <h2 class="text-lg font-bold text-white">Need more credits?</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Contact your admin to add credits to your account</p>
                     </div>
                     <div class="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/20">
-                        <i data-lucide="zap" class="w-5 h-5"></i>
+                        <i data-lucide="message-circle" class="w-5 h-5"></i>
                     </div>
                 </div>
 
-                <form action="{{ route('client.topup.store') }}" method="POST" class="space-y-6">
-                    @csrf
+                <div class="p-4 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl flex items-center justify-between">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Choose a top-up amount</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                            <button type="button" onclick="setSlots(50)"
-                                class="py-3 bg-white/5 hover:bg-indigo-500/10 border border-white/10 hover:border-indigo-500/30 rounded-xl text-xs font-bold text-slate-300 hover:text-indigo-400 transition-all">50 Slots</button>
-                            <button type="button" onclick="setSlots(100)"
-                                class="py-3 bg-white/5 hover:bg-indigo-500/10 border border-white/10 hover:border-indigo-500/30 rounded-xl text-xs font-bold text-slate-300 hover:text-indigo-400 transition-all">100 Slots</button>
-                            <button type="button" onclick="setSlots(200)"
-                                class="py-3 bg-white/5 hover:bg-indigo-500/10 border border-white/10 hover:border-indigo-500/30 rounded-xl text-xs font-bold text-slate-300 hover:text-indigo-400 transition-all">200 Slots</button>
-                        </div>
-                        <input type="number" name="amount_requested" id="slot-input" min="1"
-                            placeholder="Or enter custom amount..." oninput="updatePrice(this.value)"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors placeholder-slate-700" required>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rate per file</p>
+                        <p class="text-3xl font-bold text-white mt-0.5 font-mono">₹{{ number_format($client->price_per_file, 0) }}</p>
                     </div>
-
-                    <div class="p-4 bg-indigo-500/5 border border-indigo-500/10 rounded-2xl flex items-center justify-between">
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Total Payable</p>
-                            <p id="price-display" class="text-3xl font-bold text-white mt-0.5 font-mono">₹0</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rate</p>
-                            <p class="text-xs text-indigo-400 font-bold font-mono">₹{{ number_format($client->price_per_file, 0) }} / slot</p>
-                        </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Current Balance</p>
+                        <p class="text-xl text-indigo-400 font-bold font-mono">{{ $creditsRemaining }} credits</p>
                     </div>
+                </div>
 
-                    <div class="p-4 bg-white/[0.03] border border-white/5 rounded-2xl space-y-3">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Payment instructions</p>
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center text-green-500 flex-shrink-0">
-                                <i data-lucide="smartphone" class="w-4 h-4"></i>
-                            </div>
-                            <div>
-                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">UPI ID</p>
-                                <p class="text-sm font-bold text-white font-mono">your-upi@ybl</p>
-                            </div>
-                        </div>
-                        <p class="text-[10px] text-slate-500 leading-relaxed">Send the exact amount to the UPI ID above, then paste your <span class="text-indigo-400">UTR or transaction reference number</span> below.</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">UTR or transaction reference number</label>
-                        <input type="text" name="transaction_id" required placeholder="e.g. 123456789012"
-                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors placeholder-slate-700">
-                    </div>
-
-                    <button type="submit"
-                        class="w-full py-4 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.3em] rounded-xl border border-indigo-600/30 transition-all flex justify-center items-center gap-2">
-                        <i data-lucide="send" class="w-4 h-4"></i> Submit top-up request
-                    </button>
-                </form>
+                <div class="mt-4 p-4 bg-white/[0.03] border border-white/5 rounded-2xl">
+                    <p class="text-[10px] text-slate-500 leading-relaxed">To add credits, please contact your administrator. They will record the payment and credits will be added to your account automatically.</p>
+                </div>
             </div>
 
-            {{-- ── Top-up History ─────────────────────────────────────────── --}}
+            {{-- ── Payment History ────────────────────────────────────────── --}}
             <div>
-                <h2 class="text-sm font-bold text-white uppercase tracking-widest mb-4">Top-up history</h2>
+                <h2 class="text-sm font-bold text-white uppercase tracking-widest mb-4">Payment history</h2>
                 <div class="premium-card rounded-2xl overflow-hidden">
                     <table class="w-full text-left">
                         <thead>
                             <tr class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em] border-b border-white/[0.04]">
                                 <th class="px-6 py-4">Date</th>
-                                <th class="px-4 py-4">Slots Requested</th>
                                 <th class="px-4 py-4">Amount</th>
-                                <th class="px-4 py-4">Transaction ID</th>
+                                <th class="px-4 py-4">Credits Added</th>
+                                <th class="px-4 py-4">Payment Mode</th>
                                 <th class="px-4 py-4">Status</th>
-                                <th class="px-6 py-4">Admin Note</th>
+                                <th class="px-6 py-4">Notes</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-white/[0.04]">
-                            @forelse($topupHistory as $topup)
+                            @forelse($paymentHistory as $payment)
                                 <tr class="hover:bg-white/[0.02] transition-all">
-                                    <td class="px-6 py-4 text-[10px] text-slate-400 font-mono">{{ $topup->created_at->format('d M Y, h:i A') }}</td>
-                                    <td class="px-4 py-4">
-                                        <span class="text-sm font-bold text-white font-mono">+{{ $topup->amount_requested }}</span>
-                                        <span class="text-[10px] text-slate-500 ml-1">slots</span>
-                                    </td>
+                                    <td class="px-6 py-4 text-[10px] text-slate-400 font-mono">{{ $payment->received_at->format('d M Y, h:i A') }}</td>
                                     <td class="px-4 py-4 text-sm font-bold text-indigo-400 font-mono">
-                                        ₹{{ number_format($topup->amount_requested * $client->price_per_file, 0) }}
+                                        ₹{{ number_format($payment->amount_received, 0) }}
                                     </td>
-                                    <td class="px-4 py-4 text-[10px] text-slate-400 font-mono">{{ $topup->transaction_id ?? '—' }}</td>
                                     <td class="px-4 py-4">
-                                        @if($topup->status === 'approved')
-                                            <span class="px-2.5 py-1 bg-green-500/10 text-green-400 rounded-lg text-[9px] font-bold border border-green-500/10">Approved</span>
-                                        @elseif($topup->status === 'rejected')
-                                            <span class="px-2.5 py-1 bg-red-500/10 text-red-400 rounded-lg text-[9px] font-bold border border-red-500/10">Rejected</span>
+                                        <span class="text-sm font-bold text-white font-mono">+{{ $payment->credits_added }}</span>
+                                        <span class="text-[10px] text-slate-500 ml-1">credits</span>
+                                    </td>
+                                    <td class="px-4 py-4 text-[10px] text-slate-400">{{ ucfirst(str_replace('_', ' ', $payment->payment_mode ?? '—')) }}</td>
+                                    <td class="px-4 py-4">
+                                        @if($payment->status === 'confirmed')
+                                            <span class="px-2.5 py-1 bg-green-500/10 text-green-400 rounded-lg text-[9px] font-bold border border-green-500/10">Confirmed</span>
+                                        @elseif($payment->status === 'voided')
+                                            <span class="px-2.5 py-1 bg-red-500/10 text-red-400 rounded-lg text-[9px] font-bold border border-red-500/10">Voided</span>
                                         @else
-                                            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold border border-amber-500/10">Queued</span>
+                                            <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 rounded-lg text-[9px] font-bold border border-amber-500/10">{{ ucfirst($payment->status) }}</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-[10px] text-slate-400 max-w-[160px] truncate" title="{{ $topup->notes ?? '' }}">
-                                        {{ $topup->notes ?? '—' }}
+                                    <td class="px-6 py-4 text-[10px] text-slate-400 max-w-[160px] truncate" title="{{ $payment->notes ?? '' }}">
+                                        {{ $payment->notes ?? '—' }}
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="px-6 py-10 text-center text-xs text-slate-500">No top-up requests yet.</td></tr>
+                                <tr><td colspan="6" class="px-6 py-10 text-center text-xs text-slate-500">No payments recorded yet.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -376,15 +333,6 @@
             if (!toast) return;
             toast.classList.remove('hidden');
             setTimeout(() => toast.classList.add('hidden'), 2500);
-        }
-        const pricePerSlot = {{ $client->price_per_file ?? 0 }};
-        function setSlots(n) {
-            document.getElementById('slot-input').value = n;
-            updatePrice(n);
-        }
-        function updatePrice(val) {
-            const n = parseInt(val) || 0;
-            document.getElementById('price-display').textContent = '₹' + (n * pricePerSlot).toLocaleString('en-IN');
         }
     </script>
     <script>

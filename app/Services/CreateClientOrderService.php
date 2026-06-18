@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Models\Client;
 use App\Models\Order;
 use App\Models\OrderFile;
+use App\Services\Finance\ClientCreditService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,7 @@ class CreateClientOrderService
 
     public function __construct(
         protected PortalTelegramAlertService $telegramAlerts,
+        protected ClientCreditService $creditService,
         string $storageDisk = '',
     ) {
         $this->storageDisk = $storageDisk ?: config('filesystems.default', 'r2');
@@ -52,23 +54,24 @@ class CreateClientOrderService
                 );
             }
 
-            $totalSlots = (int) $client->total_slots;
-            $consumed = (int) $client->slots_consumed;
-            $remainingCredits = $totalSlots - $consumed;
+            $creditBalance = (int) $client->credit_balance;
 
-            if ($consumed >= $totalSlots) {
-                throw new \Exception('No upload slots remaining.');
+            if ($creditBalance <= 0) {
+                throw new \Exception('No upload credits remaining. Please contact Admin to add credits.');
             }
 
             if ($client->status === 'suspended') {
                 throw new \Exception('Your account is suspended. Please contact Admin for a refill.');
             }
 
-            if ($remainingCredits < $fileCount) {
+            if ($creditBalance < $fileCount) {
                 throw new \Exception(
-                    "Insufficient credits. You selected {$fileCount} file(s), but only {$remainingCredits} credit(s) are available."
+                    "Insufficient credits. You selected {$fileCount} file(s), but only {$creditBalance} credit(s) are available."
                 );
             }
+
+            $ratePerFile  = (float) ($client->price_per_file ?? 0);
+            $clientAmount = round($fileCount * $ratePerFile, 2);
 
             $order = Order::create([
                 'client_id'          => $client->id,
@@ -80,6 +83,10 @@ class CreateClientOrderService
                 'client_link_id'     => $meta['client_link_id'] ?? null,
                 'created_by_user_id' => $meta['created_by_user_id'] ?? null,
                 'due_at'             => now()->addMinutes($slaMinutes),
+                // Financial snapshot (Phase 4)
+                'credits_consumed'     => $fileCount,
+                'client_rate_per_file' => $ratePerFile,
+                'client_amount'        => $clientAmount,
             ]);
 
             $uploadedPaths = [];
@@ -110,12 +117,14 @@ class CreateClientOrderService
                 throw $e;
             }
 
-            $client->increment('slots_consumed', $fileCount);
+            $this->creditService->debitForOrder($client, $order, [
+                'created_by' => $meta['created_by_user_id'] ?? null,
+            ]);
 
             $freshClient = $client->fresh();
-            $remainingCreditsAfterUpload = max(0, (int) $freshClient->total_slots - (int) $freshClient->slots_consumed);
+            $remainingCreditsAfterUpload = (int) $freshClient->credit_balance;
 
-            if ($freshClient->slots_consumed >= $totalSlots) {
+            if ($freshClient->credit_balance <= 0) {
                 $client->update(['status' => 'suspended']);
             }
 

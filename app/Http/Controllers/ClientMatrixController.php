@@ -11,6 +11,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * LEGACY (Phase 10C): This controller writes to clients.slots which is a frozen
+ * informational column. It does NOT affect credit_balance. For managing client
+ * credits, use the Client Payments system (ClientPaymentController) instead.
+ */
 class ClientMatrixController extends Controller
 {
     public function index()

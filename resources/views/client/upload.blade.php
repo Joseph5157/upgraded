@@ -70,10 +70,10 @@
             </a>
         </nav>
 
-        @php $remaining = max(0, $client->slots - $client->slots_consumed); @endphp
+        @php $remaining = max(0, (int) $client->credit_balance); @endphp
         <div class="px-5 pb-6 pt-2 border-t border-white/[0.05] mt-2">
             <p class="text-[9px] font-bold text-slate-600 uppercase tracking-[0.2em]">{{ $client->name }}</p>
-            <p id="guest-link-sidebar-remaining" class="text-[10px] font-mono mt-0.5 {{ $remaining > 10 ? 'text-emerald-400' : ($remaining > 0 ? 'text-amber-400' : 'text-red-400') }}">{{ $remaining }} slots remaining</p>
+            <p id="guest-link-sidebar-remaining" class="text-[10px] font-mono mt-0.5 {{ $remaining > 10 ? 'text-emerald-400' : ($remaining > 0 ? 'text-amber-400' : 'text-red-400') }}">{{ $remaining }} credits remaining</p>
         </div>
     </aside>
 
@@ -214,7 +214,7 @@
             if (sidebar) {
                 sidebar.classList.remove(...toneClasses);
                 sidebar.classList.add(tone);
-                sidebar.textContent = `${remaining} slots remaining`;
+                sidebar.textContent = `${remaining} credits remaining`;
             }
         }
 

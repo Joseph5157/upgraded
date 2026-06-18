@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Client;
 use App\Models\Order;
+use App\Services\Finance\ClientCreditService;
 use App\Support\StorageLifecycle;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -51,14 +52,13 @@ class CleanupLinkOrdersCommand extends Command
                     $order->report->delete();
                 }
 
-                // Restore the slot credit atomically inside this transaction so a
-                // mid-loop crash cannot leave the order deleted but its slot unreturned.
-                $fileCount = $order->files_count;
-                if ($fileCount > 0) {
-                    Client::where('id', $order->client_id)
-                        ->lockForUpdate()
-                        ->first()
-                        ?->decrement('slots_consumed', $fileCount);
+                // Refund credits before deleting the order row.
+                // Only Phase-4+ orders (those with an order_debit tx) get a refund.
+                // Pre-Phase-4 orders had no credit_balance debit, so nothing is returned.
+                // slots and slots_consumed are never touched.
+                $lockedClient = Client::where('id', $order->client_id)->lockForUpdate()->first();
+                if ($lockedClient) {
+                    app(ClientCreditService::class)->refundOrderIfDebited($lockedClient, $order);
                 }
 
                 $order->delete();

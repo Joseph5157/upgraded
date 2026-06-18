@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
+use App\Models\Client;
 use App\Models\Order;
 use App\Models\RefundRequest;
+use App\Services\Finance\ClientCreditService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -13,6 +15,10 @@ use Illuminate\Support\Facades\Log;
 
 class RefundController extends Controller
 {
+    public function __construct(
+        protected ClientCreditService $creditService,
+    ) {}
+
     // Client submits a refund request against one of their own orders
     public function store(Request $request)
     {
@@ -59,7 +65,7 @@ class RefundController extends Controller
         return back()->with('success', 'Refund request submitted. The admin will review it shortly.');
     }
 
-    // Admin approves refund — refunds the credit slot
+    // Admin approves refund — restores credits through the new credit ledger
     public function approve(Request $request, RefundRequest $refundRequest)
     {
         $this->authorize('approve', $refundRequest);
@@ -72,22 +78,24 @@ class RefundController extends Controller
             return back()->with('error', 'This refund request has already been resolved.');
         }
 
-        DB::transaction(function () use ($request, $refundRequest) {
-            $client = $refundRequest->client;
+        $creditsRestored = false;
 
-            // Guard: never let slots_consumed go negative. This can happen if an
-            // admin approves a refund for an order that was already deleted (which
-            // already restored the credit during deletion).
-            if ($client->slots_consumed > 0) {
-                $client->decrement('slots_consumed');
-            } else {
-                Log::warning("RefundController: slots_consumed is already 0 for client #{$client->id} — skipping decrement.", [
-                    'refund_request_id' => $refundRequest->id,
-                ]);
-            }
+        DB::transaction(function () use ($request, $refundRequest, &$creditsRestored) {
+            // Lock both rows to prevent concurrent approve/delete races.
+            $client = Client::where('id', $refundRequest->client_id)->lockForUpdate()->firstOrFail();
+            $order  = Order::where('id', $refundRequest->order_id)->lockForUpdate()->firstOrFail();
 
-            // Reactivate client if they were suspended and now have capacity.
-            if ($client->status === 'suspended' && $client->slots_consumed < $client->slots) {
+            // Refund credits only if a TYPE_ORDER_DEBIT tx exists for this order.
+            // Pre-Phase-4 orders never debited credit_balance, so no refund is issued.
+            $creditsRestored = $this->creditService->refundOrderIfDebited(
+                $client,
+                $order,
+                Auth::user(),
+                'Admin approved refund request #' . $refundRequest->id . '.',
+            );
+
+            // Reactivate a suspended client if credit balance is now positive.
+            if ($client->status === 'suspended' && $client->fresh()->credit_balance > 0) {
                 $client->update(['status' => 'active']);
             }
 
@@ -101,7 +109,11 @@ class RefundController extends Controller
         // Bust the sidebar badge so the resolved count reflects immediately.
         Cache::forget('admin_nav_pending_refunds');
 
-        return back()->with('success', 'Refund approved. Credit slot has been returned to the client.');
+        $message = $creditsRestored
+            ? 'Refund approved. Credits have been restored to the client.'
+            : 'Refund approved. No credit refund was created because this order did not consume credits from the new ledger.';
+
+        return back()->with('success', $message);
     }
 
     // Admin rejects refund

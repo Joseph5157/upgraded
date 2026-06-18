@@ -46,7 +46,19 @@
       "Bash(cat Procfile)",
       "Bash(find . -name \"php.ini\" -not -path \"*/vendor/*\")",
       "Bash(find . -name \".htaccess\" -not -path \"*/vendor/*\")",
-      "Bash(find . -name \"nginx*.conf\" -not -path \"*/vendor/*\")"
+      "Bash(find . -name \"nginx*.conf\" -not -path \"*/vendor/*\")",
+      "Bash(ls:*)",
+      "Read(//c/Users/sikha/Herd/**)",
+      "Bash(/c/php/php artisan:*)",
+      "Bash(php.exe artisan:*)",
+      "Bash(\"C:/Users/sikha/.config/herd/bin/php.bat\" artisan:*)",
+      "Read(//c/tmp/**)",
+      "Bash(awk '/FAIL/{found=1} /passed|failed/{found=1} found{print}')",
+      "Bash(python3 -c \"import sys; lines=sys.stdin.readlines\\(\\); [print\\(l,end=''\\) for l in lines if 'FAIL' in l or 'Tests:' in l or 'passed' in l or 'failed' in l]\")",
+      "Bash(/c/php84/php artisan:*)",
+      "Bash(\"/c/Users/sikha/.config/herd/bin/php84\" artisan:*)",
+      "Bash(\"/c/Users/sikha/.config/herd/bin/php84/php.exe\" artisan:*)",
+      "Bash(/c/Users/sikha/.config/herd/bin/php84/php.exe artisan:*)"
     ]
   }
 }

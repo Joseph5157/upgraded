@@ -38,6 +38,7 @@ class GuestLinkTest extends TestCase
             'name'           => 'Guest Client',
             'slots'          => $slots,
             'slots_consumed' => $consumed,
+            'credit_balance' => $slots - $consumed,
             'status'         => 'active',
         ]);
     }
@@ -212,7 +213,7 @@ class GuestLinkTest extends TestCase
         ])->assertRedirect(route('client.upload', 'upload-link'));
 
         $client->refresh();
-        $this->assertSame(1, (int) $client->slots_consumed);
+        $this->assertSame(2, (int) $client->credit_balance); // started with 3, used 1
 
         $order = Order::firstOrFail();
         $this->assertSame($link->id, (int) $order->client_link_id);
@@ -377,7 +378,7 @@ class GuestLinkTest extends TestCase
             'file_path' => 'ready.pdf',
             'disk' => 'r2',
         ]);
-        $client->update(['slots_consumed' => 1]);
+        $client->update(['slots_consumed' => 1, 'credit_balance' => 0]);
 
         OrderReport::create([
             'order_id' => $order->id,

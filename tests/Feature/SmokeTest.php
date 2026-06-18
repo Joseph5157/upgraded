@@ -12,6 +12,8 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Log\Events\MessageLogged;
+use App\Services\Finance\ClientCreditService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -38,13 +40,14 @@ class SmokeTest extends TestCase
 
     // ── Fixture helpers ───────────────────────────────────────────────────────
 
-    /** Returns [Client, User] with the given slot allocation. */
-    private function makeClient(int $slots = 10, int $consumed = 0, string $status = 'active'): array
+    /** Returns [Client, User] with the given slot and credit allocation. */
+    private function makeClient(int $slots = 10, int $consumed = 0, string $status = 'active', int $creditBalance = 0): array
     {
         $client = Client::create([
             'name'           => 'Smoke Client',
             'slots'          => $slots,
             'slots_consumed' => $consumed,
+            'credit_balance' => $creditBalance,
             'status'         => $status,
         ]);
         $user = User::factory()->create([
@@ -102,6 +105,7 @@ class SmokeTest extends TestCase
             'client_id'          => $client->id,
             'token_view'         => Str::random(32),
             'files_count'        => $filesCount,
+            'credits_consumed'   => $filesCount,
             'status'             => OrderStatus::Pending,
             'due_at'             => now()->addMinutes(20),
             'source'             => 'account',
@@ -146,7 +150,7 @@ class SmokeTest extends TestCase
     public function test_a2_single_file_upload_creates_order_and_deducts_one_credit(): void
     {
         Storage::fake('r2');
-        [$client, $user] = $this->makeClient(slots: 10, consumed: 0);
+        [$client, $user] = $this->makeClient(slots: 10, consumed: 0, creditBalance: 10);
 
         $this->actingAs($user)
             ->post(route('client.dashboard.upload'), [
@@ -156,7 +160,7 @@ class SmokeTest extends TestCase
             ->assertSessionHas('success');
 
         $client->refresh();
-        $this->assertSame(1, (int) $client->slots_consumed, 'Single upload must deduct exactly 1 credit.');
+        $this->assertSame(9, $client->credit_balance, 'Single upload must deduct exactly 1 credit (10 → 9).');
 
         $this->assertDatabaseHas('orders', [
             'client_id'   => $client->id,
@@ -172,7 +176,7 @@ class SmokeTest extends TestCase
     public function test_a3_multi_file_dashboard_upload_is_rejected(): void
     {
         Storage::fake('r2');
-        [$client, $user] = $this->makeClient(slots: 10, consumed: 0);
+        [$client, $user] = $this->makeClient(slots: 10, consumed: 0, creditBalance: 10);
 
         $this->actingAs($user)
             ->post(route('client.dashboard.upload'), [
@@ -185,7 +189,7 @@ class SmokeTest extends TestCase
             ->assertSessionHasErrors('files');
 
         $client->refresh();
-        $this->assertSame(0, (int) $client->slots_consumed, 'Rejected multi-file upload must not consume credits.');
+        $this->assertSame(10, $client->credit_balance, 'Rejected multi-file upload must not consume credits.');
         $this->assertDatabaseCount('orders', 0);
     }
 
@@ -201,7 +205,7 @@ class SmokeTest extends TestCase
         $captured = collect();
         Log::listen(fn(MessageLogged $e) => $captured->push($e));
 
-        [$client, $user] = $this->makeClient(slots: 5, consumed: 5); // Zero remaining
+        [$client, $user] = $this->makeClient(slots: 5, consumed: 5, creditBalance: 0); // Zero credits remaining
 
         $this->actingAs($user)
             ->post(route('client.dashboard.upload'), [
@@ -209,10 +213,10 @@ class SmokeTest extends TestCase
             ])
             ->assertSessionHas('error');
 
-        // No order created, credits unchanged
+        // No order created, credit balance unchanged at zero
         $this->assertDatabaseCount('orders', 0);
         $client->refresh();
-        $this->assertSame(5, (int) $client->slots_consumed);
+        $this->assertSame(0, $client->credit_balance);
 
         // Structured warning log present
         $entry = $captured->first(fn($e) => $e->message === 'order.create_failed');
@@ -235,8 +239,18 @@ class SmokeTest extends TestCase
     public function test_a5_deleting_unclaimed_pending_order_restores_credits_and_writes_audit_log(): void
     {
         Storage::fake('r2');
-        [$client, $user] = $this->makeClient(slots: 10, consumed: 3);
+        // 3 credits consumed → 7 remaining out of 10.
+        [$client, $user] = $this->makeClient(slots: 10, consumed: 3, creditBalance: 7);
         $order = $this->pendingOrder($client, $user, filesCount: 3);
+
+        // Create the credit debit transaction so DeleteClientOrderService can refund it.
+        DB::transaction(function () use ($client, $order) {
+            $locked = Client::where('id', $client->id)->lockForUpdate()->firstOrFail();
+            app(ClientCreditService::class)->debitForOrder($locked, $order);
+        });
+
+        $client->refresh(); // balance is now 7 - 3 = 4 after the manual debit
+        $this->assertSame(4, $client->credit_balance);
 
         $this->actingAs($user)
             ->delete(route('client.orders.delete', $order))
@@ -245,15 +259,15 @@ class SmokeTest extends TestCase
         $this->assertDatabaseMissing('orders', ['id' => $order->id]);
 
         $client->refresh();
-        $this->assertSame(0, (int) $client->slots_consumed, 'Deleting a 3-file order must restore 3 credits.');
+        $this->assertSame(7, $client->credit_balance, 'Deleting a 3-file order must restore 3 credits (4 + 3 = 7).');
 
         // Audit log: credits.restored
         $this->assertDatabaseHas('audit_logs', ['event_type' => 'credits.restored']);
 
         $entry = AuditLog::where('event_type', 'credits.restored')->first();
         $this->assertNotNull($entry->request_id, 'credits.restored audit log must carry a request_id.');
-        $this->assertSame(3, (int) $entry->meta['credits_restored']);
-        $this->assertSame(0, (int) $entry->meta['slots_consumed_after']);
+        $this->assertTrue((bool) $entry->meta['credits_refunded'], 'credits_refunded must be true in meta.');
+        $this->assertSame(7, (int) $entry->meta['credit_balance_after']);
     }
 
     /**
@@ -458,15 +472,15 @@ class SmokeTest extends TestCase
 
     /**
      * C-3: Admin soft-deletes a client with unfinished orders.
-     *      Unfinished orders cancelled; credits restored equal to SUM(files_count);
-     *      both credits.restored and account.deleted audit logs written.
-     * Blocker if fails: BLOCKER — credit accounting and data integrity.
+     *      Unfinished orders cancelled; credits are forfeited (not restored);
+     *      account.deleted audit log written.
+     * Blocker if fails: BLOCKER — lifecycle integrity and data integrity.
      */
-    public function test_c3_admin_soft_deletes_client_with_unfinished_orders_restores_credits(): void
+    public function test_c3_admin_soft_deletes_client_with_unfinished_orders_cancels_them(): void
     {
         $admin = $this->makeAdmin();
         $vendor = $this->makeVendor();
-        [$client, $targetUser] = $this->makeClient(slots: 10, consumed: 5);
+        [$client, $targetUser] = $this->makeClient(slots: 10, consumed: 5, creditBalance: 5);
 
         $pendingOrder = $this->pendingOrder($client, $targetUser, filesCount: 2);
         $claimedOrder = $this->pendingOrder($client, $targetUser, filesCount: 3);
@@ -492,22 +506,18 @@ class SmokeTest extends TestCase
             ]);
         }
 
-        // Credits restored: 2 + 3 = 5; consumed drops to 0
+        // Credits are forfeited on account deletion (not restored).
+        // credit_balance is unchanged from when the account was deleted.
         $client->refresh();
-        $this->assertSame(0, (int) $client->slots_consumed, 'All 5 consumed credits must be restored.');
-
-        // Audit log: credits.restored
-        $this->assertDatabaseHas('audit_logs', ['event_type' => 'credits.restored']);
-        $creditsEntry = AuditLog::where('event_type', 'credits.restored')->first();
-        $this->assertNotNull($creditsEntry->request_id);
-        $this->assertSame(5, (int) $creditsEntry->meta['credits_restored']);
-        $this->assertSame('account_deleted', $creditsEntry->meta['reason']);
+        $this->assertSame(5, $client->credit_balance, 'Credits are forfeited on account deletion, not restored.');
 
         // Audit log: account.deleted
         $this->assertDatabaseHas('audit_logs', [
             'event_type' => 'account.deleted',
             'subject_id' => $targetUser->id,
         ]);
+        $entry = AuditLog::where('event_type', 'account.deleted')->first();
+        $this->assertNotNull($entry->request_id);
     }
 
     /**
@@ -779,8 +789,15 @@ class SmokeTest extends TestCase
     public function test_e5_credits_restored_audit_log_carries_request_id_and_correct_value(): void
     {
         Storage::fake('r2');
-        [$client, $user] = $this->makeClient(slots: 10, consumed: 2);
+        // 2 credits consumed → 8 remaining.
+        [$client, $user] = $this->makeClient(slots: 10, consumed: 2, creditBalance: 8);
         $order = $this->pendingOrder($client, $user, filesCount: 2);
+
+        // Create the credit debit transaction so DeleteClientOrderService can refund it.
+        DB::transaction(function () use ($client, $order) {
+            $locked = Client::where('id', $client->id)->lockForUpdate()->firstOrFail();
+            app(ClientCreditService::class)->debitForOrder($locked, $order);
+        });
 
         $response = $this->actingAs($user)->delete(route('client.orders.delete', $order));
         $responseRequestId = $response->headers->get('X-Request-Id');
@@ -788,7 +805,8 @@ class SmokeTest extends TestCase
         $entry = AuditLog::where('event_type', 'credits.restored')->first();
         $this->assertNotNull($entry);
         $this->assertSame($responseRequestId, $entry->request_id);
-        $this->assertSame(2, (int) $entry->meta['credits_restored']);
+        $this->assertTrue((bool) $entry->meta['credits_refunded'], 'credits_refunded must be true in audit meta.');
+        $this->assertSame(8, (int) $entry->meta['credit_balance_after'], 'credit_balance_after should be restored to 8.');
     }
 
     /**

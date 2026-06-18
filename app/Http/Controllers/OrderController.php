@@ -126,7 +126,7 @@ class OrderController extends Controller
     {
         $client = $link->client->fresh();
 
-        return max(0, (int) $client->slots - (int) $client->slots_consumed);
+        return (int) $client->credit_balance;
     }
 
     /**

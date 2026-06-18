@@ -55,15 +55,14 @@
                                 @elseif($remaining > 0)
                                     {{ $remaining }} credits remaining
                                 @else
-                                    0 credits, top up required
+                                    0 credits &mdash; contact admin to add
                                 @endif
                             </p>
                         </div>
                     </div>
-                    <button onclick="document.getElementById('topup-modal').classList.remove('hidden')"
-                        class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold uppercase tracking-[0.18em] transition-colors flex-shrink-0">
-                        Top Up
-                    </button>
+                    <span class="px-3 py-1.5 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold uppercase tracking-[0.18em] flex-shrink-0">
+                        Contact Admin
+                    </span>
                 </div>
             </div>
         </div>

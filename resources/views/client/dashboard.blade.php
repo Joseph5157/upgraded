@@ -285,15 +285,14 @@
                                     @elseif($remaining > 0)
                                         {{ $remaining }} credits remaining
                                     @else
-                                        0 credits, top up required
+                                        0 credits &mdash; contact admin to add
                                     @endif
                                 </p>
                             </div>
                         </div>
-                        <button onclick="document.getElementById('topup-modal').classList.remove('hidden')"
-                            class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-[10px] font-bold uppercase tracking-[0.18em] transition-colors">
-                            Top Up
-                        </button>
+                        <span class="px-3 py-1.5 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold uppercase tracking-[0.18em]">
+                            Contact Admin
+                        </span>
                     </div>
                 </div>
             </div>
@@ -586,108 +585,7 @@
 
     </main>
 
-    {{-- 
-         TOP-UP MODAL
-     --}}
-    <div id="topup-modal"
-        class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onclick="if(event.target===this)this.classList.add('hidden')">
-        <div class="bg-[#0f0f14] border border-white/[0.08] rounded-3xl w-full max-w-md p-7 shadow-2xl" onclick="event.stopPropagation()">
-
-            <div class="flex justify-between items-center mb-7">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-indigo-500/[0.1] rounded-xl flex items-center justify-center text-indigo-400 border border-indigo-500/[0.2]">
-                        <i data-lucide="zap" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-[15px] font-bold text-white">Request credit top-up</h3>
-                        <p class="text-[9px] text-slate-600 uppercase tracking-widest mt-0.5">Add credits to your account</p>
-                    </div>
-                </div>
-                <button onclick="document.getElementById('topup-modal').classList.add('hidden')"
-                    class="text-slate-600 hover:text-slate-300 transition-colors p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <form action="{{ route('client.topup.store') }}" method="POST" class="space-y-5">
-                @csrf
-
-                <div>
-                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2.5">Choose a top-up amount</label>
-                    <div class="grid grid-cols-3 gap-2 mb-3">
-                        <button type="button" onclick="setSlots(50)"
-                            class="slot-preset py-2.5 bg-white/[0.04] hover:bg-indigo-500/[0.1] border border-white/[0.06] hover:border-indigo-500/30 rounded-xl text-xs font-bold text-slate-400 hover:text-indigo-400 transition-all">
-                            50 Slots
-                        </button>
-                        <button type="button" onclick="setSlots(100)"
-                            class="slot-preset py-2.5 bg-white/[0.04] hover:bg-indigo-500/[0.1] border border-white/[0.06] hover:border-indigo-500/30 rounded-xl text-xs font-bold text-slate-400 hover:text-indigo-400 transition-all">
-                            100 Slots
-                        </button>
-                        <button type="button" onclick="setSlots(200)"
-                            class="slot-preset py-2.5 bg-white/[0.04] hover:bg-indigo-500/[0.1] border border-white/[0.06] hover:border-indigo-500/30 rounded-xl text-xs font-bold text-slate-400 hover:text-indigo-400 transition-all">
-                            200 Slots
-                        </button>
-                    </div>
-                    <input type="number" name="amount_requested" id="slot-input" min="1"
-                        placeholder="Or enter custom amount..."
-                        oninput="updatePrice(this.value)"
-                        class="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors placeholder-slate-700 font-mono"
-                        required>
-                </div>
-
-                <div class="p-4 bg-indigo-500/[0.05] border border-indigo-500/[0.1] rounded-2xl flex items-center justify-between">
-                    <div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Payable</p>
-                        <p id="price-display" class="text-2xl font-extrabold text-white mt-0.5 font-mono">₹0</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Rate</p>
-                        <p class="text-[11px] text-indigo-400 font-bold font-mono mt-0.5">{{ number_format($client->price_per_file, 0) }} / slot</p>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl space-y-3">
-                    <p class="text-[9px] font-black uppercase tracking-widest text-slate-600">Payment instructions</p>
-                    @if($paymentSetting)
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 bg-emerald-500/[0.1] rounded-lg flex items-center justify-center text-emerald-500 flex-shrink-0">
-                                <i data-lucide="smartphone" class="w-4 h-4"></i>
-                            </div>
-                            <div>
-                                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Account holder name</p>
-                                <p class="text-[13px] font-semibold text-white mt-0.5">{{ $paymentSetting->upi_name }}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 bg-indigo-500/[0.1] rounded-lg flex items-center justify-center text-indigo-400 flex-shrink-0">
-                                <i data-lucide="at-sign" class="w-4 h-4"></i>
-                            </div>
-                            <div>
-                                <p class="text-[9px] text-slate-500 font-bold uppercase tracking-widest">UPI ID</p>
-                                <p class="text-sm font-mono font-bold text-white mt-0.5">{{ $paymentSetting->upi_id }}</p>
-                            </div>
-                        </div>
-                    @else
-                        <p class="text-[11px] text-amber-400">Payment details not configured yet. Contact admin.</p>
-                    @endif
-                    <p class="text-[10px] text-slate-400 leading-relaxed">Send the exact amount to the UPI ID, then paste your <span class="text-indigo-400 font-semibold">UTR or transaction reference number</span> below.</p>
-                </div>
-
-                <div>
-                    <label class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">UTR or transaction reference</label>
-                    <input type="text" name="transaction_id" required placeholder="e.g. 123456789012"
-                        class="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-colors placeholder-slate-700 font-mono">
-                </div>
-
-                <button type="submit"
-                    class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold uppercase tracking-[0.25em] rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg shadow-indigo-500/20">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                    Submit top-up request
-                </button>
-            </form>
-        </div>
-    </div>
+    {{-- Top-up self-service is disabled. Credits are managed by admin. --}}
 
     @include('partials.client-upload-modal')
 

@@ -49,6 +49,18 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.finance.dashboard') }}" class="{{ request()->routeIs('admin.finance.dashboard') ? 'active' : '' }}">
+                        <i data-lucide="pie-chart" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Finance
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.finance.reports.index') }}" class="{{ request()->routeIs('admin.finance.reports.*') ? 'active' : '' }}">
+                        <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Reports
+                    </a>
+                </li>
+                <li>
                     <a href="#" onclick="event.preventDefault(); document.getElementById('create-account-modal')?.classList.remove('hidden');" class="">
                         <i data-lucide="user-plus" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         Create Account
@@ -69,14 +81,10 @@
                 @endphp
                 @php
                     $lowCreditClients = Cache::remember('admin_nav_low_credits', 60, fn() =>
-                        \App\Models\Client::whereRaw('slots_consumed >= slots')->count()
+                        \App\Models\Client::where('credit_balance', '<=', 0)->where('status', 'active')->count()
                     );
                 @endphp
-                @php
-                    $pendingTopups = Cache::remember('admin_nav_pending_topups', 60, fn() =>
-                        \App\Models\TopupRequest::where('status','pending')->count()
-                    );
-                @endphp
+                {{-- Legacy topup nav removed — superseded by Client Payments (Phase 10C) --}}
                 @php
                     $pendingRefunds = Cache::remember('admin_nav_pending_refunds', 60, fn() =>
                         \App\Models\RefundRequest::where('status','pending')->count()
@@ -101,14 +109,24 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('admin.topup.index') }}" class="{{ request()->routeIs('admin.topup.*') ? 'active' : '' }}">
-                        <i data-lucide="zap" class="w-3.5 h-3.5 flex-shrink-0"></i>
-                        <span class="flex-1">Top-ups</span>
-                        @if($pendingTopups > 0)
-                            <span class="badge badge-xs badge-warning badge-outline font-mono whitespace-nowrap">{{ $pendingTopups }}</span>
-                        @endif
+                    <a href="{{ route('admin.finance.client-payments.index') }}" class="{{ request()->routeIs('admin.finance.client-payments.*') ? 'active' : '' }}">
+                        <i data-lucide="banknote" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Client Payments
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('admin.finance.client-credit-transactions.index') }}" class="{{ request()->routeIs('admin.finance.client-credit-transactions.*') ? 'active' : '' }}">
+                        <i data-lucide="book-open" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Credit Ledger
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.finance.client-balances.index') }}" class="{{ request()->routeIs('admin.finance.client-balances.*') ? 'active' : '' }}">
+                        <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Client Balances
+                    </a>
+                </li>
+                {{-- Legacy topup link hidden — use Client Payments instead (Phase 10C) --}}
                 <li>
                     <a href="{{ route('admin.refunds.index') }}" class="{{ request()->routeIs('admin.refunds.*') ? 'active' : '' }}">
                         <i data-lucide="refresh-ccw" class="w-3.5 h-3.5 flex-shrink-0"></i>
@@ -137,6 +155,14 @@
                         \App\Models\User::where('role','vendor')->where('status','frozen')->count()
                     );
                 @endphp
+                @php
+                    $pendingVendorEarnings = Cache::remember('admin_nav_pending_vendor_earnings', 60, fn() =>
+                        \App\Models\VendorEarningTransaction::where('type', \App\Models\VendorEarningTransaction::TYPE_PENDING_ORDER_EARNING)
+                            ->where('status', \App\Models\VendorEarningTransaction::STATUS_POSTED)
+                            ->whereHas('order', fn($q) => $q->whereNull('vendor_approved_at')->whereNull('vendor_rejected_at'))
+                            ->count()
+                    );
+                @endphp
                 <li>
                     <a href="{{ route('admin.accounts.index') }}?tab=vendors" class="{{ request()->routeIs('admin.accounts.*') ? 'active' : '' }}">
                         <i data-lucide="shield" class="w-3.5 h-3.5 flex-shrink-0"></i>
@@ -147,9 +173,24 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.finance.vendor-earnings.index') }}" class="{{ request()->routeIs('admin.finance.vendor-earnings.*') ? 'active' : '' }}">
+                        <i data-lucide="check-square" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        <span class="flex-1">Earnings</span>
+                        @if($pendingVendorEarnings > 0)
+                            <span class="badge badge-xs badge-warning badge-outline font-mono whitespace-nowrap">{{ $pendingVendorEarnings }}</span>
+                        @endif
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.finance.payouts.index') }}" class="{{ request()->routeIs('admin.finance.payouts.*') ? 'active' : '' }}">
                         <i data-lucide="wallet" class="w-3.5 h-3.5 flex-shrink-0"></i>
                         Payouts
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.finance.expenses.index') }}" class="{{ request()->routeIs('admin.finance.expenses.*') ? 'active' : '' }}">
+                        <i data-lucide="trending-down" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                        Expenses
                     </a>
                 </li>
                 <li>

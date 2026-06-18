@@ -48,6 +48,9 @@ class User extends Authenticatable
         'portal_number',
         'otp',
         'otp_expires_at',
+        // Phase 1 vendor finance fields
+        'pending_earning_balance',
+        'approved_payable_balance',
     ];
 
     /**
@@ -78,9 +81,11 @@ class User extends Authenticatable
             'last_login_at'          => 'datetime',
             'telegram_connected_at'  => 'datetime',
             'session_expires_at'      => 'datetime',
-            'login_token_expires_at'  => 'datetime',
-            'activated_at'            => 'datetime',
-            'otp_expires_at'          => 'datetime',
+            'login_token_expires_at'     => 'datetime',
+            'activated_at'               => 'datetime',
+            'otp_expires_at'             => 'datetime',
+            'pending_earning_balance'    => 'decimal:2',
+            'approved_payable_balance'   => 'decimal:2',
         ];
     }
 
@@ -142,5 +147,16 @@ class User extends Authenticatable
     public function adminCreationLogs()
     {
         return $this->hasMany(AdminCreationLog::class, 'created_by_user_id');
+    }
+
+    // Finance relationships (Phase 1) — relevant when role = vendor
+    public function vendorPayouts()
+    {
+        return $this->hasMany(VendorPayout::class, 'user_id');
+    }
+
+    public function vendorEarningTransactions()
+    {
+        return $this->hasMany(VendorEarningTransaction::class, 'vendor_id');
     }
 }

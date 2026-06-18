@@ -6,10 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model
 {
-    protected $fillable = ['name', 'slots', 'slots_consumed', 'price_per_file', 'plan_expiry', 'status'];
+    protected $fillable = [
+        'name',
+        'slots',
+        'slots_consumed',
+        'price_per_file',
+        'plan_expiry',
+        'status',
+        // Phase 1 finance fields
+        'credit_balance',
+        'credits_migrated_at',
+    ];
 
     protected $casts = [
-        'plan_expiry' => 'datetime',
+        'plan_expiry'          => 'datetime',
+        'credits_migrated_at'  => 'datetime',
+        'credit_balance'       => 'integer',
     ];
 
     public function user()
@@ -40,5 +52,16 @@ class Client extends Model
     public function getTotalSlotsAttribute(): int
     {
         return (int) $this->slots;
+    }
+
+    // Finance relationships (Phase 1)
+    public function clientPayments()
+    {
+        return $this->hasMany(ClientPayment::class);
+    }
+
+    public function creditTransactions()
+    {
+        return $this->hasMany(ClientCreditTransaction::class);
     }
 }

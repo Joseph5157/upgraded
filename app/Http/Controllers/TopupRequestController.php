@@ -30,45 +30,24 @@ class TopupRequestController extends Controller
     }
 
     /**
-     * Client submits a top-up request.
+     * Client top-up requests are disabled.
+     *
+     * Credits are now added directly by admin via the Client Payments system.
+     * Self-service top-up is no longer supported.
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'amount_requested' => 'required|integer|min:1|max:1000',
-            'amount_paid'      => 'nullable|numeric|min:0',
-            'transaction_id'   => 'required|string|max:255|unique:topup_requests,transaction_id',
-        ], [
-            'transaction_id.unique' => 'This Transaction / UTR ID has already been submitted. If this is an error, please contact admin.',
-            'amount_requested.max'  => 'Maximum top-up request is 1000 slots at a time.',
-        ]);
-
-        $client = Auth::user()->client;
-
-        if (!$client) {
-            return back()->with('error', 'No client account linked to your user.');
-        }
-
-        // Prevent duplicate pending requests
-        if ($client->topupRequests()->where('status', 'pending')->exists()) {
-            return back()->with('error', 'You already have a pending top-up request. Please wait for Admin approval.');
-        }
-
-        $topupRequest = TopupRequest::create([
-            'client_id'        => $client->id,
-            'amount_requested' => $request->amount_requested,
-            'amount_paid'      => $request->amount_paid,
-            'transaction_id'   => $request->transaction_id,
-            'status'           => 'pending',
-        ]);
-
-        app(PortalTelegramAlertService::class)->notifyTopupSubmitted($topupRequest);
-
-        return back()->with('success', 'Top-up request submitted! The admin will review it shortly.');
+        return back()->with('error', 'Self-service top-up is no longer available. Please contact the admin to add credits to your account.');
     }
 
     /**
      * Admin approves a top-up request — adds slots and marks as approved.
+     *
+     * LEGACY (Phase 10C): This method writes to clients.slots which is a frozen
+     * column. It does NOT affect credit_balance. For adding credits, use the
+     * Client Payments system (ClientPaymentController) instead. This route is
+     * hidden from the admin sidebar but still functional for processing any
+     * remaining legacy pending requests.
      */
     public function approve(TopupRequest $topupRequest)
     {

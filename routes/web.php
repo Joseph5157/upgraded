@@ -23,6 +23,14 @@ use App\Http\Controllers\VendorEarningsController;
 use App\Http\Controllers\Admin\PaymentSettingsController;
 use App\Http\Controllers\Admin\ClientLinkController;
 use App\Http\Controllers\Admin\PricingController;
+use App\Http\Controllers\Admin\Finance\ClientPaymentController;
+use App\Http\Controllers\Admin\Finance\ClientCreditTransactionController;
+use App\Http\Controllers\Admin\Finance\ClientBalanceController;
+use App\Http\Controllers\Admin\Finance\VendorPayoutController as AdminVendorPayoutController;
+use App\Http\Controllers\Admin\Finance\BusinessExpenseController;
+use App\Http\Controllers\Admin\Finance\FinanceDashboardController;
+use App\Http\Controllers\Admin\Finance\FinanceReportController;
+use App\Http\Controllers\Admin\VendorEarningController;
 use App\Http\Controllers\SignupController;
 
 Route::get('/', function () {
@@ -137,8 +145,46 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
         Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
         Route::get('/billing/{ledger}', [BillingController::class, 'show'])->name('billing.show');
         Route::prefix('finance')->name('finance.')->group(function () {
-            Route::get('/payouts', [VendorPayoutController::class, 'index'])->name('payouts.index');
-            Route::post('/payouts', [VendorPayoutController::class, 'store'])->name('payouts.store');
+            // Phase 9 — finance dashboard
+            Route::get('/dashboard', [FinanceDashboardController::class, 'index'])->name('dashboard');
+            // Phase 10A — finance reports
+            Route::get('/reports',                          [FinanceReportController::class, 'index'])->name('reports.index');
+            Route::get('/reports/client-payments',          [FinanceReportController::class, 'clientPayments'])->name('reports.client-payments');
+            Route::get('/reports/client-payments.csv',      [FinanceReportController::class, 'clientPaymentsCsv'])->name('reports.client-payments.csv');
+            Route::get('/reports/client-credit-ledger',     [FinanceReportController::class, 'clientCreditLedger'])->name('reports.client-credit-ledger');
+            Route::get('/reports/client-credit-ledger.csv', [FinanceReportController::class, 'clientCreditLedgerCsv'])->name('reports.client-credit-ledger.csv');
+            Route::get('/reports/vendor-earnings',          [FinanceReportController::class, 'vendorEarnings'])->name('reports.vendor-earnings');
+            Route::get('/reports/vendor-earnings.csv',      [FinanceReportController::class, 'vendorEarningsCsv'])->name('reports.vendor-earnings.csv');
+            Route::get('/reports/vendor-payouts',           [FinanceReportController::class, 'vendorPayouts'])->name('reports.vendor-payouts');
+            Route::get('/reports/vendor-payouts.csv',       [FinanceReportController::class, 'vendorPayoutsCsv'])->name('reports.vendor-payouts.csv');
+            Route::get('/reports/expenses',                 [FinanceReportController::class, 'expenses'])->name('reports.expenses');
+            Route::get('/reports/expenses.csv',             [FinanceReportController::class, 'expensesCsv'])->name('reports.expenses.csv');
+            Route::get('/reports/order-profit',             [FinanceReportController::class, 'orderProfit'])->name('reports.order-profit');
+            Route::get('/reports/order-profit.csv',         [FinanceReportController::class, 'orderProfitCsv'])->name('reports.order-profit.csv');
+            Route::get('/reports/monthly-summary',          [FinanceReportController::class, 'monthlySummary'])->name('reports.monthly-summary');
+            Route::get('/reports/monthly-summary.csv',      [FinanceReportController::class, 'monthlySummaryCsv'])->name('reports.monthly-summary.csv');
+            // Phase 7 — vendor payout ledger (replaces legacy VendorPayoutController for admin)
+            Route::get('/payouts', [AdminVendorPayoutController::class, 'index'])->name('payouts.index');
+            Route::post('/payouts', [AdminVendorPayoutController::class, 'store'])->name('payouts.store');
+            Route::get('/payouts/{vendorPayout}', [AdminVendorPayoutController::class, 'show'])->name('payouts.show');
+            Route::post('/payouts/{vendorPayout}/void', [AdminVendorPayoutController::class, 'void'])->name('payouts.void');
+            // Phase 3 — client payment ledger
+            Route::get('/client-payments', [ClientPaymentController::class, 'index'])->name('client-payments.index');
+            Route::post('/client-payments', [ClientPaymentController::class, 'store'])->name('client-payments.store');
+            Route::get('/client-payments/{clientPayment}', [ClientPaymentController::class, 'show'])->name('client-payments.show');
+            Route::post('/client-payments/{clientPayment}/void', [ClientPaymentController::class, 'void'])->name('client-payments.void');
+            // Phase 3B — credit transaction ledger and client balance summary
+            Route::get('/client-credit-transactions', [ClientCreditTransactionController::class, 'index'])->name('client-credit-transactions.index');
+            Route::get('/client-balances', [ClientBalanceController::class, 'index'])->name('client-balances.index');
+            // Phase 8 — business expense tracking
+            Route::get('/expenses', [BusinessExpenseController::class, 'index'])->name('expenses.index');
+            Route::post('/expenses', [BusinessExpenseController::class, 'store'])->name('expenses.store');
+            Route::get('/expenses/{businessExpense}', [BusinessExpenseController::class, 'show'])->name('expenses.show');
+            Route::post('/expenses/{businessExpense}/void', [BusinessExpenseController::class, 'void'])->name('expenses.void');
+            // Phase 6 — vendor earning approval / rejection
+            Route::get('/vendor-earnings', [VendorEarningController::class, 'index'])->name('vendor-earnings.index');
+            Route::post('/vendor-earnings/{order}/approve', [VendorEarningController::class, 'approve'])->name('vendor-earnings.approve');
+            Route::post('/vendor-earnings/{order}/reject', [VendorEarningController::class, 'reject'])->name('vendor-earnings.reject');
         });
         Route::get('/refunds', [RefundController::class, 'index'])->name('refunds.index');
         Route::post('/refunds/{refundRequest}/approve', [RefundController::class, 'approve'])->name('refunds.approve');

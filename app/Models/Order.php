@@ -23,14 +23,38 @@ class Order extends Model
         'client_link_id',
         'release_count',
         'claimed_at',
+        // Phase 1 financial snapshot fields
+        'credits_consumed',
+        'client_rate_per_file',
+        'client_amount',
+        'vendor_rate_per_file',
+        'vendor_amount',
+        'gross_profit',
+        'financial_locked_at',
+        'vendor_submitted_at',
+        'vendor_approved_at',
+        'vendor_rejected_at',
+        'credits_refunded_at',
     ];
 
     protected $casts = [
-        'due_at'        => 'datetime',
-        'claimed_at'    => 'datetime',
-        'delivered_at'  => 'datetime',
-        'is_downloaded' => 'boolean',
-        'status'        => OrderStatus::class,
+        'due_at'               => 'datetime',
+        'claimed_at'           => 'datetime',
+        'delivered_at'         => 'datetime',
+        'is_downloaded'        => 'boolean',
+        'status'               => OrderStatus::class,
+        // Phase 1 financial snapshot casts
+        'credits_consumed'     => 'integer',
+        'client_rate_per_file' => 'decimal:2',
+        'client_amount'        => 'decimal:2',
+        'vendor_rate_per_file' => 'decimal:2',
+        'vendor_amount'        => 'decimal:2',
+        'gross_profit'         => 'decimal:2',
+        'financial_locked_at'  => 'datetime',
+        'vendor_submitted_at'  => 'datetime',
+        'vendor_approved_at'   => 'datetime',
+        'vendor_rejected_at'   => 'datetime',
+        'credits_refunded_at'  => 'datetime',
     ];
 
     public function client()       { return $this->belongsTo(Client::class); }
@@ -41,6 +65,10 @@ class Order extends Model
     public function link()         { return $this->belongsTo(ClientLink::class, 'client_link_id'); }
     public function orderLogs()    { return $this->hasMany(OrderLog::class); }
     public function refundRequest(){ return $this->hasOne(RefundRequest::class); }
+
+    // Finance relationships (Phase 1)
+    public function creditTransaction() { return $this->hasOne(ClientCreditTransaction::class); }
+    public function vendorEarningTransactions() { return $this->hasMany(VendorEarningTransaction::class); }
 
     public function getComputedStatusAttribute()
     {

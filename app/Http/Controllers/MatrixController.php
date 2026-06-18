@@ -6,6 +6,11 @@ use App\Models\Client;
 use App\Models\TopupRequest;
 use Illuminate\Http\Request;
 
+/**
+ * LEGACY (Phase 10C): This controller writes to clients.slots which is a frozen
+ * informational column. It does NOT affect credit_balance. For managing client
+ * credits, use the Client Payments system (ClientPaymentController) instead.
+ */
 class MatrixController extends Controller
 {
     public function index()

@@ -36,7 +36,7 @@ class AdminDashboardController extends Controller
                 'suspended_clients' => Client::where('status', 'suspended')->count(),
                 'frozen_client_users' => User::where('role', 'client')->where('status', 'frozen')->count(),
                 'pending_topups' => TopupRequest::where('status', 'pending')->count(),
-                'out_of_credit_clients' => Client::whereRaw('slots_consumed >= slots')->count(),
+                'out_of_credit_clients' => Client::where('credit_balance', '<=', 0)->where('status', 'active')->count(),
                 'pending_refunds' => RefundRequest::where('status', 'pending')->count(),
                 'frozen_vendors' => User::where('role', 'vendor')->where('status', 'frozen')->count(),
             ];

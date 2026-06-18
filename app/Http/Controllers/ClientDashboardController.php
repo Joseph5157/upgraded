@@ -84,8 +84,8 @@ class ClientDashboardController extends Controller
             : null;
 
         $dashboardSignature = $this->buildDashboardSignature($user, $client);
-        $consumed = (int) $client->fresh()->slots_consumed;
-        $remaining = max(0, (int) $client->total_slots - $consumed);
+        $remaining = (int) $client->fresh()->credit_balance;
+        $consumed = 0; // legacy variable kept for view compatibility; not used for balance decisions
         $paymentSetting = PaymentSetting::active()->first();
 
         return view('client.dashboard', compact('client', 'orders', 'dashboardSignature', 'telegramConnectUrl', 'consumed', 'remaining', 'paymentSetting'));
@@ -124,8 +124,8 @@ class ClientDashboardController extends Controller
         $orders = $ordersQuery->with(['report', 'files', 'client', 'refundRequest'])
             ->latest()
             ->get();
-        $consumed = (int) $client->fresh()->slots_consumed;
-        $remaining = max(0, (int) $client->total_slots - $consumed);
+        $remaining = (int) $client->fresh()->credit_balance;
+        $consumed = 0; // legacy variable kept for view compatibility
 
         return response()->json([
             'signature' => $signature,

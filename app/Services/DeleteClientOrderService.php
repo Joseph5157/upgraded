@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Enums\OrderStatus;
 use App\Models\Client;
+use App\Models\ClientCreditTransaction;
 use App\Models\Order;
+use App\Services\Finance\ClientCreditService;
 use App\Support\LogContext;
 use App\Support\StorageLifecycle;
 use Exception;
@@ -17,6 +19,7 @@ class DeleteClientOrderService
 
     public function __construct(
         protected AuditLogger $auditLogger,
+        protected ClientCreditService $creditService,
         string $storageDisk = '',
     ) {
         $this->storageDisk = $storageDisk ?: config('filesystems.default', 'r2');
@@ -62,10 +65,27 @@ class DeleteClientOrderService
             throw new Exception('Only unclaimed pending orders can be deleted.');
         }
 
-        DB::transaction(function () use ($order, $client) {
+        $creditsRefunded = false;
+
+        DB::transaction(function () use ($order, $client, &$creditsRefunded) {
             // Re-read the client row with a row-level lock to prevent concurrent
             // delete/credit-restore races (e.g. two simultaneous delete requests).
             $client = Client::where('id', $client->id)->lockForUpdate()->first();
+
+            // Guard: only refund credits for Phase 4+ orders that had a debit tx.
+            // Pre-Phase-4 orders never debited credit_balance, so no refund is issued.
+            $hasDebitTx = ClientCreditTransaction::where('order_id', $order->id)
+                ->where('type', ClientCreditTransaction::TYPE_ORDER_DEBIT)
+                ->exists();
+
+            // Refund credits BEFORE deleting the order row (refundForOrder updates
+            // order.credits_refunded_at and reads order.credits_consumed).
+            if ($hasDebitTx) {
+                $this->creditService->refundForOrder($client, $order, [
+                    'created_by' => request()?->user()?->id,
+                ]);
+                $creditsRefunded = true;
+            }
 
             // Delete uploaded source files from storage first. Missing files are
             // tolerated, but if a file exists and cannot be removed we abort so
@@ -92,12 +112,6 @@ class DeleteClientOrderService
             $order->report()->delete();
             $order->delete();
 
-            // Restore slot credit if the service was never rendered
-            $creditsToRestore = max(0, (int) $order->files_count);
-            $newConsumed = max(0, $client->slots_consumed - $creditsToRestore);
-
-            $client->update(['slots_consumed' => $newConsumed]);
-
             $actor = request()?->user();
             $requestContext = LogContext::currentRequest();
 
@@ -106,16 +120,18 @@ class DeleteClientOrderService
                 LogContext::forOrder($order, $actor ? LogContext::forUser($actor, $requestContext) : $requestContext)
             ));
             $this->auditLogger->record('credits.restored', $order, [
-                'client_id' => $client->id,
-                'credits_restored' => $creditsToRestore,
-                'slots_consumed_after' => $newConsumed,
+                'client_id'           => $client->id,
+                'credits_refunded'    => $creditsRefunded,
+                'credit_balance_after' => $client->fresh()->credit_balance,
             ], $actor?->id);
 
-            if ($client->status === 'suspended' && $newConsumed < $client->slots) {
+            // Reactivate suspended client if credit balance was restored
+            $freshClient = $client->fresh();
+            if ($client->status === 'suspended' && $freshClient->credit_balance > 0) {
                 $client->update(['status' => 'active']);
             }
         });
 
-        return true;
+        return $creditsRefunded;
     }
 }
