@@ -3,6 +3,8 @@
 /**
  * Laravel + Livewire router script for PHP's built-in server.
  *
+ * Used with: php -S 0.0.0.0:$PORT -t public server.php
+ *
  * PHP's built-in server returns 404 for URLs that look like static files
  * (e.g. /livewire/livewire.min.js) when the file does not exist on disk,
  * instead of forwarding the request to the application. This router
@@ -14,8 +16,8 @@ $uri = urldecode(
     parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/'
 );
 
-// If the requested file exists in the public directory, let the
-// built-in server handle it directly (images, compiled assets, etc.).
+// If the requested file exists in the public directory (document root),
+// let the built-in server handle it directly (images, compiled assets, etc.).
 if ($uri !== '/' && file_exists(__DIR__ . '/public' . $uri)) {
     return false;
 }
