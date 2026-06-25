@@ -29,6 +29,7 @@ class ClientPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Blue,
             ])
+            ->darkMode(false)
             ->maxContentWidth('xl')
             ->sidebarCollapsibleOnDesktop()
             ->spa()

@@ -26,6 +26,7 @@ class VendorPanelProvider extends PanelProvider
             ->path('vendor-panel')
             ->login()
             ->brandName('Vendor Portal')
+            ->darkMode(false)
             ->maxContentWidth('xl')
             ->sidebarCollapsibleOnDesktop()
             ->spa()
