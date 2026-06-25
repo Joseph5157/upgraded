@@ -66,9 +66,9 @@ class TelegramLoginController extends Controller
         $request->session()->regenerate();
 
         return match ($user->role) {
-            'admin' => redirect('/admin/dashboard'),
-            'client' => redirect('/client/dashboard'),
-            default => redirect('/dashboard'),
+            'admin' => redirect('/filament-admin'),
+            'client' => redirect('/client-panel'),
+            default => redirect('/vendor-panel'),
         };
     }
 

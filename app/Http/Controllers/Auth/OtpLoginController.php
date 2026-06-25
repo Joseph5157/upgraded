@@ -174,18 +174,18 @@ class OtpLoginController extends Controller
         $request->session()->regenerate();
 
         if ($user->role === 'admin') {
-            return redirect('/admin/dashboard');
+            return redirect('/filament-admin');
         }
 
         if ($user->role === 'vendor') {
-            return redirect('/dashboard');
+            return redirect('/vendor-panel');
         }
 
         if ($user->role === 'client') {
-            return redirect('/client/dashboard');
+            return redirect('/client-panel');
         }
 
-        return redirect('/dashboard');
+        return redirect('/login');
     }
 
     protected function applyMidnightSessionExpiry(User $user): void
