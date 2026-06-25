@@ -10,7 +10,8 @@ cmds = [
 
 [phases.build]
 cmds = [
-  "php artisan storage:link"
+  "php artisan storage:link",
+  "php artisan filament:assets"
 ]
 
 [start]
