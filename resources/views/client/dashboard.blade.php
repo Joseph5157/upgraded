@@ -233,7 +233,7 @@
         <div id="client-dashboard-live" class="px-3 pt-2 pb-24 md:pb-4 max-w-[1380px] mx-auto space-y-3 sm:px-6 sm:pt-3 sm:space-y-4 xl:px-8 xl:pt-4 xl:space-y-5">
 
             @php
-                $activeOrders = $orders->whereNotIn('status', ['delivered', 'cancelled'])->count();
+                $activeOrders = $orders->whereNotIn('status', ['delivered', 'cancelled', 'failed'])->count();
                 $planLabel = $client->plan_expiry && $client->plan_expiry->isPast() ? 'Expired' : 'Professional';
                 $creditTone = $remaining > 10
                     ? 'border-emerald-500/[0.16] bg-emerald-500/[0.05] text-emerald-300'
@@ -417,6 +417,10 @@
                                         <span class="badge badge-sm badge-warning badge-outline gap-1.5 flex-shrink-0 text-[9px] font-bold uppercase tracking-[0.12em]">
                                             <span class="w-1 h-1 rounded-full bg-amber-400"></span> Reserved
                                         </span>
+                                    @elseif($order->status->value === 'failed')
+                                        <span class="badge badge-sm badge-error badge-outline gap-1.5 flex-shrink-0 text-[9px] font-bold uppercase tracking-[0.12em]">
+                                            <span class="w-1 h-1 rounded-full bg-red-400"></span> Failed
+                                        </span>
                                     @else
                                         <span class="badge badge-sm badge-neutral badge-outline gap-1.5 flex-shrink-0 text-[9px] font-bold uppercase tracking-[0.12em]">
                                             <span class="w-1 h-1 rounded-full bg-slate-500 pulse-dot"></span> Queued
@@ -496,6 +500,14 @@
                                                     <i data-lucide="x-circle" class="w-3 h-3"></i> Refund Rejected
                                                 </span>
                                             @endif
+                                        </div>
+
+                                    {{-- FAILED STATE --}}
+                                    @elseif($order->status->value === 'failed')
+                                        <div class="flex items-center justify-between gap-3">
+                                            <p class="text-[9px] text-red-400 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                                                <i data-lucide="x-circle" class="w-3 h-3"></i> Processing failed — contact support
+                                            </p>
                                         </div>
 
                                     {{-- ACTIVE / PROCESSING / PENDING STATE --}}

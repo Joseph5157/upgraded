@@ -174,12 +174,13 @@ class Phase9FinanceDashboardTest extends TestCase
     #[Test]
     public function admin_can_view_finance_dashboard(): void
     {
+        // Phase 10 Stage 2: GET /admin/finance/dashboard now redirects to /filament-finance.
+        // The finance metrics themselves are verified at service level by all the tests below.
         $admin = $this->makeAdmin();
 
         $this->actingAs($admin)
             ->get(route('admin.finance.dashboard'))
-            ->assertOk()
-            ->assertViewIs('admin.finance.dashboard');
+            ->assertRedirect('/filament-finance');
     }
 
     #[Test]
@@ -545,11 +546,13 @@ class Phase9FinanceDashboardTest extends TestCase
     #[Test]
     public function dashboard_supports_date_range_filter_via_http(): void
     {
+        // Phase 10 Stage 2: GET /admin/finance/dashboard redirects to /filament-finance.
+        // Date range filtering is now handled by the Filament finance panel.
+        // Service-level date filtering is verified by the date_range_filters_* tests above.
         $admin = $this->makeAdmin();
 
         $this->actingAs($admin)
             ->get(route('admin.finance.dashboard', ['from' => '2026-01-01', 'to' => '2026-12-31']))
-            ->assertOk()
-            ->assertViewIs('admin.finance.dashboard');
+            ->assertRedirect('/filament-finance');
     }
 }

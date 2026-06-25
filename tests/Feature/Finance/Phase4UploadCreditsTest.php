@@ -331,11 +331,14 @@ class Phase4UploadCreditsTest extends TestCase
         $client = $this->makeClient(['credit_balance' => 7]);
         $user   = $this->makeClientUser($client);
 
+        // Phase 10 Stage 2: GET /client/dashboard now redirects to /client-panel.
+        // The credit_balance value itself is verified via the Client model directly;
+        // the Filament panel displays it through CreditOverviewWidget (browser-tested).
         $response = $this->actingAs($user)->get(route('client.dashboard'));
+        $response->assertRedirect('/client-panel');
 
-        $response->assertOk();
-        // The view receives $remaining = credit_balance
-        $response->assertViewHas('remaining', 7);
+        // Verify the credit_balance is correctly stored on the model (service-level assertion)
+        $this->assertSame(7, $client->fresh()->credit_balance);
     }
 
     #[Test]

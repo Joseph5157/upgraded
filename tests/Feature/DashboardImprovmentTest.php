@@ -85,30 +85,22 @@ class DashboardImprovmentTest extends TestCase
     {
         $agent = $this->setupData();
 
+        // Phase 10 Stage 2: GET /dashboard now redirects to /vendor-panel.
+        // The underlying stat queries (available_pool, active_jobs, etc.) are exercised by
+        // the pulse endpoint which still hits DashboardController::loadDashboardState().
         $response = $this->actingAs($agent)->get(route('dashboard'));
-
-        $response->assertStatus(200);
-        $response->assertViewHas('stats');
-        $response->assertViewHas('myWorkspace');
-        $response->assertViewHas('availableFiles');
-        $response->assertViewHas('recentHistory');
-
-        $stats = $response->viewData('stats');
-        $this->assertEquals(2, $stats['available_pool']);
-        $this->assertEquals(1, $stats['active_jobs']);
-        $this->assertEquals(1, $stats['total_checked_today']);
-        $this->assertEquals(1, $stats['total_delivered']);
-
-        $this->assertCount(1, $response->viewData('myWorkspace'));
-        $this->assertCount(2, $response->viewData('availableFiles'));
+        $response->assertRedirect('/vendor-panel');
     }
 
     public function test_vendor_dashboard_pulse_returns_fragment_html_when_queue_changes(): void
     {
         $agent = $this->setupData();
 
-        $response = $this->actingAs($agent)->get(route('dashboard'));
-        $signature = (string) $response->viewData('dashboardSignature');
+        // Phase 10 Stage 2: GET /dashboard redirects — get initial signature from pulse endpoint
+        // instead (pulse is not redirected and returns full JSON when signature is unknown).
+        $initial = $this->actingAs($agent)->getJson(route('dashboard.pulse', ['signature' => '']));
+        $initial->assertOk()->assertJsonStructure(['signature', 'checked_at', 'liveHtml']);
+        $signature = (string) $initial->json('signature');
 
         $client = Client::create([
             'name' => 'Pulse Customer',
@@ -129,6 +121,7 @@ class DashboardImprovmentTest extends TestCase
             'original_name' => 'pulse-order.pdf',
         ]);
 
+        // Now the queue changed — pulse with the old signature should return fresh HTML
         $pulse = $this->actingAs($agent)->getJson(route('dashboard.pulse', ['signature' => $signature]));
 
         $pulse->assertOk()

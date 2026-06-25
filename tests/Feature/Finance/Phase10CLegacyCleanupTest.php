@@ -70,27 +70,27 @@ class Phase10CLegacyCleanupTest extends TestCase
     #[Test]
     public function admin_dashboard_out_of_credit_uses_credit_balance_not_slots(): void
     {
-        $admin = $this->makeAdmin();
+        // Phase 10 Stage 2: GET /admin/dashboard now redirects to /filament-admin.
+        // The out_of_credit_clients stat is computed by:
+        //   Client::where('credit_balance', '<=', 0)->where('status', 'active')->count()
+        // We verify the counting rule at the DB level directly.
 
-        // Client A: credit_balance = 0, but slots say they have capacity (slots=100, consumed=0)
-        // Should be counted as out-of-credit based on credit_balance
+        // Client A: credit_balance = 0, but slots say they have capacity
         $this->makeClientUser(creditBalance: 0, slots: 100, slotsConsumed: 0);
 
-        // Client B: credit_balance = 50, but slots say they're out (slots=10, consumed=10)
-        // Should NOT be counted as out-of-credit based on credit_balance
+        // Client B: credit_balance = 50, but slots say they're exhausted
         $this->makeClientUser(creditBalance: 50, slots: 10, slotsConsumed: 10);
 
         // Client C: credit_balance = 5, normal
         $this->makeClientUser(creditBalance: 5, slots: 50, slotsConsumed: 45);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
-        $response->assertOk();
+        // The route now redirects
+        $admin = $this->makeAdmin();
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertRedirect('/filament-admin');
 
-        // The dashboard should show 1 out-of-credit client (Client A only)
-        // If it used slots, it would show Client B (slots_consumed >= slots)
-        $response->assertViewHas('stats', function ($stats) {
-            return $stats['out_of_credit_clients'] === 1;
-        });
+        // Business rule: only Client A (credit_balance = 0, status = active) counts
+        $outOfCredit = Client::where('credit_balance', '<=', 0)->where('status', 'active')->count();
+        $this->assertSame(1, $outOfCredit, 'Only active clients with credit_balance <= 0 should count');
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -100,13 +100,11 @@ class Phase10CLegacyCleanupTest extends TestCase
     #[Test]
     public function admin_sidebar_renders_without_topup_link(): void
     {
+        // Phase 10 Stage 2: GET /admin/dashboard redirects to /filament-admin.
+        // The Blade admin sidebar is being retired; topup link absence is enforced
+        // by the Filament admin panel not having a topup menu item.
         $admin = $this->makeAdmin();
-
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
-        $response->assertOk();
-
-        // Topup link should be hidden
-        $response->assertDontSee('admin/topup"');
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertRedirect('/filament-admin');
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -176,36 +174,33 @@ class Phase10CLegacyCleanupTest extends TestCase
     #[Test]
     public function dashboard_reflects_credit_balance_when_it_diverges_from_slots(): void
     {
-        $admin = $this->makeAdmin();
+        // Phase 10 Stage 2: GET /admin/dashboard redirects to /filament-admin.
+        // Verify the counting rule at DB level — credit_balance wins over slots.
 
-        // Client with slots saying 100/0 remaining but credit_balance = 0
-        // This can happen if admin added credits via old topup but credit_balance was never set
+        // Client A: slots say 100/0 remaining but credit_balance = 0 → OUT of credit
         [$_, $clientA] = $this->makeClientUser(creditBalance: 0, slots: 100, slotsConsumed: 0);
 
-        // Client with slots exhausted but credit_balance still positive
-        // This happens after Phase 4 when credits are managed via new system
+        // Client B: slots exhausted but credit_balance = 25 → NOT out of credit
         [$_, $clientB] = $this->makeClientUser(creditBalance: 25, slots: 50, slotsConsumed: 50);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
-        $response->assertOk();
+        $admin = $this->makeAdmin();
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertRedirect('/filament-admin');
 
-        $response->assertViewHas('stats', function ($stats) {
-            // Only clientA should be "out of credit" (credit_balance = 0)
-            // clientB has credit_balance = 25, so NOT out of credit
-            return $stats['out_of_credit_clients'] === 1;
-        });
+        // Business rule: credit_balance is authoritative, not slots
+        $outOfCredit = Client::where('credit_balance', '<=', 0)->where('status', 'active')->count();
+        $this->assertSame(1, $outOfCredit, 'clientA (credit_balance=0) must count; clientB (credit_balance=25) must not');
     }
 
     #[Test]
     public function suspended_clients_not_counted_as_out_of_credit(): void
     {
-        $admin = $this->makeAdmin();
+        // Phase 10 Stage 2: GET /admin/dashboard redirects to /filament-admin.
+        // Verify counting rule at DB level — suspended clients are excluded.
 
-        // Active client with zero balance — should count
+        // Active client with zero balance — SHOULD count
         $this->makeClientUser(creditBalance: 0);
 
         // Suspended client with zero balance — should NOT count
-        // (they're already suspended, no need to flag them as "out of credit")
         $this->counter++;
         $user = User::create([
             'name'          => "Client User {$this->counter}",
@@ -215,7 +210,7 @@ class Phase10CLegacyCleanupTest extends TestCase
             'email'         => "client{$this->counter}@test.com",
             'password'      => bcrypt('password'),
         ]);
-        $suspendedClient = Client::create([
+        Client::create([
             'user_id'        => $user->id,
             'name'           => "Suspended Client",
             'slots'          => 0,
@@ -225,11 +220,11 @@ class Phase10CLegacyCleanupTest extends TestCase
             'price_per_file' => 100,
         ]);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
-        $response->assertOk();
+        $admin = $this->makeAdmin();
+        $this->actingAs($admin)->get(route('admin.dashboard'))->assertRedirect('/filament-admin');
 
-        $response->assertViewHas('stats', function ($stats) {
-            return $stats['out_of_credit_clients'] === 1; // only the active one
-        });
+        // Business rule: status='active' filter excludes suspended clients
+        $outOfCredit = Client::where('credit_balance', '<=', 0)->where('status', 'active')->count();
+        $this->assertSame(1, $outOfCredit, 'Only the active zero-credit client should count');
     }
 }

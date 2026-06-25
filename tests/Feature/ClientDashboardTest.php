@@ -56,12 +56,10 @@ class ClientDashboardTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('client.dashboard'));
 
-        $response->assertStatus(200);
-        $response->assertSee('Queued');
-        $response->assertSee('In progress');
-        $response->assertSee('Ready');
-        $response->assertSee('Download Both');
-        $response->assertSee('AI Report');
+        // Phase 10 Stage 2: GET /client/dashboard now redirects to /client-panel.
+        // Business logic (order list, credit display) is tested via ClientUploadFilamentTest
+        // and ClientUploadVerificationTest against the Filament panel directly.
+        $response->assertRedirect('/client-panel');
     }
 
     public function test_client_dashboard_pulse_returns_fragment_html_when_orders_change(): void

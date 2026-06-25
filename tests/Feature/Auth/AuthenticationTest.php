@@ -95,7 +95,7 @@ class AuthenticationTest extends TestCase
     public function test_login_code_send_fails_closed_when_telegram_delivery_fails(): void
     {
         $this->app->instance(TelegramService::class, new class extends TelegramService {
-            public function sendMessage(string $chatId, string $text, ?array $replyMarkup = null, array $options = []): bool
+            public function sendMessage(string $chatId, string $text, array $options = []): int|false
             {
                 return false;
             }

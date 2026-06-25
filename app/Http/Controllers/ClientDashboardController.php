@@ -74,13 +74,23 @@ class ClientDashboardController extends Controller
             ->latest()
             ->get();
 
-        if ($this->telegramColumnsReady() && ! $user->telegram_chat_id && ! $user->telegram_link_token) {
-            $user->forceFill(['telegram_link_token' => Str::random(48)])->save();
+        if ($this->telegramColumnsReady() && ! $user->telegram_chat_id) {
+            // Regenerate if no token exists or existing token has already expired
+            $needsToken = ! $user->telegram_link_token
+                || ($user->telegram_link_token_expires_at && $user->telegram_link_token_expires_at->isPast());
+
+            if ($needsToken) {
+                $ttl = config('telegram.link_token_ttl_minutes', 15);
+                $user->forceFill([
+                    'telegram_link_token'            => Str::random(48),
+                    'telegram_link_token_expires_at' => now()->addMinutes($ttl),
+                ])->save();
+            }
         }
 
-        $telegramBotUsername = config('services.telegram.bot_username');
+        $telegramBotUsername = config('telegram.bot_username') ?? config('services.telegram.bot_username');
         $telegramConnectUrl = ($this->telegramColumnsReady() && $telegramBotUsername && $user->telegram_link_token)
-            ? 'https://t.me/' . ltrim($telegramBotUsername, '@') . '?start=' . $user->telegram_link_token
+            ? 'https://t.me/' . ltrim($telegramBotUsername, '@') . '?start=link_' . $user->telegram_link_token
             : null;
 
         $dashboardSignature = $this->buildDashboardSignature($user, $client);
@@ -206,8 +216,8 @@ class ClientDashboardController extends Controller
             abort(403);
         }
 
-        if (in_array($order->status, [OrderStatus::Claimed, OrderStatus::Processing, OrderStatus::Delivered], true)) {
-            abort(403, 'Files cannot be deleted after the order has been reserved, processed, or delivered.');
+        if (in_array($order->status, [OrderStatus::Claimed, OrderStatus::Processing, OrderStatus::Delivered, OrderStatus::Failed], true)) {
+            abort(403, 'Files cannot be deleted after the order has been reserved, processed, delivered, or failed.');
         }
 
         StorageLifecycle::deleteStoredFileIfPresent($file->disk ?: $this->storageDisk, $file->file_path);
@@ -245,10 +255,12 @@ class ClientDashboardController extends Controller
             return back()->with('error', 'Telegram connection is not ready yet. Please ask admin to run migrations.');
         }
 
+        $ttl = config('telegram.link_token_ttl_minutes', 15);
         $user->update([
-            'telegram_link_token' => Str::random(48),
-            'telegram_chat_id' => null,
-            'telegram_connected_at' => null,
+            'telegram_link_token'            => Str::random(48),
+            'telegram_link_token_expires_at' => now()->addMinutes($ttl),
+            'telegram_chat_id'               => null,
+            'telegram_connected_at'          => null,
         ]);
 
         Log::info('telegram.link_token.regenerated', LogContext::forUser($user, array_merge(
@@ -332,6 +344,7 @@ class ClientDashboardController extends Controller
         $maxOrderUpdatedAt = (clone $ordersQuery)->max('updated_at');
         $deliveredCount = (clone $ordersQuery)->where('status', OrderStatus::Delivered)->count();
         $cancelledCount = (clone $ordersQuery)->where('status', OrderStatus::Cancelled)->count();
+        $failedCount    = (clone $ordersQuery)->where('status', OrderStatus::Failed)->count();
 
         $maxReportUpdatedAt = OrderReport::query()
             ->whereHas('order', function ($query) use ($client, $user) {
@@ -347,7 +360,7 @@ class ClientDashboardController extends Controller
         $orderTs = $maxOrderUpdatedAt ? strtotime((string) $maxOrderUpdatedAt) : 0;
         $reportTs = $maxReportUpdatedAt ? strtotime((string) $maxReportUpdatedAt) : 0;
 
-        return sha1($orderCount . '|' . $orderTs . '|' . $reportTs . '|' . $deliveredCount . '|' . $cancelledCount);
+        return sha1($orderCount . '|' . $orderTs . '|' . $reportTs . '|' . $deliveredCount . '|' . $cancelledCount . '|' . $failedCount);
     }
 
     protected function telegramColumnsReady(): bool

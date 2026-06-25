@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
@@ -23,6 +25,7 @@ class User extends Authenticatable
         'phone',
         'telegram_chat_id',
         'telegram_link_token',
+        'telegram_link_token_expires_at',
         'telegram_connected_at',
         'password',
         'email_verified_at',
@@ -79,7 +82,8 @@ class User extends Authenticatable
             'is_super_admin'         => 'boolean',
             'admin_token_expires_at' => 'datetime',
             'last_login_at'          => 'datetime',
-            'telegram_connected_at'  => 'datetime',
+            'telegram_connected_at'              => 'datetime',
+            'telegram_link_token_expires_at'     => 'datetime',
             'session_expires_at'      => 'datetime',
             'login_token_expires_at'     => 'datetime',
             'activated_at'               => 'datetime',
@@ -102,6 +106,25 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return $this->is_super_admin === true;
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        if ($this->isFrozen()) {
+            return false;
+        }
+
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return match ($panel->getId()) {
+            'admin' => in_array($this->role, ['admin', 'staff']),
+            'finance' => $this->role === 'accountant',
+            'client' => $this->role === 'client',
+            'vendor' => $this->role === 'vendor',
+            default => false,
+        };
     }
 
     public function canCreateAdmins(): bool

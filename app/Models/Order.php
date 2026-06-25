@@ -35,6 +35,10 @@ class Order extends Model
         'vendor_approved_at',
         'vendor_rejected_at',
         'credits_refunded_at',
+        // Phase 7C failed-file workflow
+        'failed_at',
+        'failure_reason',
+        'failed_by',
     ];
 
     protected $casts = [
@@ -55,12 +59,15 @@ class Order extends Model
         'vendor_approved_at'   => 'datetime',
         'vendor_rejected_at'   => 'datetime',
         'credits_refunded_at'  => 'datetime',
+        // Phase 7C failed-file workflow
+        'failed_at'            => 'datetime',
     ];
 
     public function client()       { return $this->belongsTo(Client::class); }
     public function files()        { return $this->hasMany(OrderFile::class); }
     public function report()       { return $this->hasOne(OrderReport::class); }
     public function vendor()       { return $this->belongsTo(User::class, 'claimed_by'); }
+    public function failedBy()     { return $this->belongsTo(User::class, 'failed_by'); }
     public function creator()      { return $this->belongsTo(User::class, 'created_by_user_id'); }
     public function link()         { return $this->belongsTo(ClientLink::class, 'client_link_id'); }
     public function orderLogs()    { return $this->hasMany(OrderLog::class); }
@@ -74,6 +81,7 @@ class Order extends Model
     {
         if ($this->status === OrderStatus::Delivered)  return 'delivered';
         if ($this->status === OrderStatus::Cancelled)  return 'cancelled';
+        if ($this->status === OrderStatus::Failed)     return 'failed';
         if ($this->status === OrderStatus::Claimed)    return 'claimed';
         if ($this->status === OrderStatus::Processing) return 'processing';
         return 'pending';

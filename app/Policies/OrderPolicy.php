@@ -29,7 +29,8 @@ class OrderPolicy
 
         return ($isOwner || $isAdmin)
             && $order->status !== OrderStatus::Delivered
-            && $order->status !== OrderStatus::Cancelled;
+            && $order->status !== OrderStatus::Cancelled
+            && $order->status !== OrderStatus::Failed;
     }
 
     /**
@@ -42,7 +43,8 @@ class OrderPolicy
 
         return ($isOwner || $isAdmin)
             && $order->status !== OrderStatus::Cancelled
-            && $order->status !== OrderStatus::Delivered;
+            && $order->status !== OrderStatus::Delivered
+            && $order->status !== OrderStatus::Failed;
     }
 
     /**
@@ -55,7 +57,8 @@ class OrderPolicy
 
         return ($isOwner || $isAdmin)
             && $order->status !== OrderStatus::Cancelled
-            && $order->status !== OrderStatus::Delivered;
+            && $order->status !== OrderStatus::Delivered
+            && $order->status !== OrderStatus::Failed;
     }
 
     /**
@@ -68,7 +71,20 @@ class OrderPolicy
 
         return ($isOwner || $isAdmin)
             && $order->status !== OrderStatus::Cancelled
-            && $order->status !== OrderStatus::Delivered;
+            && $order->status !== OrderStatus::Delivered
+            && $order->status !== OrderStatus::Failed;
+    }
+
+    /**
+     * Determine if the user can mark the order as failed.
+     */
+    public function markFailed(User $user, Order $order): bool
+    {
+        $isOwner = (int) $user->id === (int) $order->claimed_by;
+        $isAdmin = $user->role === 'admin';
+
+        return ($isOwner || $isAdmin)
+            && in_array($order->status, [OrderStatus::Claimed, OrderStatus::Processing]);
     }
 
     /**
@@ -87,6 +103,18 @@ class OrderPolicy
         return $user->role === 'client'
             && (int) $user->client_id === (int) $order->client_id
             && $order->status === OrderStatus::Pending;
+    }
+
+    /**
+     * Determine if an admin can requeue a failed order back to pending.
+     *
+     * Vendor/client/accountant cannot requeue.
+     * Only failed orders can be requeued.
+     */
+    public function requeue(User $user, Order $order): bool
+    {
+        return $user->role === 'admin'
+            && $order->status === OrderStatus::Failed;
     }
 
     /**

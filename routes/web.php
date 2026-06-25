@@ -99,20 +99,28 @@ Route::middleware(['auth', 'nocache'])->group(function () {
 
     // Vendor/Admin Dashboard Routes
     Route::middleware(['role:vendor,admin', 'account.status'])->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        // Stage 2 redirect — GET /dashboard → Filament panel (Phase 10)
+        Route::get('/dashboard', function () {
+            return match (auth()->user()?->role) {
+                'admin'  => redirect('/filament-admin'),
+                default  => redirect('/vendor-panel'),
+            };
+        })->name('dashboard');
         Route::get('/dashboard/pulse', [DashboardController::class, 'pulse'])->name('dashboard.pulse');
         Route::post('/orders/{order}/claim', [DashboardController::class, 'claim'])->name('orders.claim');
         Route::post('/orders/{order}/unclaim', [DashboardController::class, 'unclaim'])->name('orders.unclaim');
         Route::post('/orders/{order}/status', [DashboardController::class, 'updateStatus'])->name('orders.status');
         Route::post('/orders/{order}/report', [DashboardController::class, 'uploadReport'])->name('orders.report');
         Route::get('/orders/{order}/files/{file}', [DashboardController::class, 'downloadFile'])->name('orders.files.download');
-        Route::get('/earnings', [VendorEarningsController::class, 'index'])->name('vendor.earnings');
+        // Stage 2 redirect — GET /earnings → Filament vendor panel (Phase 10)
+        Route::get('/earnings', fn () => redirect('/vendor-panel/earning-history'))->name('vendor.earnings');
         Route::post('/earnings/request-payout', [VendorPayoutController::class, 'requestPayout'])->name('earnings.request-payout');
     });
 
     // Client Dashboard Routes
     Route::middleware(['role:client', 'account.status'])->prefix('client')->name('client.')->group(function () {
-        Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
+        // Stage 2 redirect — GET /client/dashboard → Filament client panel (Phase 10)
+        Route::get('/dashboard', fn () => redirect('/client-panel'))->name('dashboard');
         Route::get('/dashboard/pulse', [ClientDashboardController::class, 'pulse'])->name('dashboard.pulse');
         Route::post('/dashboard/upload', [ClientDashboardController::class, 'store'])->name('dashboard.upload');
         Route::post('/dashboard/telegram/regenerate-link', [ClientDashboardController::class, 'regenerateTelegramLink'])->name('dashboard.telegram.regenerate');
@@ -134,7 +142,8 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        // Stage 2 redirect — GET /admin/dashboard → Filament admin panel (Phase 10)
+        Route::get('/dashboard', fn () => redirect('/filament-admin'))->name('dashboard');
         Route::post('/accounts/invite', [InviteController::class, 'store'])->name('accounts.invite');
         Route::resource('/matrix', ClientMatrixController::class)->only(['index', 'update']);
         Route::post('/matrix/{client}/refill', [ClientMatrixController::class, 'refill'])->name('matrix.refill');
@@ -145,8 +154,8 @@ Route::middleware(['auth', 'nocache', 'role:admin', 'account.status'])
         Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
         Route::get('/billing/{ledger}', [BillingController::class, 'show'])->name('billing.show');
         Route::prefix('finance')->name('finance.')->group(function () {
-            // Phase 9 — finance dashboard
-            Route::get('/dashboard', [FinanceDashboardController::class, 'index'])->name('dashboard');
+            // Stage 2 redirect — GET /admin/finance/dashboard → Filament finance panel (Phase 10)
+            Route::get('/dashboard', fn () => redirect('/filament-finance'))->name('dashboard');
             // Phase 10A — finance reports
             Route::get('/reports',                          [FinanceReportController::class, 'index'])->name('reports.index');
             Route::get('/reports/client-payments',          [FinanceReportController::class, 'clientPayments'])->name('reports.client-payments');

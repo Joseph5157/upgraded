@@ -17,11 +17,11 @@ class TelegramWebhookTest extends TestCase
         $this->app->instance(TelegramService::class, new class extends TelegramService {
             public array $messages = [];
 
-            public function sendMessage(string $chatId, string $text, ?array $replyMarkup = null, array $options = []): bool
+            public function sendMessage(string $chatId, string $text, array $options = []): int|false
             {
-                $this->messages[] = compact('chatId', 'text', 'replyMarkup', 'options');
+                $this->messages[] = compact('chatId', 'text', 'options');
 
-                return true;
+                return 1;
             }
         });
     }

@@ -161,6 +161,10 @@ class OrderWorkflowService
             throw new WorkflowException("Cannot change a delivered order back to processing.");
         }
 
+        if ($order->status === OrderStatus::Failed) {
+            throw new WorkflowException("Cannot process a failed order. An admin must re-queue it first.");
+        }
+
         if ($order->status !== OrderStatus::Claimed) {
             throw new WorkflowException("Order must be in 'claimed' status to start processing. Current status: '{$order->status->value}'.");
         }
@@ -217,6 +221,10 @@ class OrderWorkflowService
 
             if ($lockedOrder->status === OrderStatus::Delivered) {
                 throw new WorkflowException("Cannot upload a report for an order that has already been delivered.");
+            }
+
+            if ($lockedOrder->status === OrderStatus::Failed) {
+                throw new WorkflowException("Cannot upload a report for a failed order. An admin must re-queue it first.");
             }
 
             if (empty($data['ai_report_path']) && empty($data['ai_skip_reason'])) {
@@ -372,6 +380,108 @@ class OrderWorkflowService
             'old_status' => $oldStatus,
             'new_status' => OrderStatus::Delivered->value,
         ], $actor->id);
+    }
+
+    /**
+     * Mark an active order as failed.
+     *
+     * Only allowed for claimed or processing orders. The vendor or an admin
+     * provides a reason. No automatic credit refund — admin handles that
+     * separately via the refund workflow.
+     */
+    public function markFailed(Order $order, User $user, string $reason): void
+    {
+        $this->assertVendorOrAdmin($order, $user, 'mark as failed');
+
+        DB::transaction(function () use ($order, $user, $reason) {
+            $locked = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            if (! in_array($locked->status, [OrderStatus::Claimed, OrderStatus::Processing])) {
+                throw new WorkflowException("Only claimed or processing orders can be marked as failed. Current status: '{$locked->status->value}'.");
+            }
+
+            $oldStatus = $locked->status->value;
+
+            $locked->update([
+                'status'         => OrderStatus::Failed,
+                'failed_at'      => now(),
+                'failure_reason' => $reason,
+                'failed_by'      => $user->id,
+            ]);
+
+            $this->logActivity(
+                $locked,
+                $user,
+                'mark_failed',
+                "Order marked as failed: {$reason}",
+                $oldStatus,
+                OrderStatus::Failed->value
+            );
+
+            $context = LogContext::forOrder($locked, LogContext::forUser($user, LogContext::currentRequest()));
+
+            Log::info('order.failed', $context);
+            $this->auditLogger->record('order.failed', $locked, [
+                'old_status' => $oldStatus,
+                'new_status' => OrderStatus::Failed->value,
+                'reason'     => $reason,
+            ], $user->id);
+        });
+
+        Cache::forget('admin_dashboard_stats');
+    }
+
+    /**
+     * Requeue a failed order back to the pending pool.
+     *
+     * Admin-only. Clears claimed_by so the order becomes available again.
+     * Preserves failed_at, failure_reason, and failed_by as audit history.
+     * No credit refund. No vendor earning. No payout change.
+     */
+    public function requeueFailed(Order $order, User $user, ?string $reason = null): Order
+    {
+        DB::transaction(function () use ($order, $user, $reason) {
+            $locked = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->status !== OrderStatus::Failed) {
+                throw new WorkflowException("Only failed orders can be requeued. Current status: '{$locked->status->value}'.");
+            }
+
+            $oldStatus = $locked->status->value;
+
+            $locked->update([
+                'status'     => OrderStatus::Pending,
+                'claimed_by' => null,
+                // failed_at, failure_reason, failed_by are intentionally preserved as audit history
+            ]);
+
+            $notes = 'Order requeued to pending pool by admin';
+            if ($reason) {
+                $notes .= ": {$reason}";
+            }
+
+            $this->logActivity(
+                $locked,
+                $user,
+                'requeue',
+                $notes,
+                $oldStatus,
+                OrderStatus::Pending->value
+            );
+
+            $context = LogContext::forOrder($locked, LogContext::forUser($user, LogContext::currentRequest()));
+
+            Log::info('order.requeued', array_merge($context, ['requeue_reason' => $reason]));
+            $this->auditLogger->record('order.requeued', $locked, [
+                'old_status'     => $oldStatus,
+                'new_status'     => OrderStatus::Pending->value,
+                'requeue_reason' => $reason,
+            ], $user->id);
+        });
+
+        Cache::forget('admin_dashboard_stats');
+
+        return $order->fresh();
     }
 
     // ─── Private Helpers ────────────────────────────────────────────────────────

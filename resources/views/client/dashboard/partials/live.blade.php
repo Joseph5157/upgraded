@@ -1,6 +1,6 @@
 <div id="client-dashboard-live" class="space-y-3 sm:space-y-4">
     @php
-        $activeOrders = $orders->whereNotIn('status', ['delivered', 'cancelled'])->count();
+        $activeOrders = $orders->whereNotIn('status', ['delivered', 'cancelled', 'failed'])->count();
         $planLabel = $client->plan_expiry && $client->plan_expiry->isPast() ? 'Expired' : 'Professional';
         $creditTone = $remaining > 10
             ? 'border-emerald-500/[0.16] bg-emerald-500/[0.05] text-emerald-300'

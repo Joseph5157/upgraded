@@ -426,11 +426,12 @@ class SmokeTest extends TestCase
      */
     public function test_c1_admin_dashboard_loads(): void
     {
+        // Phase 10 Stage 2: GET /admin/dashboard now redirects to /filament-admin.
         $admin = $this->makeAdmin();
 
         $this->actingAs($admin)
             ->get(route('admin.dashboard'))
-            ->assertOk();
+            ->assertRedirect('/filament-admin');
     }
 
     /**
@@ -706,29 +707,29 @@ class SmokeTest extends TestCase
             ->assertOk()
             ->assertHeader('X-Request-Id');
 
-        // Authenticated client route
+        // Authenticated client route — Phase 10 Stage 2: now redirects to /client-panel
         [$client, $user] = $this->makeClient();
         $this->actingAs($user)
             ->get(route('client.dashboard'))
-            ->assertOk()
+            ->assertRedirect('/client-panel')
             ->assertHeader('X-Request-Id');
 
         // Unauthenticated attempt at protected route → redirect still has header
         $this->get(route('client.dashboard'))
             ->assertHeader('X-Request-Id');
 
-        // Authenticated vendor route
+        // Authenticated vendor route — Phase 10 Stage 2: now redirects to /vendor-panel
         $vendor = $this->makeVendor();
         $this->actingAs($vendor)
             ->get(route('dashboard'))
-            ->assertOk()
+            ->assertRedirect('/vendor-panel')
             ->assertHeader('X-Request-Id');
 
-        // Admin route
+        // Admin route — Phase 10 Stage 2: now redirects to /filament-admin
         $admin = $this->makeAdmin();
         $this->actingAs($admin)
             ->get(route('admin.dashboard'))
-            ->assertOk()
+            ->assertRedirect('/filament-admin')
             ->assertHeader('X-Request-Id');
     }
 
