@@ -28,13 +28,18 @@ class VendorPanelProvider extends PanelProvider
             ->path('vendor-panel')
             ->login()
             ->brandName('PlagExpert')
-            ->darkMode(false)
+            ->darkMode(true)
             ->maxContentWidth('xl')
             ->sidebarCollapsibleOnDesktop()
             ->spa()
             ->navigationGroups([])
             ->colors([
                 'primary' => Color::Amber,
+                'gray'    => Color::Zinc,
+                'danger'  => Color::Rose,
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
+                'info'    => Color::Sky,
             ])
             ->discoverResources(in: app_path('Filament/Vendor/Resources'), for: 'App\\Filament\\Vendor\\Resources')
             ->discoverPages(in: app_path('Filament/Vendor/Pages'), for: 'App\\Filament\\Vendor\\Pages')

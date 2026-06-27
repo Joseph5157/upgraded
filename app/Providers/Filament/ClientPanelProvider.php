@@ -30,8 +30,13 @@ class ClientPanelProvider extends PanelProvider
             ->brandName('PlagExpert')
             ->colors([
                 'primary' => Color::Blue,
+                'gray'    => Color::Zinc,
+                'danger'  => Color::Rose,
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
+                'info'    => Color::Sky,
             ])
-            ->darkMode(false)
+            ->darkMode(true)
             ->maxContentWidth('xl')
             ->sidebarCollapsibleOnDesktop()
             ->spa()

@@ -30,8 +30,13 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('PlagExpert Admin')
             ->colors([
                 'primary' => Color::Indigo,
+                'gray'    => Color::Zinc,
+                'danger'  => Color::Rose,
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
+                'info'    => Color::Sky,
             ])
-            ->darkMode(false)
+            ->darkMode(true)
             ->sidebarCollapsibleOnDesktop()
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')

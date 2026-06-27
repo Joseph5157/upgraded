@@ -28,8 +28,13 @@ class FinancePanelProvider extends PanelProvider
             ->brandName('PlagExpert Finance')
             ->colors([
                 'primary' => Color::Emerald,
+                'gray'    => Color::Zinc,
+                'danger'  => Color::Rose,
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
+                'info'    => Color::Sky,
             ])
-            ->darkMode(false)
+            ->darkMode(true)
             ->discoverResources(in: app_path('Filament/Finance/Resources'), for: 'App\\Filament\\Finance\\Resources')
             ->discoverPages(in: app_path('Filament/Finance/Pages'), for: 'App\\Filament\\Finance\\Pages')
             ->discoverWidgets(in: app_path('Filament/Finance/Widgets'), for: 'App\\Filament\\Finance\\Widgets')
