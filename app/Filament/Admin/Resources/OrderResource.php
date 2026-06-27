@@ -121,9 +121,9 @@ class OrderResource extends Resource
                     ->columns(3)
                     ->schema([
                         TextEntry::make('credits_consumed')->label('Credits'),
-                        TextEntry::make('client_amount')->label('Client Amount')->money('INR'),
-                        TextEntry::make('vendor_amount')->label('Vendor Amount')->money('INR'),
-                        TextEntry::make('gross_profit')->label('Gross Profit')->money('INR'),
+                        TextEntry::make('client_amount')->label('Client Amount')->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—'),
+                        TextEntry::make('vendor_amount')->label('Vendor Amount')->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—'),
+                        TextEntry::make('gross_profit')->label('Gross Profit')->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—'),
                     ]),
 
                 InfoSection::make(fn ($record): string => $record->status === OrderStatus::Failed

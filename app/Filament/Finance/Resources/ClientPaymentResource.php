@@ -86,7 +86,7 @@ class ClientPaymentResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('amount_received')
                     ->label('Amount')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('credits_added')
                     ->label('Credits')
@@ -94,7 +94,7 @@ class ClientPaymentResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('rate_per_credit')
                     ->label('Rate/Credit')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('payment_mode')
                     ->label('Mode')

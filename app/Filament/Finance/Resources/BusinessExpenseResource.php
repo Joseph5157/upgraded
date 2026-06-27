@@ -80,7 +80,7 @@ class BusinessExpenseResource extends Resource
                     ->color('primary'),
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Amount')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('payment_mode')
                     ->label('Mode')

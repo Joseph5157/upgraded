@@ -77,7 +77,7 @@ class ClientResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('price_per_file')
                     ->label('Rate/File')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('credit_balance')
                     ->label('Credits')

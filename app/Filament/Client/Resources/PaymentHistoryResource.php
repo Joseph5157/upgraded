@@ -67,7 +67,7 @@ class PaymentHistoryResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('amount_received')
                     ->label('Amount')
-                    ->money('INR'),
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—'),
                 Tables\Columns\TextColumn::make('payment_mode')
                     ->label('Mode')
                     ->badge()

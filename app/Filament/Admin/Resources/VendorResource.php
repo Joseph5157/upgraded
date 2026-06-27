@@ -99,16 +99,16 @@ class VendorResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('payout_rate')
                     ->label('Rate/File')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('pending_earning_balance')
                     ->label('Pending')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('approved_payable_balance')
                     ->label('Payable')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('status')

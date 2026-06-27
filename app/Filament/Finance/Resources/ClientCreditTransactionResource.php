@@ -56,11 +56,11 @@ class ClientCreditTransactionResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('rate_per_credit')
                     ->label('Rate')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('money_value')
                     ->label('Money Value')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('order_id')
                     ->label('Order')

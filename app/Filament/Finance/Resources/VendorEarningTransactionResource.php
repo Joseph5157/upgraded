@@ -48,7 +48,7 @@ class VendorEarningTransactionResource extends Resource
                     ->formatStateUsing(fn (string $state): string => str_replace('_', ' ', ucfirst($state))),
                 Tables\Columns\TextColumn::make('amount_delta')
                     ->label('Amount')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->sortable()
                     ->color(fn (string $state): string => (float) $state >= 0 ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('files_count')
@@ -57,15 +57,15 @@ class VendorEarningTransactionResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('rate_per_file')
                     ->label('Rate/File')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('pending_balance_after')
                     ->label('Pending After')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('approved_balance_after')
                     ->label('Approved After')
-                    ->money('INR')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹ ' . number_format((float) $state, 2) : '—')
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
