@@ -10,10 +10,7 @@ class CreditOverviewWidget extends BaseWidget
 {
     protected static ?int $sort = 1;
 
-    protected function getColumns(): int
-    {
-        return 2;
-    }
+    protected static string $view = 'filament.widgets.stats-2col';
 
     protected function getStats(): array
     {
