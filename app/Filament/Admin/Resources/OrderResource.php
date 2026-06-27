@@ -15,6 +15,7 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class OrderResource extends Resource
 {
@@ -149,6 +150,11 @@ class OrderResource extends Resource
             ]);
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['client', 'vendor']);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -194,6 +200,8 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
+            ->defaultPaginationPageOption(10)
+            ->paginationPageOptions([10, 25, 50])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options(collect(OrderStatus::cases())->mapWithKeys(
@@ -202,8 +210,7 @@ class OrderResource extends Resource
                 Tables\Filters\SelectFilter::make('client_id')
                     ->label('Client')
                     ->relationship('client', 'name')
-                    ->searchable()
-                    ->preload(),
+                    ->searchable(),
                 Tables\Filters\SelectFilter::make('claimed_by')
                     ->label('Vendor')
                     ->options(fn () => User::where('role', 'vendor')->pluck('name', 'id'))

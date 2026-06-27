@@ -16,6 +16,8 @@ class AdminOverview extends Widget
 
     protected int|string|array $columnSpan = 'full';
 
+    protected static bool $isLazy = true;
+
     protected static string $view = 'filament.admin.widgets.admin-overview';
 
     protected function getViewData(): array

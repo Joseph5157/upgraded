@@ -47,7 +47,9 @@ class MyWorkResource extends Resource
             return parent::getEloquentQuery()->whereRaw('1 = 0');
         }
 
-        return parent::getEloquentQuery()->where('claimed_by', $user->id);
+        return parent::getEloquentQuery()
+            ->where('claimed_by', $user->id)
+            ->with(['client']);
     }
 
     public static function canCreate(): bool
@@ -241,6 +243,8 @@ class MyWorkResource extends Resource
                     }),
             ])
             ->defaultSort('id', 'desc')
+            ->defaultPaginationPageOption(10)
+            ->paginationPageOptions([10, 25, 50])
             ->bulkActions([]);
     }
 

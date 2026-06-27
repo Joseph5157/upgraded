@@ -41,7 +41,9 @@ class MyOrdersResource extends Resource
             return parent::getEloquentQuery()->whereRaw('1 = 0');
         }
 
-        return parent::getEloquentQuery()->where('client_id', $client->id);
+        return parent::getEloquentQuery()
+            ->where('client_id', $client->id)
+            ->with(['files', 'report']);
     }
 
     public static function canCreate(): bool

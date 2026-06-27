@@ -12,6 +12,8 @@ class FinanceOverview extends StatsOverviewWidget
 
     protected int | string | array $columnSpan = 'full';
 
+    protected static bool $isLazy = true;
+
     protected function getStats(): array
     {
         $m = app(FinanceDashboardService::class)->metrics();
