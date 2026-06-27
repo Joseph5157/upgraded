@@ -27,7 +27,7 @@ class ClientPanelProvider extends PanelProvider
             ->id('client')
             ->path('client-panel')
             ->login()
-            ->brandName('My Portal')
+            ->brandName('PlagExpert')
             ->colors([
                 'primary' => Color::Blue,
             ])

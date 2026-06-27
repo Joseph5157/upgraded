@@ -27,7 +27,7 @@ class VendorPanelProvider extends PanelProvider
             ->id('vendor')
             ->path('vendor-panel')
             ->login()
-            ->brandName('Vendor Portal')
+            ->brandName('PlagExpert')
             ->darkMode(false)
             ->maxContentWidth('xl')
             ->sidebarCollapsibleOnDesktop()

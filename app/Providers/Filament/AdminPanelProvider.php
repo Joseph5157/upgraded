@@ -25,6 +25,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('filament-admin')
             ->login()
+            ->brandName('PlagExpert Admin')
             ->colors([
                 'primary' => Color::Indigo,
             ])

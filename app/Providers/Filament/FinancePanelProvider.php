@@ -25,6 +25,7 @@ class FinancePanelProvider extends PanelProvider
             ->id('finance')
             ->path('filament-finance')
             ->login()
+            ->brandName('PlagExpert Finance')
             ->colors([
                 'primary' => Color::Emerald,
             ])
