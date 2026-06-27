@@ -1,5 +1,5 @@
 <x-filament-widgets::widget>
-    <div class="grid grid-cols-2 gap-3">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
             <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Pending Earnings</p>
             <p class="mt-1 text-xl font-semibold tracking-tight text-gray-950 dark:text-white">{{ $pending }} ₹</p>
