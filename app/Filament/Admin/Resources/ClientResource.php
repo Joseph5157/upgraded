@@ -125,6 +125,12 @@ class ClientResource extends Resource
             ->bulkActions([]);
     }
 
+    public static function canCreate(): bool
+    {
+        $user = auth()->user();
+        return $user && ($user->role === 'admin' || $user->isSuperAdmin());
+    }
+
     public static function getRelations(): array
     {
         return [];
