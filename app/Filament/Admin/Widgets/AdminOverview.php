@@ -2,20 +2,33 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Enums\OrderStatus;
 use App\Models\Client;
 use App\Models\Order;
+use App\Models\RefundRequest;
+use App\Models\TopupRequest;
 use App\Models\User;
-use Filament\Widgets\StatsOverviewWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\Widget;
 
-class AdminOverview extends StatsOverviewWidget
+class AdminOverview extends Widget
 {
-    protected function getStats(): array
+    protected static ?int $sort = 1;
+
+    protected int|string|array $columnSpan = 'full';
+
+    protected static string $view = 'filament.admin.widgets.admin-overview';
+
+    protected function getViewData(): array
     {
         return [
-            Stat::make('Total Orders', Order::count()),
-            Stat::make('Active Clients', Client::where('status', 'active')->count()),
-            Stat::make('Active Vendors', User::where('role', 'vendor')->active()->count()),
+            'totalOrders'     => Order::count(),
+            'pendingOrders'   => Order::where('status', OrderStatus::Pending->value)->count(),
+            'activeClients'   => Client::where('status', 'active')->count(),
+            'activeVendors'   => User::where('role', 'vendor')->where('status', 'active')->count(),
+            'pendingRequests' => TopupRequest::where('status', 'pending')->count()
+                               + RefundRequest::where('status', 'pending')->count(),
+            'deliveredToday'  => Order::where('status', OrderStatus::Delivered->value)
+                                    ->whereDate('delivered_at', today())->count(),
         ];
     }
 }

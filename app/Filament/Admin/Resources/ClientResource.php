@@ -16,7 +16,7 @@ class ClientResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $navigationGroup = 'People';
+    protected static ?string $navigationGroup = 'Users & Clients';
 
     protected static ?int $navigationSort = 2;
 
@@ -82,7 +82,8 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make('credit_balance')
                     ->label('Credits')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->color(fn ($state): string => (int) $state === 0 ? 'danger' : 'success'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
