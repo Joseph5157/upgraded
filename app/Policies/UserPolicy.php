@@ -9,12 +9,14 @@ class UserPolicy
     /**
      * Determine if the authenticated user can create an account with the given role.
      * Usage: $this->authorize('create', [User::class, $role])
+     * When called by Filament without role param, defaults to admin creation check.
      */
-    public function create(User $authenticatedUser, string $role): bool
+    public function create(User $authenticatedUser, ?string $role = null): bool
     {
         return match ($role) {
             'admin'          => $authenticatedUser->isSuperAdmin(),
             'vendor', 'client' => $authenticatedUser->role === 'admin',
+            null             => $authenticatedUser->role === 'admin', // Filament default check
             default          => false,
         };
     }
