@@ -121,7 +121,8 @@ class TelegramPermissionService
         }
 
         // Check vendor_id or assigned_vendor_id presence
-        foreach (['vendor_id', 'assigned_vendor_id', 'user_id'] as $key) {
+        // 'claimed_by' is the Order model's vendor assignment field
+        foreach (['vendor_id', 'assigned_vendor_id', 'claimed_by', 'user_id'] as $key) {
             if (isset($subject->{$key})) {
                 return (int) $subject->{$key} === (int) $user->id;
             }

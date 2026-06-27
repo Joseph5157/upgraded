@@ -327,7 +327,7 @@ class OrderWorkflowService
         try {
             /** @var \App\Services\PortalTelegramAlertService $telegramAlerts */
             $telegramAlerts = app(\App\Services\PortalTelegramAlertService::class);
-            $telegramAlerts->notifyOrderCompleted(Order::findOrFail($order->id));
+            $telegramAlerts->notifyReportReady(Order::findOrFail($order->id));
         } catch (\Throwable $e) {
             report($e);
         }

@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\ClientPayment;
 use App\Models\Order;
 use App\Models\PendingInvite;
 use App\Models\TelegramActionToken;
 use App\Models\TelegramEventLog;
 use App\Models\User;
+use App\Services\Finance\ClientPaymentService;
+use App\Services\Finance\VendorEarningService;
 use App\Services\Telegram\TelegramActionTokenService;
+use App\Services\Telegram\TelegramMessageBuilder;
 use App\Services\Telegram\TelegramPermissionService;
 use App\Services\TelegramService;
 use App\Support\LogContext;
@@ -53,7 +57,7 @@ class BotController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────
-    // Callback query handling — 13-step action token flow
+    // Callback query handling — action token flow
     // ──────────────────────────────────────────────────────────────
 
     private function handleCallbackQuery(array $cq): JsonResponse
@@ -128,8 +132,11 @@ class BotController extends Controller
     /**
      * Execute the action associated with a validated action token.
      *
-     * Steps 9–13: execute in DB transaction, mark used, answer callback,
-     *              edit message, write audit log.
+     * Final phase: check action type → verify subject exists → verify ownership
+     * → execute in DB transaction → mark used → answer callback → edit message → write audit log.
+     *
+     * Note: action type cannot be forged by the caller — callback_data only carries
+     * the token UUID; the action type is authoritative from the DB record.
      */
     private function dispatchCallbackAction(
         array $cq,
@@ -173,14 +180,56 @@ class BotController extends Controller
             return response()->json(['ok' => true]);
         }
 
-        // ── Phase 3 — Sensitive accounting actions (prepared, not yet live) ──
-        // To enable Phase 3, uncomment the relevant blocks here and wire up
-        // the appropriate service calls (e.g. ClientPaymentService::approve).
+        // ── Phase 3 — Two-step accounting actions via existing services ──
 
-        // if ($actionType === TelegramActionToken::ACTION_PAYMENT_APPROVE_REQUEST) { ... }
-        // if ($actionType === TelegramActionToken::ACTION_PAYMENT_APPROVE_CONFIRM) { ... }
-        // if ($actionType === TelegramActionToken::ACTION_PAYMENT_REJECT_REQUEST)  { ... }
-        // if ($actionType === TelegramActionToken::ACTION_VENDOR_PAYOUT_PAID_CONFIRM) { ... }
+        // Payment approval — step 1: show confirmation
+        if ($actionType === TelegramActionToken::ACTION_PAYMENT_APPROVE_REQUEST) {
+            return $this->handlePaymentApproveRequest($token, $user, $subject, $callbackQueryId, $chatId, $messageId, $telegramUserId);
+        }
+
+        // Payment approval — step 2: execute via ClientPaymentService
+        if ($actionType === TelegramActionToken::ACTION_PAYMENT_APPROVE_CONFIRM) {
+            return $this->handlePaymentApproveConfirm($token, $user, $subject, $callbackQueryId, $chatId, $messageId, $telegramUserId);
+        }
+
+        // Payment rejection — redirect to portal (reason required)
+        if ($actionType === TelegramActionToken::ACTION_PAYMENT_REJECT_REQUEST) {
+            return $this->handlePaymentRejectRequest($token, $user, $subject, $callbackQueryId, $chatId, $messageId, $telegramUserId);
+        }
+
+        // Vendor report approval — step 1: show confirmation
+        if ($actionType === TelegramActionToken::ACTION_VENDOR_REPORT_APPROVE_REQUEST) {
+            return $this->handleVendorReportApproveRequest($token, $user, $subject, $callbackQueryId, $chatId, $messageId, $telegramUserId);
+        }
+
+        // Vendor report approval — step 2: execute via VendorEarningService
+        if ($actionType === TelegramActionToken::ACTION_VENDOR_REPORT_APPROVE_CONFIRM) {
+            return $this->handleVendorReportApproveConfirm($token, $user, $subject, $callbackQueryId, $chatId, $messageId, $telegramUserId);
+        }
+
+        // Vendor report fail — calls VendorEarningService::reverseEarning()
+        if ($actionType === TelegramActionToken::ACTION_VENDOR_REPORT_FAIL_REQUEST) {
+            return $this->handleVendorReportFail($token, $user, $subject, $callbackQueryId, $chatId, $messageId, $telegramUserId);
+        }
+
+        // Vendor report rework — redirect to portal (needs instructions)
+        if ($actionType === TelegramActionToken::ACTION_VENDOR_REPORT_REWORK_REQUEST) {
+            return $this->handlePortalRedirect($token, $user, $callbackQueryId, $chatId, $messageId, $telegramUserId,
+                'Send rework instructions in the portal.',
+                $subject ? "/admin/orders/{$subject->id}" : '/admin/orders',
+                'callback.vendor.report.rework_redirect',
+            );
+        }
+
+        // Vendor payout — redirect to portal (needs form data: amount, mode, txn ID)
+        if ($actionType === TelegramActionToken::ACTION_VENDOR_PAYOUT_PAID_REQUEST
+            || $actionType === TelegramActionToken::ACTION_VENDOR_PAYOUT_PAID_CONFIRM) {
+            return $this->handlePortalRedirect($token, $user, $callbackQueryId, $chatId, $messageId, $telegramUserId,
+                'Record the payout details in the portal.',
+                '/filament-finance/vendor-payouts',
+                'callback.vendor.payout.portal_redirect',
+            );
+        }
 
         // ── Unknown action ────────────────────────────────────────────
         $this->telegram->answerCallbackQuery($callbackQueryId, 'This action is not yet enabled.');
@@ -246,6 +295,377 @@ class BotController extends Controller
         $this->writeEventLog($telegramUserId, $user->id, 'callback.vendor.assignment.accepted', $token, [
             'order_id' => $order->id,
         ], ['accepted' => true], TelegramEventLog::STATUS_SUCCESS);
+
+        return response()->json(['ok' => true]);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // Payment approval — two-step confirmation
+    // ──────────────────────────────────────────────────────────────
+
+    /**
+     * Step 1: Admin taps "Approve" → show confirmation message with Confirm/Cancel buttons.
+     * Does NOT execute any financial operation.
+     */
+    private function handlePaymentApproveRequest(
+        TelegramActionToken $token,
+        User $user,
+        mixed $subject,
+        string $callbackQueryId,
+        string $chatId,
+        int $messageId,
+        string $telegramUserId,
+    ): JsonResponse {
+        $payment = $subject instanceof ClientPayment ? $subject : null;
+
+        if (! $payment || $payment->status !== ClientPayment::STATUS_PENDING) {
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'This payment is no longer pending.', true);
+            $this->writeEventLog($telegramUserId, $user->id, 'callback.payment.approve.invalid_state', $token, [
+                'payment_status' => $payment?->status,
+            ], null, TelegramEventLog::STATUS_ERROR);
+            return response()->json(['ok' => true]);
+        }
+
+        // Mark the request token as used (one-step-per-token)
+        DB::transaction(fn () => $this->tokenService->markUsed($token, $user->id));
+
+        // Create the second-step confirmation token
+        $confirmToken = $this->tokenService->create(
+            actionType:       TelegramActionToken::ACTION_PAYMENT_APPROVE_CONFIRM,
+            subject:          $payment,
+            createdForUserId: $user->id,
+            telegramUserId:   $telegramUserId,
+            requiredRole:     'admin',
+            ttlMinutes:       5,
+        );
+
+        // Show confirmation message
+        $messageBuilder = app(TelegramMessageBuilder::class);
+        $confirmMsg = $messageBuilder->paymentApprovalConfirm($payment, $confirmToken);
+
+        $this->telegram->answerCallbackQuery($callbackQueryId, 'Please confirm below.');
+        $this->telegram->editMessageText(
+            $chatId, $messageId,
+            $confirmMsg['text'],
+            $confirmMsg['reply_markup'] ?? null,
+        );
+
+        $this->writeEventLog($telegramUserId, $user->id, 'callback.payment.approve.requested', $token, [
+            'payment_id' => $payment->id,
+        ], null, TelegramEventLog::STATUS_SUCCESS);
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Step 2: Admin taps "Confirm Approval" → execute via ClientPaymentService::approve().
+     * Uses the same service the portal uses — creates client_credit_transactions, updates balance.
+     */
+    private function handlePaymentApproveConfirm(
+        TelegramActionToken $token,
+        User $user,
+        mixed $subject,
+        string $callbackQueryId,
+        string $chatId,
+        int $messageId,
+        string $telegramUserId,
+    ): JsonResponse {
+        $payment = $subject instanceof ClientPayment ? $subject : null;
+
+        if (! $payment) {
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'Payment no longer exists.', true);
+            return response()->json(['ok' => true]);
+        }
+
+        try {
+            $paymentService = app(ClientPaymentService::class);
+            $approved = $paymentService->approve($payment, $user);
+
+            DB::transaction(fn () => $this->tokenService->markUsed($token, $user->id));
+
+            // Revoke any other active tokens for this payment (e.g. reject button)
+            $this->tokenService->revokeForSubject($payment, 'payment.');
+
+            $messageBuilder = app(TelegramMessageBuilder::class);
+            $approvedMsg = $messageBuilder->paymentApproved($approved);
+
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'Payment approved! Credits added.');
+            $this->telegram->editMessageText(
+                $chatId, $messageId,
+                $approvedMsg['text'] . "\n\nApproved by {$user->name}",
+                ['inline_keyboard' => [[
+                    ['text' => 'Open Payment', 'url' => $this->portalUrl("/filament-finance/client-payments/{$approved->id}")],
+                ]]],
+            );
+
+            // Notify the client that credits were added
+            $alertService = app(\App\Services\PortalTelegramAlertService::class);
+            $alertService->notifyCreditsAdded($approved->client, (int) $approved->credits_added);
+
+            $this->writeEventLog($telegramUserId, $user->id, 'callback.payment.approved', $token, [
+                'payment_id'    => $approved->id,
+                'credits_added' => $approved->credits_added,
+                'client_id'     => $approved->client_id,
+            ], ['approved' => true], TelegramEventLog::STATUS_SUCCESS);
+
+        } catch (\InvalidArgumentException $e) {
+            $this->telegram->answerCallbackQuery($callbackQueryId, $e->getMessage(), true);
+            $this->writeEventLog($telegramUserId, $user->id, 'callback.payment.approve.rejected', $token, [
+                'reason' => $e->getMessage(),
+            ], null, TelegramEventLog::STATUS_ERROR);
+        } catch (\Throwable $e) {
+            report($e);
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'Approval failed. Please try in the portal.', true);
+            $this->writeEventLog($telegramUserId, $user->id, 'callback.payment.approve.error', $token, [
+                'error' => $e->getMessage(),
+            ], null, TelegramEventLog::STATUS_ERROR);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Payment rejection — redirect to portal (reason is required, can't collect via button).
+     */
+    private function handlePaymentRejectRequest(
+        TelegramActionToken $token,
+        User $user,
+        mixed $subject,
+        string $callbackQueryId,
+        string $chatId,
+        int $messageId,
+        string $telegramUserId,
+    ): JsonResponse {
+        $payment = $subject instanceof ClientPayment ? $subject : null;
+        $url = $this->portalUrl($payment
+            ? "/filament-finance/client-payments/{$payment->id}"
+            : '/filament-finance/client-payments');
+
+        $this->telegram->answerCallbackQuery($callbackQueryId, 'Provide a rejection reason in the portal.');
+        $this->telegram->editMessageText($chatId, $messageId,
+            "<b>Rejection requires a reason.</b>\nPlease review and reject in the portal.",
+            ['inline_keyboard' => [[['text' => 'Open Payment', 'url' => $url]]]],
+        );
+
+        DB::transaction(fn () => $this->tokenService->markUsed($token, $user->id));
+        $this->writeEventLog($telegramUserId, $user->id, 'callback.payment.reject_redirect', $token, [
+            'payment_id' => $payment?->id,
+        ], null, TelegramEventLog::STATUS_SUCCESS);
+
+        return response()->json(['ok' => true]);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // Vendor report review — two-step for approve, single-step for fail
+    // ──────────────────────────────────────────────────────────────
+
+    /**
+     * Step 1: Admin taps "Approve Report" → show confirmation.
+     */
+    private function handleVendorReportApproveRequest(
+        TelegramActionToken $token,
+        User $user,
+        mixed $subject,
+        string $callbackQueryId,
+        string $chatId,
+        int $messageId,
+        string $telegramUserId,
+    ): JsonResponse {
+        $order = $subject instanceof Order ? $subject : null;
+
+        if (! $order) {
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'Order no longer exists.', true);
+            return response()->json(['ok' => true]);
+        }
+
+        DB::transaction(fn () => $this->tokenService->markUsed($token, $user->id));
+
+        // Create confirmation token
+        $confirmToken = $this->tokenService->create(
+            actionType:       TelegramActionToken::ACTION_VENDOR_REPORT_APPROVE_CONFIRM,
+            subject:          $order,
+            createdForUserId: $user->id,
+            telegramUserId:   $telegramUserId,
+            requiredRole:     'admin',
+            ttlMinutes:       5,
+        );
+
+        $vendor = $order->claimed_by ? User::find($order->claimed_by) : null;
+        $vendorName = $vendor?->name ?? 'Unknown';
+        $amount = number_format((float) ($order->vendor_amount ?? 0), 2);
+
+        $this->telegram->answerCallbackQuery($callbackQueryId, 'Please confirm below.');
+        $this->telegram->editMessageText($chatId, $messageId,
+            "<b>Confirm Report Approval?</b>\n"
+            . "Order: <code>{$order->order_number}</code>\n"
+            . "Vendor: {$vendorName}\n"
+            . "Vendor earning: ₹{$amount}\n\n"
+            . "<i>This will move the earning from pending to approved payable.</i>",
+            ['inline_keyboard' => [
+                [
+                    ['text' => 'Confirm Approval', 'callback_data' => $this->tokenService->callbackData($confirmToken)],
+                    ['text' => 'Cancel', 'url' => $this->portalUrl("/filament-admin/orders/{$order->id}")],
+                ],
+            ]],
+        );
+
+        $this->writeEventLog($telegramUserId, $user->id, 'callback.vendor.report.approve.requested', $token, [
+            'order_id' => $order->id,
+        ], null, TelegramEventLog::STATUS_SUCCESS);
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Step 2: Admin taps "Confirm Approval" → call VendorEarningService::approveEarning().
+     */
+    private function handleVendorReportApproveConfirm(
+        TelegramActionToken $token,
+        User $user,
+        mixed $subject,
+        string $callbackQueryId,
+        string $chatId,
+        int $messageId,
+        string $telegramUserId,
+    ): JsonResponse {
+        $order = $subject instanceof Order ? $subject : null;
+
+        if (! $order) {
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'Order no longer exists.', true);
+            return response()->json(['ok' => true]);
+        }
+
+        try {
+            $earningService = app(VendorEarningService::class);
+            $tx = $earningService->approveEarning($order, $user, 'Approved via Telegram');
+
+            DB::transaction(fn () => $this->tokenService->markUsed($token, $user->id));
+            $this->tokenService->revokeForSubject($order, 'vendor.report.');
+
+            if ($tx) {
+                $amount = number_format((float) $tx->amount_delta, 2);
+                $this->telegram->answerCallbackQuery($callbackQueryId, "Report approved! ₹{$amount} moved to payable.");
+            } else {
+                $this->telegram->answerCallbackQuery($callbackQueryId, 'Already approved — no action needed.');
+            }
+
+            $vendor = $order->claimed_by ? User::find($order->claimed_by) : null;
+
+            $this->telegram->editMessageText($chatId, $messageId,
+                "<b>Report Approved</b>\n"
+                . "Order: <code>{$order->order_number}</code>\n"
+                . "Vendor: " . ($vendor?->name ?? 'Unknown') . "\n"
+                . "Approved by: {$user->name}",
+                ['inline_keyboard' => [[
+                    ['text' => 'Open Order', 'url' => $this->portalUrl("/filament-admin/orders/{$order->id}")],
+                ]]],
+            );
+
+            $this->writeEventLog($telegramUserId, $user->id, 'callback.vendor.report.approved', $token, [
+                'order_id' => $order->id,
+                'amount'   => $tx?->amount_delta,
+            ], ['approved' => true], TelegramEventLog::STATUS_SUCCESS);
+
+        } catch (\Throwable $e) {
+            report($e);
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'Approval failed: ' . mb_substr($e->getMessage(), 0, 150), true);
+            $this->writeEventLog($telegramUserId, $user->id, 'callback.vendor.report.approve.error', $token, [
+                'error' => $e->getMessage(),
+            ], null, TelegramEventLog::STATUS_ERROR);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Vendor report fail — calls VendorEarningService::reverseEarning() directly.
+     * Single-step because failing a report is recoverable (admin can requeue).
+     */
+    private function handleVendorReportFail(
+        TelegramActionToken $token,
+        User $user,
+        mixed $subject,
+        string $callbackQueryId,
+        string $chatId,
+        int $messageId,
+        string $telegramUserId,
+    ): JsonResponse {
+        $order = $subject instanceof Order ? $subject : null;
+
+        if (! $order) {
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'Order no longer exists.', true);
+            return response()->json(['ok' => true]);
+        }
+
+        try {
+            $earningService = app(VendorEarningService::class);
+            $earningService->reverseEarning($order, $user, 'Rejected via Telegram');
+
+            DB::transaction(fn () => $this->tokenService->markUsed($token, $user->id));
+            $this->tokenService->revokeForSubject($order, 'vendor.report.');
+
+            $vendor = $order->claimed_by ? User::find($order->claimed_by) : null;
+
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'Report marked as failed.');
+            $this->telegram->editMessageText($chatId, $messageId,
+                "<b>Report Rejected</b>\n"
+                . "Order: <code>{$order->order_number}</code>\n"
+                . "Vendor: " . ($vendor?->name ?? 'Unknown') . "\n"
+                . "Rejected by: {$user->name}\n\n"
+                . "<i>Pending earning reversed. Order can be requeued from the portal.</i>",
+                ['inline_keyboard' => [[
+                    ['text' => 'Requeue Order', 'url' => $this->portalUrl("/filament-admin/orders/{$order->id}")],
+                ]]],
+            );
+
+            $this->writeEventLog($telegramUserId, $user->id, 'callback.vendor.report.failed', $token, [
+                'order_id' => $order->id,
+            ], ['rejected' => true], TelegramEventLog::STATUS_SUCCESS);
+
+        } catch (\LogicException $e) {
+            $this->telegram->answerCallbackQuery($callbackQueryId, $e->getMessage(), true);
+            $this->writeEventLog($telegramUserId, $user->id, 'callback.vendor.report.fail.blocked', $token, [
+                'reason' => $e->getMessage(),
+            ], null, TelegramEventLog::STATUS_DENIED);
+        } catch (\Throwable $e) {
+            report($e);
+            $this->telegram->answerCallbackQuery($callbackQueryId, 'Failed. Please try in the portal.', true);
+            $this->writeEventLog($telegramUserId, $user->id, 'callback.vendor.report.fail.error', $token, [
+                'error' => $e->getMessage(),
+            ], null, TelegramEventLog::STATUS_ERROR);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // Generic portal redirect handler (rework, payout, etc.)
+    // ──────────────────────────────────────────────────────────────
+
+    /**
+     * Redirect the admin to the portal for actions that require form input.
+     */
+    private function handlePortalRedirect(
+        TelegramActionToken $token,
+        User $user,
+        string $callbackQueryId,
+        string $chatId,
+        int $messageId,
+        string $telegramUserId,
+        string $toastText,
+        string $portalPath,
+        string $eventType,
+    ): JsonResponse {
+        $url = $this->portalUrl($portalPath);
+
+        $this->telegram->answerCallbackQuery($callbackQueryId, $toastText);
+        $this->telegram->editMessageText($chatId, $messageId,
+            "{$toastText}\n{$url}",
+            ['inline_keyboard' => [[['text' => 'Open Portal', 'url' => $url]]]],
+        );
+
+        DB::transaction(fn () => $this->tokenService->markUsed($token, $user->id));
+        $this->writeEventLog($telegramUserId, $user->id, $eventType, $token, [], null, TelegramEventLog::STATUS_SUCCESS);
 
         return response()->json(['ok' => true]);
     }
@@ -910,8 +1330,13 @@ class BotController extends Controller
     }
 
     // ──────────────────────────────────────────────────────────────
-    // Audit log helper
+    // Helpers
     // ──────────────────────────────────────────────────────────────
+
+    private function portalUrl(string $path): string
+    {
+        return rtrim(config('app.url'), '/') . $path;
+    }
 
     private function writeEventLog(
         string $telegramUserId,

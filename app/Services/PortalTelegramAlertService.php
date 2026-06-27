@@ -62,6 +62,12 @@ class PortalTelegramAlertService
 
         // Also alert vendor group (plain text, no buttons)
         $this->alertVendorGroup($order);
+
+        // Low credit warning (same logic as legacy notifyOrderAccepted)
+        $threshold = config('telegram.low_credit_threshold', 5);
+        if ((int) $order->client->credit_balance <= $threshold) {
+            $this->notifyLowCredit($order->client);
+        }
     }
 
     /**
@@ -79,11 +85,8 @@ class PortalTelegramAlertService
             return;
         }
 
-        $downloadUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
-            'client.reports.download',
-            now()->addMinutes(config('telegram.download_link_ttl_minutes', 15)),
-            ['order' => $order->id]
-        );
+        // Use the existing public download route: /download/{token_view}
+        $downloadUrl = rtrim(config('app.url'), '/') . '/download/' . $order->token_view;
 
         $message = $this->messageBuilder->reportReadyForClient($order, $downloadUrl);
 

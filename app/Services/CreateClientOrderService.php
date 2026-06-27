@@ -39,13 +39,12 @@ class CreateClientOrderService
     {
         $fileCount = count($files);
         $orderId = null;
-        $remainingCreditsAfterUpload = 0;
         $slaMinutes = (int) config('services.portal.default_sla_minutes', 20);
         if ($slaMinutes <= 0) {
             $slaMinutes = 20;
         }
 
-        DB::transaction(function () use ($client, $files, $source, $meta, $fileCount, $slaMinutes, &$orderId, &$remainingCreditsAfterUpload) {
+        DB::transaction(function () use ($client, $files, $source, $meta, $fileCount, $slaMinutes, &$orderId) {
             $client = Client::where('id', $client->id)->lockForUpdate()->first();
 
             if ($client->plan_expiry && $client->plan_expiry->isPast()) {
@@ -122,7 +121,6 @@ class CreateClientOrderService
             ]);
 
             $freshClient = $client->fresh();
-            $remainingCreditsAfterUpload = (int) $freshClient->credit_balance;
 
             if ($freshClient->credit_balance <= 0) {
                 $client->update(['status' => 'suspended']);
@@ -133,7 +131,7 @@ class CreateClientOrderService
 
         $order = Order::findOrFail($orderId);
 
-        $this->telegramAlerts->notifyOrderAccepted($order, $remainingCreditsAfterUpload);
+        $this->telegramAlerts->notifyOrderCreated($order);
 
         return $order;
     }

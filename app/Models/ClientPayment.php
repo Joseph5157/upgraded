@@ -16,7 +16,9 @@ class ClientPayment extends Model
     public const MODE_CASH          = 'cash';
     public const MODE_RAZORPAY      = 'razorpay';
 
+    public const STATUS_PENDING   = 'pending';
     public const STATUS_CONFIRMED = 'confirmed';
+    public const STATUS_REJECTED  = 'rejected';
     public const STATUS_VOIDED    = 'voided';
     public const STATUS_REFUNDED  = 'refunded';
 

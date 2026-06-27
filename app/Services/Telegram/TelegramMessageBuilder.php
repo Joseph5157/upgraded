@@ -42,6 +42,7 @@ class TelegramMessageBuilder
         $buttons = [
             [
                 ['text' => 'View Order', 'url' => $this->portalUrl("/orders/{$order->id}")],
+                ['text' => 'Check Credits', 'url' => $this->portalUrl('/client-panel')],
             ],
         ];
 
@@ -73,10 +74,11 @@ class TelegramMessageBuilder
         $buttons = [
             [
                 ['text' => 'Download Report', 'url' => $downloadUrl],
-                ['text' => 'View Order', 'url' => $this->portalUrl("/orders/{$order->id}")],
+                ['text' => 'Raise Issue', 'url' => $this->portalUrl('/support')],
             ],
             [
-                ['text' => 'View Credit Balance', 'url' => $this->portalUrl('/subscription')],
+                ['text' => 'View Order', 'url' => $this->portalUrl("/orders/{$order->id}")],
+                ['text' => 'Check Credits', 'url' => $this->portalUrl('/client-panel')],
             ],
         ];
 
@@ -102,7 +104,7 @@ class TelegramMessageBuilder
         $amount  = number_format($payment->amount_received, 2);
         $credits = $payment->credits_added;
         $mode    = ucfirst($payment->payment_mode ?? 'unknown');
-        $ref     = $payment->reference_id ?? '—';
+        $ref     = $payment->transaction_id ?? '—';
 
         $text = "<b>Payment Pending Approval</b>\n"
             . "Client: {$client->name}\n"
