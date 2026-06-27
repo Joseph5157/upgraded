@@ -1,24 +1,33 @@
 <x-filament-widgets::widget>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div class="rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Pending Earnings</p>
-            <p class="mt-1 text-xl font-semibold tracking-tight text-gray-950 dark:text-white">{{ $pending }} ₹</p>
-            <p class="mt-1 text-xs text-amber-500">Awaiting approval</p>
+
+        {{-- Pending Earnings — Amber --}}
+        <div style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:12px;padding:14px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:500;">Pending Earnings</p>
+            <p style="font-size:22px;font-weight:700;color:#fff;margin-top:4px;line-height:1.2;">{{ $pending }} ₹</p>
+            <p style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px;">Awaiting approval</p>
         </div>
-        <div class="rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Approved Payable</p>
-            <p class="mt-1 text-xl font-semibold tracking-tight text-gray-950 dark:text-white">{{ $approved }} ₹</p>
-            <p class="mt-1 text-xs text-green-500">Ready to pay out</p>
+
+        {{-- Approved Payable — Green --}}
+        <div style="background:linear-gradient(135deg,#10b981,#059669);border-radius:12px;padding:14px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:500;">Approved Payable</p>
+            <p style="font-size:22px;font-weight:700;color:#fff;margin-top:4px;line-height:1.2;">{{ $approved }} ₹</p>
+            <p style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px;">Ready to pay out</p>
         </div>
-        <div class="rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Delivered Today</p>
-            <p class="mt-1 text-xl font-semibold tracking-tight text-gray-950 dark:text-white">{{ $today }}</p>
-            <p class="mt-1 text-xs text-blue-500">Today's completions</p>
+
+        {{-- Delivered Today — Blue --}}
+        <div style="background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:12px;padding:14px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:500;">Delivered Today</p>
+            <p style="font-size:22px;font-weight:700;color:#fff;margin-top:4px;line-height:1.2;">{{ $today }}</p>
+            <p style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px;">Today's completions</p>
         </div>
-        <div class="rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-            <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Total Delivered</p>
-            <p class="mt-1 text-xl font-semibold tracking-tight text-gray-950 dark:text-white">{{ $total }}</p>
-            <p class="mt-1 text-xs text-gray-500">All time</p>
+
+        {{-- Total Delivered — Indigo --}}
+        <div style="background:linear-gradient(135deg,#6366f1,#4f46e5);border-radius:12px;padding:14px;">
+            <p style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:500;">Total Delivered</p>
+            <p style="font-size:22px;font-weight:700;color:#fff;margin-top:4px;line-height:1.2;">{{ $total }}</p>
+            <p style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:4px;">All time</p>
         </div>
+
     </div>
 </x-filament-widgets::widget>
