@@ -3,61 +3,33 @@
 namespace App\Filament\Client\Widgets;
 
 use App\Enums\OrderStatus;
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
-use Filament\Widgets\StatsOverviewWidget\Stat;
+use Filament\Widgets\Widget;
 
-class CreditOverviewWidget extends BaseWidget
+class CreditOverviewWidget extends Widget
 {
     protected static ?int $sort = 1;
 
-    protected static string $view = 'filament.widgets.stats-2col';
+    protected int|string|array $columnSpan = 'full';
 
-    protected function getStats(): array
+    protected static string $view = 'filament.client.widgets.credit-overview';
+
+    protected function getViewData(): array
     {
         $client = auth()->user()?->client;
 
         if (! $client) {
-            return [
-                Stat::make('Credit Balance', '0 credits')
-                    ->description('Available credits')
-                    ->color('info'),
-                Stat::make('Files Submitted', 0)
-                    ->description('Total orders')
-                    ->color('indigo'),
-                Stat::make('In Progress', 0)
-                    ->color('warning'),
-                Stat::make('Completed', 0)
-                    ->color('success'),
-            ];
+            return ['balance' => 0, 'total' => 0, 'inProgress' => 0, 'completed' => 0];
         }
 
-        $totalOrders = $client->orders()
-            ->where('status', '!=', OrderStatus::Cancelled->value)
-            ->count();
-
-        $inProgress = $client->orders()
-            ->whereIn('status', [
+        return [
+            'balance'    => $client->credit_balance ?? 0,
+            'total'      => $client->orders()->where('status', '!=', OrderStatus::Cancelled->value)->count(),
+            'inProgress' => $client->orders()->whereIn('status', [
                 OrderStatus::Pending->value,
                 OrderStatus::Claimed->value,
                 OrderStatus::Processing->value,
-            ])
-            ->count();
-
-        $completed = $client->orders()
-            ->where('status', OrderStatus::Delivered->value)
-            ->count();
-
-        return [
-            Stat::make('Credit Balance', ($client->credit_balance ?? 0) . ' credits')
-                ->description('Available credits')
-                ->color('info'),
-            Stat::make('Files Submitted', $totalOrders)
-                ->description('Total orders')
-                ->color('indigo'),
-            Stat::make('In Progress', $inProgress)
-                ->color('warning'),
-            Stat::make('Completed', $completed)
-                ->color('success'),
+            ])->count(),
+            'completed'  => $client->orders()->where('status', OrderStatus::Delivered->value)->count(),
         ];
     }
 }
