@@ -6,8 +6,6 @@ use App\Filament\Client\Resources\MyOrdersResource;
 use App\Services\CreateClientOrderService;
 use App\Support\LogContext;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -45,39 +43,25 @@ class UploadFiles extends Page implements HasForms
     {
         return $form
             ->schema([
-                Section::make('Credit Summary')
-                    ->description('Each file uploaded uses 1 credit.')
-                    ->schema([
-                        Placeholder::make('available_credits')
-                            ->label('Available Credits')
-                            ->content(fn (): string => $this->creditBalance . ' credit' . ($this->creditBalance === 1 ? '' : 's')),
-                        Placeholder::make('cost_info')
-                            ->label('Cost per file')
-                            ->content('1 credit'),
+                FileUpload::make('file')
+                    ->label('Select File')
+                    ->helperText('PDF, DOC, DOCX or ZIP · Max 100 MB')
+                    ->required()
+                    ->acceptedFileTypes([
+                        'application/pdf',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/zip',
+                        'application/x-zip-compressed',
                     ])
-                    ->columns(2),
+                    ->maxSize(102400)
+                    ->storeFiles(false),
 
-                Section::make('Upload')
-                    ->schema([
-                        FileUpload::make('file')
-                            ->label('File (PDF, DOC, DOCX, or ZIP)')
-                            ->required()
-                            ->acceptedFileTypes([
-                                'application/pdf',
-                                'application/msword',
-                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                                'application/zip',
-                                'application/x-zip-compressed',
-                            ])
-                            ->maxSize(102400)
-                            ->storeFiles(false),
-
-                        Textarea::make('notes')
-                            ->label('Notes (optional)')
-                            ->rows(3)
-                            ->maxLength(1000)
-                            ->placeholder('Any additional instructions for the vendor...'),
-                    ]),
+                Textarea::make('notes')
+                    ->label('Notes (optional)')
+                    ->rows(2)
+                    ->maxLength(1000)
+                    ->placeholder('Any instructions for the vendor...'),
             ])
             ->statePath('data');
     }
