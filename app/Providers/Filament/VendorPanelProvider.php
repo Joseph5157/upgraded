@@ -10,6 +10,8 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\HtmlString;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -52,6 +54,29 @@ class VendorPanelProvider extends PanelProvider
                 Authenticate::class,
                 FilamentPanelRole::class . ':vendor',
             ])
-            ->authGuard('web');
+            ->authGuard('web')
+            ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn (): HtmlString => new HtmlString(<<<'HTML'
+                <script>
+                    (function () {
+                        function closeMobileSidebar() {
+                            if (window.innerWidth >= 1024) return;
+                            document.querySelectorAll('[x-data]').forEach(function (el) {
+                                var stacks = el._x_dataStack;
+                                if (!stacks) return;
+                                stacks.forEach(function (data) {
+                                    if ('isNavigationOpen' in data) {
+                                        data.isNavigationOpen = false;
+                                    }
+                                });
+                            });
+                        }
+                        document.addEventListener('alpine:initialized', closeMobileSidebar);
+                        document.addEventListener('livewire:navigated', closeMobileSidebar);
+                    })();
+                </script>
+                HTML)
+            );
     }
 }
