@@ -18,6 +18,6 @@ class AccessFinance extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->role === 'admin' ?? false;
     }
 }
