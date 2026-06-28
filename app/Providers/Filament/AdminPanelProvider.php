@@ -7,7 +7,6 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -58,12 +57,6 @@ class AdminPanelProvider extends PanelProvider
                 FilamentPanelRole::class . ':admin',
             ])
             ->authGuard('web')
-            ->registerNavigationItems([
-                NavigationItem::make('Finance')
-                    ->url('/filament-finance')
-                    ->icon('heroicon-o-currency-dollar')
-                    ->isActiveWhen(fn (): bool => request()->is('filament-finance*')),
-            ])
             ->renderHook(
                 PanelsRenderHook::BODY_START,
                 fn (): HtmlString => new HtmlString(<<<'HTML'
