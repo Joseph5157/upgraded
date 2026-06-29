@@ -15,7 +15,6 @@ class ListVendors extends ListRecords
     {
         return [
             InviteTelegramAction::make('invite-vendor')->role('vendor'),
-            Actions\CreateAction::make(),
         ];
     }
 }

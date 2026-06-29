@@ -15,7 +15,6 @@ class ListUsers extends ListRecords
     {
         return [
             InviteTelegramAction::make('invite-user')->role(null),
-            Actions\CreateAction::make(),
         ];
     }
 }

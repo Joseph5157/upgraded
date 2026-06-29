@@ -15,7 +15,6 @@ class ListClients extends ListRecords
     {
         return [
             InviteTelegramAction::make('invite-client')->role('client'),
-            Actions\CreateAction::make(),
         ];
     }
 }
