@@ -8,6 +8,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -148,6 +149,11 @@ class AnnouncementResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->bulkActions([])
             ->paginated([10, 25, 50]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['creator']);
     }
 
     public static function getPages(): array

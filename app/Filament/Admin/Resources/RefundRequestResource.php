@@ -11,6 +11,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
 class RefundRequestResource extends Resource
 {
@@ -45,7 +47,9 @@ class RefundRequestResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = RefundRequest::where('status', 'pending')->count();
+        $count = Cache::remember('refund_pending_count', 300, fn () =>
+            RefundRequest::where('status', 'pending')->count()
+        );
 
         return $count > 0 ? (string) $count : null;
     }
@@ -149,6 +153,11 @@ class RefundRequestResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->bulkActions([])
             ->paginated([10, 25, 50]);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['client', 'user']);
     }
 
     public static function getPages(): array

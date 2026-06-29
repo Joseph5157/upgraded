@@ -152,7 +152,7 @@ class OrderResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['client', 'vendor']);
+        return parent::getEloquentQuery()->with(['client', 'vendor', 'failedBy']);
     }
 
     public static function table(Table $table): Table
