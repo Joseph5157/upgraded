@@ -11,8 +11,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Cache;
 
 class TopupRequestResource extends Resource
 {
@@ -47,9 +45,7 @@ class TopupRequestResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = Cache::remember('topup_pending_count', 300, fn () =>
-            TopupRequest::where('status', 'pending')->count()
-        );
+        $count = TopupRequest::where('status', 'pending')->count();
 
         return $count > 0 ? (string) $count : null;
     }
@@ -155,11 +151,6 @@ class TopupRequestResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->bulkActions([])
             ->paginated([10, 25, 50]);
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()->with(['client']);
     }
 
     public static function getPages(): array

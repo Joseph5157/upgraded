@@ -8,8 +8,6 @@ use Filament\Widgets\Widget;
 
 class RecentOrdersWidget extends Widget
 {
-    protected static bool $isLazy = true;
-
     protected static ?int $sort = 2;
 
     protected int|string|array $columnSpan = 'full';

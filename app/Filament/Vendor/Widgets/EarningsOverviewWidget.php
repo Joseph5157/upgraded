@@ -6,8 +6,6 @@ use Filament\Widgets\Widget;
 
 class EarningsOverviewWidget extends Widget
 {
-    protected static bool $isLazy = true;
-
     protected static ?int $sort = 1;
 
     protected int|string|array $columnSpan = 'full';

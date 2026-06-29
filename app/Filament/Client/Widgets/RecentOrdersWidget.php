@@ -11,8 +11,6 @@ use Illuminate\Database\Eloquent\Builder;
 
 class RecentOrdersWidget extends BaseWidget
 {
-    protected static bool $isLazy = true;
-
     protected static ?int $sort = 2;
 
     protected int | string | array $columnSpan = 'full';
