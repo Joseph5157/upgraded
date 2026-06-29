@@ -64,6 +64,13 @@ class InviteTelegramAction extends Action
                 ->required()
                 ->live();
 
+            $schema[] = TextInput::make('price_per_file')
+                ->label('Rate per File (₹)')
+                ->numeric()
+                ->minValue(0)
+                ->step(0.01)
+                ->visible(fn (Get $get) => $get('role') === 'client');
+
             $schema[] = TextInput::make('slots')
                 ->label('Total Slots')
                 ->numeric()
@@ -77,6 +84,12 @@ class InviteTelegramAction extends Action
                 ->step(0.01)
                 ->visible(fn (Get $get) => $get('role') === 'vendor');
         } elseif ($this->inviteRole === 'client') {
+            $schema[] = TextInput::make('price_per_file')
+                ->label('Rate per File (₹)')
+                ->numeric()
+                ->minValue(0)
+                ->step(0.01);
+
             $schema[] = TextInput::make('slots')
                 ->label('Total Slots')
                 ->numeric()
@@ -116,12 +129,13 @@ class InviteTelegramAction extends Action
         $token = Str::random(32);
 
         PendingInvite::create([
-            'name'         => $data['name'],
-            'role'         => $role,
-            'slots'        => $data['slots'] ?? null,
-            'payout_rate'  => $data['payout_rate'] ?? null,
-            'invite_token' => $token,
-            'expires_at'   => now()->addDays(7),
+            'name'           => $data['name'],
+            'role'           => $role,
+            'slots'          => $data['slots'] ?? null,
+            'price_per_file' => $data['price_per_file'] ?? null,
+            'payout_rate'    => $data['payout_rate'] ?? null,
+            'invite_token'   => $token,
+            'expires_at'     => now()->addDays(7),
         ]);
 
         $link = "https://t.me/{$botUsername}?start=invite_{$token}";

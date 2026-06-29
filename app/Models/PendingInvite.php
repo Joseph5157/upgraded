@@ -10,6 +10,7 @@ class PendingInvite extends Model
         'name',
         'role',
         'slots',
+        'price_per_file',
         'payout_rate',
         'invite_token',
         'expires_at',
@@ -18,8 +19,9 @@ class PendingInvite extends Model
     protected function casts(): array
     {
         return [
-            'expires_at'  => 'datetime',
-            'payout_rate' => 'decimal:2',
+            'expires_at'     => 'datetime',
+            'price_per_file' => 'decimal:2',
+            'payout_rate'    => 'decimal:2',
         ];
     }
 

@@ -1187,9 +1187,10 @@ class BotController extends Controller
 
                 if ($invite->role === 'client') {
                     $client = Client::create([
-                        'name'   => $invite->name,
-                        'slots'  => $invite->slots ?? 0,
-                        'status' => 'active',
+                        'name'           => $invite->name,
+                        'slots'          => $invite->slots ?? 0,
+                        'price_per_file' => $invite->price_per_file,
+                        'status'         => 'active',
                     ]);
                     $userData['client_id'] = $client->id;
                 }
