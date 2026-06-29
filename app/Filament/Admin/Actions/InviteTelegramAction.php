@@ -126,12 +126,21 @@ class InviteTelegramAction extends Action
 
         $link = "https://t.me/{$botUsername}?start=invite_{$token}";
 
+        // Show a small success toast
         Notification::make()
             ->success()
             ->title('Invite created for ' . $data['name'])
-            ->body($link)
-            ->persistent()
             ->send();
+
+        // Show a copyable dialog box with the link via JavaScript
+        $jsLink = str_replace("'", "\\'", $link);
+        $jsName = str_replace("'", "\\'", $data['name']);
+
+        $this->getLivewire()->js(
+            "navigator.clipboard.writeText('{$jsLink}')" .
+            ".then(() => alert('Invite link for {$jsName} copied to clipboard!\\n\\n{$jsLink}'))" .
+            ".catch(() => prompt('Copy this invite link for {$jsName}:', '{$jsLink}'))"
+        );
 
         Log::info('telegram.invite_link.created', [
             'invite_name'       => $data['name'],
