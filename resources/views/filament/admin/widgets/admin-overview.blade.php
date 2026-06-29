@@ -7,26 +7,14 @@
         }
         @media (max-width: 1024px) {
             .admin-stats-grid {
-                display: flex;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
-                overflow-x: auto;
-                scroll-behavior: smooth;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 8px;
             }
-            .admin-stats-grid::-webkit-scrollbar {
-                height: 4px;
-            }
-            .admin-stats-grid::-webkit-scrollbar-track {
-                background: #f3f4f6;
-                border-radius: 2px;
-            }
-            .admin-stats-grid::-webkit-scrollbar-thumb {
-                background: #d1d5db;
-                border-radius: 2px;
-            }
-            .admin-stats-grid::-webkit-scrollbar-thumb:hover {
-                background: #9ca3af;
+        }
+        @media (max-width: 640px) {
+            .admin-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
         }
         .stat-card-clean {
@@ -39,12 +27,16 @@
             gap: 14px;
             transition: all 0.2s ease;
             box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            flex-shrink: 0;
-            min-width: 280px;
         }
-        @media (min-width: 1025px) {
+        @media (max-width: 1024px) {
             .stat-card-clean {
-                min-width: auto;
+                padding: 16px;
+            }
+        }
+        @media (max-width: 640px) {
+            .stat-card-clean {
+                padding: 12px;
+                gap: 10px;
             }
         }
         .stat-card-clean:hover {
@@ -65,6 +57,26 @@
             width: 22px;
             height: 22px;
         }
+        @media (max-width: 1024px) {
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+            }
+            .stat-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+        @media (max-width: 640px) {
+            .stat-icon {
+                width: 36px;
+                height: 36px;
+            }
+            .stat-icon svg {
+                width: 18px;
+                height: 18px;
+            }
+        }
         .stat-content {
             flex: 1;
             min-width: 0;
@@ -83,6 +95,24 @@
             font-weight: 700;
             color: #111827;
             line-height: 1;
+        }
+        @media (max-width: 1024px) {
+            .stat-label {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            .stat-value {
+                font-size: 22px;
+            }
+        }
+        @media (max-width: 640px) {
+            .stat-label {
+                font-size: 10px;
+                margin-bottom: 2px;
+            }
+            .stat-value {
+                font-size: 18px;
+            }
         }
 
         /* Dark mode */
@@ -104,18 +134,6 @@
         [data-theme="dark"] .stat-value,
         .dark .stat-value {
             color: #f3f4f6;
-        }
-        [data-theme="dark"] .admin-stats-grid::-webkit-scrollbar-track,
-        .dark .admin-stats-grid::-webkit-scrollbar-track {
-            background: #252840;
-        }
-        [data-theme="dark"] .admin-stats-grid::-webkit-scrollbar-thumb,
-        .dark .admin-stats-grid::-webkit-scrollbar-thumb {
-            background: #3e4268;
-        }
-        [data-theme="dark"] .admin-stats-grid::-webkit-scrollbar-thumb:hover,
-        .dark .admin-stats-grid::-webkit-scrollbar-thumb:hover {
-            background: #4e5580;
         }
     </style>
 

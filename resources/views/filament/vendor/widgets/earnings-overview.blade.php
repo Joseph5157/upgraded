@@ -7,26 +7,14 @@
         }
         @media (max-width: 1024px) {
             .earnings-stats-grid {
-                display: flex;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
-                overflow-x: auto;
-                scroll-behavior: smooth;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 8px;
             }
-            .earnings-stats-grid::-webkit-scrollbar {
-                height: 4px;
-            }
-            .earnings-stats-grid::-webkit-scrollbar-track {
-                background: #f3f4f6;
-                border-radius: 2px;
-            }
-            .earnings-stats-grid::-webkit-scrollbar-thumb {
-                background: #d1d5db;
-                border-radius: 2px;
-            }
-            .earnings-stats-grid::-webkit-scrollbar-thumb:hover {
-                background: #9ca3af;
+        }
+        @media (max-width: 640px) {
+            .earnings-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
         }
         .earnings-card {
@@ -39,12 +27,16 @@
             gap: 14px;
             transition: all 0.2s ease;
             box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            flex-shrink: 0;
-            min-width: 260px;
         }
-        @media (min-width: 1025px) {
+        @media (max-width: 1024px) {
             .earnings-card {
-                min-width: auto;
+                padding: 16px;
+            }
+        }
+        @media (max-width: 640px) {
+            .earnings-card {
+                padding: 12px;
+                gap: 10px;
             }
         }
         .earnings-card:hover {
@@ -89,6 +81,46 @@
             color: #9ca3af;
             margin-top: 4px;
         }
+        @media (max-width: 1024px) {
+            .earnings-icon {
+                width: 40px;
+                height: 40px;
+            }
+            .earnings-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+            .earnings-label {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            .earnings-value {
+                font-size: 22px;
+            }
+            .earnings-desc {
+                font-size: 11px;
+            }
+        }
+        @media (max-width: 640px) {
+            .earnings-icon {
+                width: 36px;
+                height: 36px;
+            }
+            .earnings-icon svg {
+                width: 18px;
+                height: 18px;
+            }
+            .earnings-label {
+                font-size: 10px;
+                margin-bottom: 2px;
+            }
+            .earnings-value {
+                font-size: 18px;
+            }
+            .earnings-desc {
+                font-size: 10px;
+            }
+        }
 
         /* Dark mode */
         [data-theme="dark"] .earnings-card,
@@ -112,18 +144,6 @@
         [data-theme="dark"] .earnings-desc,
         .dark .earnings-desc {
             color: #6b7280;
-        }
-        [data-theme="dark"] .earnings-stats-grid::-webkit-scrollbar-track,
-        .dark .earnings-stats-grid::-webkit-scrollbar-track {
-            background: #252840;
-        }
-        [data-theme="dark"] .earnings-stats-grid::-webkit-scrollbar-thumb,
-        .dark .earnings-stats-grid::-webkit-scrollbar-thumb {
-            background: #3e4268;
-        }
-        [data-theme="dark"] .earnings-stats-grid::-webkit-scrollbar-thumb:hover,
-        .dark .earnings-stats-grid::-webkit-scrollbar-thumb:hover {
-            background: #4e5580;
         }
     </style>
 

@@ -7,26 +7,14 @@
         }
         @media (max-width: 1024px) {
             .credit-stats-grid {
-                display: flex;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 12px;
-                overflow-x: auto;
-                scroll-behavior: smooth;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 8px;
             }
-            .credit-stats-grid::-webkit-scrollbar {
-                height: 4px;
-            }
-            .credit-stats-grid::-webkit-scrollbar-track {
-                background: #f3f4f6;
-                border-radius: 2px;
-            }
-            .credit-stats-grid::-webkit-scrollbar-thumb {
-                background: #d1d5db;
-                border-radius: 2px;
-            }
-            .credit-stats-grid::-webkit-scrollbar-thumb:hover {
-                background: #9ca3af;
+        }
+        @media (max-width: 640px) {
+            .credit-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
         }
         .credit-card {
@@ -39,12 +27,16 @@
             gap: 14px;
             transition: all 0.2s ease;
             box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            flex-shrink: 0;
-            min-width: 260px;
         }
-        @media (min-width: 1025px) {
+        @media (max-width: 1024px) {
             .credit-card {
-                min-width: auto;
+                padding: 16px;
+            }
+        }
+        @media (max-width: 640px) {
+            .credit-card {
+                padding: 12px;
+                gap: 10px;
             }
         }
         .credit-card:hover {
@@ -89,6 +81,46 @@
             color: #9ca3af;
             margin-top: 4px;
         }
+        @media (max-width: 1024px) {
+            .credit-icon {
+                width: 40px;
+                height: 40px;
+            }
+            .credit-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+            .credit-label {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            .credit-value {
+                font-size: 22px;
+            }
+            .credit-desc {
+                font-size: 11px;
+            }
+        }
+        @media (max-width: 640px) {
+            .credit-icon {
+                width: 36px;
+                height: 36px;
+            }
+            .credit-icon svg {
+                width: 18px;
+                height: 18px;
+            }
+            .credit-label {
+                font-size: 10px;
+                margin-bottom: 2px;
+            }
+            .credit-value {
+                font-size: 18px;
+            }
+            .credit-desc {
+                font-size: 10px;
+            }
+        }
 
         /* Dark mode */
         [data-theme="dark"] .credit-card,
@@ -112,18 +144,6 @@
         [data-theme="dark"] .credit-desc,
         .dark .credit-desc {
             color: #6b7280;
-        }
-        [data-theme="dark"] .credit-stats-grid::-webkit-scrollbar-track,
-        .dark .credit-stats-grid::-webkit-scrollbar-track {
-            background: #252840;
-        }
-        [data-theme="dark"] .credit-stats-grid::-webkit-scrollbar-thumb,
-        .dark .credit-stats-grid::-webkit-scrollbar-thumb {
-            background: #3e4268;
-        }
-        [data-theme="dark"] .credit-stats-grid::-webkit-scrollbar-thumb:hover,
-        .dark .credit-stats-grid::-webkit-scrollbar-thumb:hover {
-            background: #4e5580;
         }
     </style>
 
