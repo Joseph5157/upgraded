@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\VendorResource\Pages;
 
+use App\Filament\Admin\Actions\InviteTelegramAction;
 use App\Filament\Admin\Resources\VendorResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -13,6 +14,7 @@ class ListVendors extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            InviteTelegramAction::make('invite-vendor')->role('vendor'),
             Actions\CreateAction::make(),
         ];
     }
